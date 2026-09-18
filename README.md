@@ -273,6 +273,56 @@ zoneless lifecycle tests, server rendering, partial-Ivy output, and packed
 Angular 20 and Angular 22 AOT consumers. Browser hydration has not been tested
 and no hydration compatibility claim is made.
 
+### Vue lifecycle adapter
+
+Vue 3.3–3.5 applications can provide an existing surface through a plugin and
+bind an explicit definition with a native template ref:
+
+```vue
+<script setup lang="ts">
+import { shallowRef } from "vue";
+import type { AgentElementDefinition } from "dual-surface-ui";
+import { useAgentElement } from "dual-surface-ui/vue";
+
+const definition = shallowRef<AgentElementDefinition>({
+  id: "confirm-order",
+  actions: {
+    confirm_order: {
+      risk: "consequential",
+      effects: ["order_submitted"],
+      handler: submitOrder,
+    },
+  },
+});
+
+const agentElement = useAgentElement<HTMLButtonElement>(definition);
+</script>
+
+<template>
+  <button ref="agentElement" @click="submitOrder">
+    Confirm order
+  </button>
+</template>
+```
+
+```ts
+import { createApp } from "vue";
+import { createAgentSurfacePlugin } from "dual-surface-ui/vue";
+import App from "./App.vue";
+
+createApp(App)
+  .use(createAgentSurfacePlugin(surface))
+  .mount("#app");
+```
+
+The adapter owns only Vue provider and ref lifecycle. It disposes bindings on
+unmount and `KeepAlive` deactivation; core still owns validation, policy,
+confirmation, replay protection, execution, and verification. Replace the
+definition object to update semantics rather than mutating it in place.
+
+The adapter is verified with Vue 3.5 lifecycle/KeepAlive tests, real Node SSR,
+SSR-to-client hydration, and packed Vue 3.3.13 and 3.5.43 SFC consumers.
+
 Snapshots conform to the published `0.1` JSON Schema in
 `schemas/agent-snapshot-0.1.schema.json`. The schema includes a surface ID,
 revision, capabilities, semantic nodes, and typed action metadata. Sensitive
@@ -352,12 +402,13 @@ Included:
 - Updated state returned after every action
 - Optional allowlisted WebMCP imperative export with revision-bound execution
 - Optional React 18.2/19 provider and committed-ref lifecycle bindings
+- Optional Vue 3.3–3.5 plugin and template-ref lifecycle binding
 
 Not included yet:
 
 - MCP or HTTP transport
 - WebMCP declarative autosubmit, synthetic polyfill, or cross-origin exposure
-- Vue/Svelte adapters
+- Svelte adapter
 - Mutation-stream or incremental snapshots
 - Durable audit storage, delivery retries, and retention policy
 - Persistent or distributed idempotency storage

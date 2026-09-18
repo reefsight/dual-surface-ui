@@ -92,5 +92,8 @@ StrictMode/SSR tests. P2.4 is implemented and verified as a thin Angular
 provider/directive lifecycle boundary with zoneless and SSR tests, partial-Ivy
 output, isolated root installation, and Angular 20/22 packed-consumer AOT
 builds. Browser hydration proof remains explicitly pending and no hydration
-compatibility is claimed. P2.5 (Vue adapter) is next; later Phase 2
-deliverables remain gated by the roadmap.
+compatibility is claimed. P2.5 is implemented and verified as an additive Vue
+3.3–3.5 plugin/composable boundary with lifecycle and `KeepAlive` cleanup,
+real Node SSR, SSR-to-client hydration, isolated root installation, and packed
+Vue 3.3.13/3.5.43 SFC production builds. P2.6 (domain-action annotations) is
+next; later Phase 2 deliverables remain gated by the roadmap.

@@ -21,6 +21,10 @@
     "./angular": {
       "types": "./dist/angular/index.d.ts",
       "import": "./dist/angular/index.js"
+    },
+    "./vue": {
+      "types": "./dist/vue/index.d.ts",
+      "import": "./dist/vue/index.js"
     }
   },
   "files": [
@@ -59,13 +63,17 @@
   },
   "peerDependencies": {
     "@angular/core": "^20.0.0 || ^21.0.0 || ^22.0.0",
-    "react": "^18.2.0 || ^19.0.0"
+    "react": "^18.2.0 || ^19.0.0",
+    "vue": ">=3.3.0 <3.6.0"
   },
   "peerDependenciesMeta": {
     "@angular/core": {
       "optional": true
     },
     "react": {
+      "optional": true
+    },
+    "vue": {
       "optional": true
     }
   },
@@ -78,6 +86,7 @@
     "@angular/platform-server": "20.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@vue/server-renderer": "3.5.43",
     "jsdom": "^26.1.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -85,6 +94,7 @@
     "tslib": "2.8",
     "typescript": "5.8.3",
     "vitest": "^5.0.1",
+    "vue": "3.5.43",
     "zone.js": "^0.15.1"
   }
 }
