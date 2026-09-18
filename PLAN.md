@@ -1,6 +1,6 @@
 # Dual Surface UI — Master Plan
 
-Status: **Phase 1 exit recommended; maintainer approval pending**
+Status: **Phase 1 accepted; Phase 2 in progress**
 
 Implementation status: the current code is an exploratory prototype only. It
 must not be treated as a stable API or a completed phase.
@@ -78,5 +78,6 @@ the validated JSON handler-output contract; P1.7 added bounded keyed replay
 protection without retaining raw action input; P1.8–P1.11 completed structured
 failures, redacted lifecycle events, DOM conformance, and the example baseline.
 P1.12 verified the frozen contract, security evidence, clean installation,
-package consumer, and all 134 tests. The Phase 1 exit is recommended but still
-requires maintainer approval. Phase 2 has not started.
+package consumer, and all 134 tests. The maintainer accepted the Phase 1 exit
+gate on 2026-09-18 and authorized Phase 2. P2.1 starts with the imperative
+WebMCP exporter; later Phase 2 deliverables remain gated by the roadmap.

@@ -1,6 +1,6 @@
 # Phase 1 Exit Review
 
-Status: Recommended for maintainer approval
+Status: Accepted by repository maintainer on 2026-09-18
 
 Verified implementation commit: `6adc8ce79c478a0b4e1dc4172fd6463d1e63c6e4`
 
@@ -8,13 +8,12 @@ Audit date: 2026-09-18
 
 Decision owner: Repository maintainer
 
-## Recommendation
+## Decision
 
-Approve the Phase 1 exit gate and authorize planning and implementation of
-P2.1. Do not publish, tag, or describe Phase 2 as started until the maintainer
-records that approval. This review commit only records evidence; it adds no
-runtime, schema, dependency, or package-content change after the verified
-implementation commit.
+The repository maintainer accepted the Phase 1 exit gate and authorized
+planning and implementation of P2.1 on 2026-09-18. Package publication and
+version tagging remain separate release decisions. The approval changes phase
+status only; it does not alter runtime, schema, dependency, or package content.
 
 ## Deliverable audit
 
@@ -112,11 +111,11 @@ efficiency claim.
 - The baseline uses one synthetic document-approval fixture.
 - The package is not published or tagged, and the `0.1` manifest is a source
   compatibility freeze for review, not a registry release.
-- Human maintainer approval remains required before Phase 2 begins.
+- Browser/model/production evidence remains required by the later phase gates.
 
-## Maintainer decision requested
+## Maintainer decision
 
-- [ ] Approve the Phase 1 exit gate.
-- [ ] Authorize P2.1 planning and implementation under the existing roadmap.
-- [ ] Keep package publication and version tagging as a separate release
+- [x] Approve the Phase 1 exit gate — accepted 2026-09-18.
+- [x] Authorize P2.1 planning and implementation under the existing roadmap.
+- [x] Keep package publication and version tagging as a separate release
   decision.
