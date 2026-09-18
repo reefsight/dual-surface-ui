@@ -63,6 +63,12 @@ surface.register(button, {
     confirm_order: {
       description: "Submit the order for payment",
       risk: "consequential",
+      inputSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: { orderId: { type: "string" } },
+        required: ["orderId"],
+      },
       handler: async () => {
         await submitOrder();
       },
@@ -80,6 +86,7 @@ await surface.perform({
   revision: snapshot.revision,
   elementId: "confirm-order",
   action: "confirm_order",
+  input: { orderId: "order-123" },
 });
 ```
 
@@ -103,6 +110,8 @@ actions require an `authorize` callback; without approval they fail closed.
 - Secret-safe snapshots: password and `data-agent-sensitive="true"` values are
   never serialized; agents can only see whether a value is present.
 - Reject stale actions: requests bind to the observed surface and revision.
+- Validate before acting: declared JSON Schemas reject invalid input before
+  authorization or handler execution.
 - Verify after acting: `perform()` returns a versioned result with the updated
   revision and target node when it is still present.
 - Vision remains a fallback for canvas, charts, maps, and unannotated legacy UI.
@@ -118,6 +127,7 @@ Included:
 - Inferred native actions for standard controls
 - Custom domain actions
 - Action risk metadata and authorization hook
+- Runtime JSON Schema validation and stable typed error codes
 - Updated state returned after every action
 
 Not included yet:
@@ -125,7 +135,7 @@ Not included yet:
 - MCP or HTTP transport
 - React/Vue/Svelte adapters
 - Mutation-stream or incremental snapshots
-- JSON Schema validation for action inputs
+- Output validation and declared-effect verification
 - Screenshot alignment and visual verification
 - Shadow DOM, iframe, canvas, or native desktop adapters
 

@@ -35,9 +35,11 @@
   "engines": {
     "node": ">=20"
   },
-  "devDependencies": {
+  "dependencies": {
     "ajv": "^8.17.1",
-    "ajv-formats": "^3.0.1",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
     "jsdom": "^26.1.0",
     "typescript": "^5.8.3",
     "vitest": "^5.0.1"

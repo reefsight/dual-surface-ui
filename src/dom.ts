@@ -152,8 +152,12 @@ export function boundsOf(element: Element): AgentBounds | undefined {
   };
 }
 
-function action(name: string, risk: AgentRisk): AgentActionSnapshot {
-  return { name, risk };
+function action(
+  name: string,
+  risk: AgentRisk,
+  inputSchema?: Record<string, unknown>,
+): AgentActionSnapshot {
+  return { name, risk, ...(inputSchema ? { inputSchema } : {}) };
 }
 
 export function inferredActions(element: Element): AgentActionSnapshot[] {
@@ -171,6 +175,7 @@ export function inferredActions(element: Element): AgentActionSnapshot[] {
           element.getAttribute("data-agent-sensitive") === "true"
           ? "credential"
           : "write",
+        { type: "string" },
       ),
     ];
   }
@@ -185,6 +190,7 @@ export function inferredActions(element: Element): AgentActionSnapshot[] {
         element.getAttribute("data-agent-sensitive") === "true"
           ? "credential"
           : "write",
+        { type: "string" },
       ),
     ];
   }

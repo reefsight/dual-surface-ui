@@ -7,6 +7,14 @@ import {
   runNativeAction,
   stateOf,
 } from "./dom.js";
+import {
+  AgentActionNotFoundError,
+  AgentAuthorizationRequiredError,
+  AgentDuplicateElementIdError,
+  AgentElementNotFoundError,
+  AgentStaleRevisionError,
+  AgentSurfaceMismatchError,
+} from "./errors.js";
 import { AGENT_CONTRACT_SCHEMA_VERSION } from "./schema.js";
 import type {
   AgentActionRequest,
@@ -17,13 +25,7 @@ import type {
   AgentSnapshot,
   AgentSurfaceOptions,
 } from "./types.js";
-
-export class AgentElementNotFoundError extends Error {}
-export class AgentActionNotFoundError extends Error {}
-export class AgentAuthorizationRequiredError extends Error {}
-export class AgentDuplicateElementIdError extends Error {}
-export class AgentSurfaceMismatchError extends Error {}
-export class AgentStaleRevisionError extends Error {}
+import { validateActionInput } from "./validation.js";
 
 export class AgentSurface {
   readonly #root: ParentNode;
@@ -107,6 +109,8 @@ export class AgentSurface {
         `Action "${request.action}" is not available on "${request.elementId}"`,
       );
     }
+
+    validateActionInput(action, request.input);
 
     if (action.risk !== "read") {
       const allowed = await this.#authorize?.({

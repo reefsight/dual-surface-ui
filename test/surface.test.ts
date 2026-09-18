@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   AgentAuthorizationRequiredError,
   AgentDuplicateElementIdError,
+  AgentInputValidationError,
   AgentStaleRevisionError,
   AgentSurfaceMismatchError,
   createAgentSurface,
@@ -81,7 +82,11 @@ describe("AgentSurface", () => {
     );
     expect(password?.state.value).toBeUndefined();
     expect(password?.actions).toEqual([
-      { name: "set_value", risk: "credential" },
+      {
+        name: "set_value",
+        risk: "credential",
+        inputSchema: { type: "string" },
+      },
     ]);
     expect(JSON.stringify(password)).not.toContain("top-secret");
   });
@@ -140,6 +145,8 @@ describe("AgentSurface", () => {
           risk: "consequential",
           inputSchema: {
             type: "object",
+            additionalProperties: false,
+            properties: { orderId: { type: "string" } },
             required: ["orderId"],
           },
           preconditions: ["order_is_ready"],
@@ -164,6 +171,8 @@ describe("AgentSurface", () => {
             risk: "consequential",
             inputSchema: {
               type: "object",
+              additionalProperties: false,
+              properties: { orderId: { type: "string" } },
               required: ["orderId"],
             },
             preconditions: ["order_is_ready"],
@@ -282,5 +291,65 @@ describe("AgentSurface", () => {
 
     expect(authorize).not.toHaveBeenCalled();
     expect(document.querySelector("input")!.value).toBe("Changed elsewhere");
+  });
+
+  it("rejects invalid native input before authorization or execution", async () => {
+    document.body.innerHTML = `
+      <label for="name">Name</label>
+      <input id="name" data-agent-id="name" value="Old">
+    `;
+    const authorize = vi.fn(() => true);
+    const surface = createAgentSurface({ authorize });
+    const observed = surface.snapshot();
+    const rawSecret = { password: "must-not-leak" };
+
+    let caught: unknown;
+    try {
+      await surface.perform({
+        surfaceId: observed.surfaceId,
+        revision: observed.revision,
+        elementId: "name",
+        action: "set_value",
+        input: rawSecret,
+      });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(AgentInputValidationError);
+    expect(caught).toMatchObject({ code: "invalid_input" });
+    expect(String(caught)).not.toContain("must-not-leak");
+    expect(authorize).not.toHaveBeenCalled();
+    expect(document.querySelector("input")!.value).toBe("Old");
+  });
+
+  it("fails closed when a declared input schema is malformed", async () => {
+    document.body.innerHTML = `<button>Run</button>`;
+    const button = document.querySelector("button")!;
+    const authorize = vi.fn(() => true);
+    const handler = vi.fn();
+    const surface = createAgentSurface({ authorize });
+    surface.register(button, {
+      id: "run",
+      actions: {
+        run: {
+          inputSchema: { type: "not-a-json-schema-type" },
+          handler,
+        },
+      },
+    });
+    const observed = surface.snapshot();
+
+    await expect(
+      surface.perform({
+        surfaceId: observed.surfaceId,
+        revision: observed.revision,
+        elementId: "run",
+        action: "run",
+        input: "value",
+      }),
+    ).rejects.toMatchObject({ code: "invalid_input" });
+    expect(authorize).not.toHaveBeenCalled();
+    expect(handler).not.toHaveBeenCalled();
   });
 });
