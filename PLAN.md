@@ -88,5 +88,9 @@ capability diagnostics, and an explicit no-synthetic-polyfill decision; its
 automated gates pass while supported-browser proof remains open for the same
 environment reason. P2.3 is implemented and verified as a thin React
 provider/ref lifecycle boundary across React 18.2 consumer and React 19.3
-StrictMode/SSR tests. P2.4 (Angular adapter) is next; later Phase 2 deliverables
-remain gated by the roadmap.
+StrictMode/SSR tests. P2.4 is implemented and verified as a thin Angular
+provider/directive lifecycle boundary with zoneless and SSR tests, partial-Ivy
+output, isolated root installation, and Angular 20/22 packed-consumer AOT
+builds. Browser hydration proof remains explicitly pending and no hydration
+compatibility is claimed. P2.5 (Vue adapter) is next; later Phase 2
+deliverables remain gated by the roadmap.

@@ -223,6 +223,56 @@ unmount. It contains no policy, action execution, schema inference, DOM-text
 extraction, snapshot subscription, or automatic WebMCP export. Memoize
 definitions to avoid safe but unnecessary unregister/register churn.
 
+### Angular lifecycle adapter
+
+Angular 20–22 applications can provide an application-owned surface and bind
+an explicit definition to a rendered host with a standalone directive:
+
+```ts
+import { Component } from "@angular/core";
+import { bootstrapApplication } from "@angular/platform-browser";
+import type { AgentElementDefinition } from "dual-surface-ui";
+import {
+  AgentElementDirective,
+  provideAgentSurface,
+} from "dual-surface-ui/angular";
+
+@Component({
+  selector: "app-root",
+  standalone: true,
+  imports: [AgentElementDirective],
+  templateUrl: "./app.html",
+})
+class AppComponent {
+  readonly confirmDefinition: AgentElementDefinition = {
+    id: "confirm-order",
+    actions: {
+      confirm_order: {
+        risk: "consequential",
+        effects: ["order_submitted"],
+        handler: submitOrder,
+      },
+    },
+  };
+}
+
+bootstrapApplication(AppComponent, {
+  providers: [provideAgentSurface(surface)],
+});
+```
+
+```html
+<button [dualSurfaceAgentElement]="confirmDefinition">
+  Confirm order
+</button>
+```
+
+The adapter is limited to Angular dependency injection and lifecycle cleanup;
+core remains responsible for policy and execution. It is verified with
+zoneless lifecycle tests, server rendering, partial-Ivy output, and packed
+Angular 20 and Angular 22 AOT consumers. Browser hydration has not been tested
+and no hydration compatibility claim is made.
+
 Snapshots conform to the published `0.1` JSON Schema in
 `schemas/agent-snapshot-0.1.schema.json`. The schema includes a surface ID,
 revision, capabilities, semantic nodes, and typed action metadata. Sensitive
@@ -307,7 +357,7 @@ Not included yet:
 
 - MCP or HTTP transport
 - WebMCP declarative autosubmit, synthetic polyfill, or cross-origin exposure
-- Angular/Vue/Svelte adapters
+- Vue/Svelte adapters
 - Mutation-stream or incremental snapshots
 - Durable audit storage, delivery retries, and retention policy
 - Persistent or distributed idempotency storage

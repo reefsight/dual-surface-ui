@@ -17,6 +17,10 @@
     "./react": {
       "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.js"
+    },
+    "./angular": {
+      "types": "./dist/angular/index.d.ts",
+      "import": "./dist/angular/index.js"
     }
   },
   "files": [
@@ -26,12 +30,14 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && node scripts/generate-schema.mjs",
+    "build": "npm run build:core && npm run build:angular",
+    "build:core": "tsc -p tsconfig.json && node scripts/generate-schema.mjs",
+    "build:angular": "ngc -p angular/tsconfig.json",
     "contract:check": "npm run build && node scripts/check-phase1-contract.mjs",
     "example:document-approval": "npm run build && node examples/document-approval/run.mjs",
     "baseline:phase1": "npm run build && node scripts/measure-phase1-baseline.mjs",
     "schema:generate": "node scripts/generate-schema.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && npm run build:core && ngc -p angular/tsconfig.json --noEmit",
     "test": "vitest run",
     "test:gate": "node scripts/run-phase1-gate-tests.mjs",
     "test:watch": "vitest"
@@ -52,20 +58,33 @@
     "ajv-formats": "^3.0.1"
   },
   "peerDependencies": {
+    "@angular/core": "^20.0.0 || ^21.0.0 || ^22.0.0",
     "react": "^18.2.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
+    "@angular/core": {
+      "optional": true
+    },
     "react": {
       "optional": true
     }
   },
   "devDependencies": {
+    "@angular/common": "20.3",
+    "@angular/compiler": "20.3",
+    "@angular/compiler-cli": "20.3",
+    "@angular/core": "20.3",
+    "@angular/platform-browser": "20.3",
+    "@angular/platform-server": "20.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "jsdom": "^26.1.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "typescript": "^5.8.3",
-    "vitest": "^5.0.1"
+    "rxjs": "7.8",
+    "tslib": "2.8",
+    "typescript": "5.8.3",
+    "vitest": "^5.0.1",
+    "zone.js": "^0.15.1"
   }
 }
