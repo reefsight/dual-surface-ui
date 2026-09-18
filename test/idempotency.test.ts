@@ -19,9 +19,13 @@ describe("AgentSurface idempotency and replay protection", () => {
     getPrincipal?: AgentSurfaceOptions["getPrincipal"];
     handler: () => unknown | Promise<unknown>;
     idempotency?: AgentIdempotency;
+    policy?: AgentSurfaceOptions["policy"];
+    verifyEffect?: AgentSurfaceOptions["verifyEffect"];
   }) {
-    const policy = vi.fn(() => ({ outcome: "allow" as const }));
-    const verifyEffect = vi.fn(() => true);
+    const policy = vi.fn(
+      options.policy ?? (() => ({ outcome: "allow" as const })),
+    );
+    const verifyEffect = vi.fn(options.verifyEffect ?? (() => true));
     const surface = createAgentSurface({
       getPrincipal: options.getPrincipal,
       idempotencyCacheSize: options.cacheSize,
@@ -182,21 +186,73 @@ describe("AgentSurface idempotency and replay protection", () => {
     expect(handler).toHaveBeenCalledOnce();
   });
 
-  it("removes failed executions so the same request can retry", async () => {
-    let attempt = 0;
-    const handler = vi.fn(() => {
-      attempt += 1;
-      if (attempt === 1) throw new Error("temporary failure");
-      return { attempt };
+  it("removes pre-execution failures so the same request can retry", async () => {
+    let policyAttempt = 0;
+    const handler = vi.fn(() => ({ attempt: 1 }));
+    const { policy, surface } = createAction({
+      handler,
+      idempotency: "keyed",
+      policy: () => ({
+        outcome: ++policyAttempt === 1 ? "deny" : "allow",
+      }),
     });
-    const { surface } = createAction({ handler, idempotency: "keyed" });
     const request = requestFor(surface, "request-1");
 
-    await expect(surface.perform(request)).rejects.toThrow("temporary failure");
+    await expect(surface.perform(request)).rejects.toMatchObject({
+      code: "authorization_required",
+    });
     const result = await surface.perform(request);
 
-    expect(result.output).toEqual({ attempt: 2 });
-    expect(handler).toHaveBeenCalledTimes(2);
+    expect(result.output).toEqual({ attempt: 1 });
+    expect(policy).toHaveBeenCalledTimes(2);
+    expect(handler).toHaveBeenCalledOnce();
+  });
+
+  it("retains a keyed verification failure after the handler starts", async () => {
+    const handler = vi.fn(() => ({ attempt: 1 }));
+    const { policy, surface, verifyEffect } = createAction({
+      handler,
+      idempotency: "keyed",
+      verifyEffect: () => false,
+    });
+    const request = requestFor(surface, "verification-failure");
+
+    await expect(surface.perform(request)).rejects.toMatchObject({
+      code: "verification_failed",
+    });
+    await expect(surface.perform(request)).rejects.toMatchObject({
+      code: "verification_failed",
+    });
+    await expect(
+      surface.perform({ ...request, input: { orderId: "different" } }),
+    ).rejects.toBeInstanceOf(AgentIdempotencyConflictError);
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(policy).toHaveBeenCalledOnce();
+    expect(verifyEffect).toHaveBeenCalledOnce();
+  });
+
+  it("retains a keyed invalid-output failure after the handler starts", async () => {
+    const handler = vi.fn(() => ({ attempt: "not-a-number" }));
+    const { policy, surface, verifyEffect } = createAction({
+      handler,
+      idempotency: "keyed",
+    });
+    const request = requestFor(surface, "output-failure");
+
+    await expect(surface.perform(request)).rejects.toMatchObject({
+      code: "invalid_output",
+    });
+    await expect(surface.perform(request)).rejects.toMatchObject({
+      code: "invalid_output",
+    });
+    await expect(
+      surface.perform({ ...request, input: { orderId: "different" } }),
+    ).rejects.toBeInstanceOf(AgentIdempotencyConflictError);
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(policy).toHaveBeenCalledOnce();
+    expect(verifyEffect).toHaveBeenCalledOnce();
   });
 
   it("replays after the original action removes its target", async () => {

@@ -52,6 +52,7 @@ import type {
   AgentSurfaceOptions,
 } from "./types.js";
 import {
+  preflightActionSchemas,
   validateActionInput,
   validateActionOutput,
 } from "./validation.js";
@@ -357,6 +358,7 @@ export class AgentSurface {
       before.revision,
     );
 
+    preflightActionSchemas(action);
     validateActionInput(action, request.input);
     if (!isValidNativeActionInput(element, action.name, request.input)) {
       throw new AgentInputValidationError(action.name);
@@ -386,6 +388,7 @@ export class AgentSurface {
         return result;
       }
 
+      let actionStarted = false;
       const execution = this.#performOnce(
         request,
         before,
@@ -395,6 +398,9 @@ export class AgentSurface {
         principal,
         origin,
         audit,
+        () => {
+          actionStarted = true;
+        },
       ).then(cloneActionResult);
       const record: AgentReplayRecord = {
         actionName: action.name,
@@ -409,7 +415,12 @@ export class AgentSurface {
           this.#pruneReplayCache();
         },
         () => {
-          if (this.#replays.get(scope) === record) this.#replays.delete(scope);
+          if (actionStarted) {
+            record.settled = true;
+            this.#pruneReplayCache();
+          } else if (this.#replays.get(scope) === record) {
+            this.#replays.delete(scope);
+          }
         },
       );
       return cloneActionResult(await execution);
@@ -456,6 +467,7 @@ export class AgentSurface {
     principal: AgentPrincipal | undefined,
     origin: string,
     audit: AgentAuditContext | undefined,
+    onActionStarted?: () => void,
   ): Promise<AgentActionResult> {
     const policyRequest = {
       ...request,
@@ -524,6 +536,7 @@ export class AgentSurface {
       "started",
       ready.revision,
     );
+    onActionStarted?.();
     let handlerOutput: unknown;
     if (customHandler) {
       handlerOutput = await customHandler(request.input, element);

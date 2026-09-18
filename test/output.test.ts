@@ -110,6 +110,42 @@ describe("AgentSurface handler output", () => {
     expect(String(caught)).not.toContain("must-not-leak");
   });
 
+  it("rejects a malformed output schema before downstream work starts", async () => {
+    const policy = vi.fn(() => ({ outcome: "allow" as const }));
+    const confirm = vi.fn(() => true);
+    const checkPrecondition = vi.fn(() => true);
+    const verifyEffect = vi.fn(() => true);
+    const handler = vi.fn(() => ({ ok: true }));
+    const surface = createAgentSurface({
+      policy,
+      confirm,
+      checkPrecondition,
+      verifyEffect,
+    });
+    surface.register(document.querySelector("button")!, {
+      id: "submit",
+      actions: {
+        submit_order: {
+          risk: "consequential",
+          outputSchema: { type: "not-a-type" },
+          preconditions: ["order_is_ready"],
+          effects: ["order_submitted"],
+          requiresConfirmation: true,
+          handler,
+        },
+      },
+    });
+
+    await expect(surface.perform(requestFor(surface))).rejects.toMatchObject({
+      code: "invalid_output",
+    });
+    expect(policy).not.toHaveBeenCalled();
+    expect(confirm).not.toHaveBeenCalled();
+    expect(checkPrecondition).not.toHaveBeenCalled();
+    expect(handler).not.toHaveBeenCalled();
+    expect(verifyEffect).not.toHaveBeenCalled();
+  });
+
   it.each([
     ["missing", () => undefined, { type: "object" }],
     ["malformed schema", () => ({ ok: true }), { type: "not-a-type" }],

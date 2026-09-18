@@ -13,6 +13,37 @@ addFormats(ajv);
 
 const validators = new WeakMap<object, ValidateFunction>();
 
+function compileInputValidator(action: AgentActionSnapshot): ValidateFunction {
+  try {
+    let validate = validators.get(action.inputSchema!);
+    if (!validate) {
+      validate = ajv.compile(action.inputSchema!);
+      validators.set(action.inputSchema!, validate);
+    }
+    return validate;
+  } catch {
+    throw new AgentInputValidationError(action.name);
+  }
+}
+
+function compileOutputValidator(action: AgentActionSnapshot): ValidateFunction {
+  try {
+    let validate = validators.get(action.outputSchema!);
+    if (!validate) {
+      validate = ajv.compile(action.outputSchema!);
+      validators.set(action.outputSchema!, validate);
+    }
+    return validate;
+  } catch {
+    throw new AgentOutputValidationError(action.name);
+  }
+}
+
+export function preflightActionSchemas(action: AgentActionSnapshot): void {
+  if (action.inputSchema) compileInputValidator(action);
+  if (action.outputSchema) compileOutputValidator(action);
+}
+
 export function validateActionInput(
   action: AgentActionSnapshot,
   input: unknown,
@@ -20,12 +51,7 @@ export function validateActionInput(
   if (!action.inputSchema) return;
 
   try {
-    let validate = validators.get(action.inputSchema);
-    if (!validate) {
-      const compiled = ajv.compile(action.inputSchema);
-      validators.set(action.inputSchema, compiled);
-      validate = compiled;
-    }
+    const validate = compileInputValidator(action);
 
     if (!validate(input)) {
       throw new AgentInputValidationError(action.name);
@@ -81,12 +107,7 @@ export function validateActionOutput(
       throw new AgentOutputValidationError(action.name);
     }
     normalized = JSON.parse(JSON.stringify(output)) as AgentJsonValue;
-    let validate = validators.get(action.outputSchema);
-    if (!validate) {
-      const compiled = ajv.compile(action.outputSchema);
-      validators.set(action.outputSchema, compiled);
-      validate = compiled;
-    }
+    const validate = compileOutputValidator(action);
     if (!validate(normalized)) {
       throw new AgentOutputValidationError(action.name);
     }
