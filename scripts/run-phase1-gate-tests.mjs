@@ -16,7 +16,15 @@ for (const [index, name] of testFiles.entries()) {
   console.log(`[${index + 1}/${testFiles.length}] ${relativePath}`);
   const run = spawnSync(
     process.execPath,
-    [vitestEntry, "run", relativePath, "--pool=forks", "--no-file-parallelism"],
+    [
+      vitestEntry,
+      "run",
+      relativePath,
+      "--pool=vmThreads",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--isolate=false",
+    ],
     {
       cwd: projectRoot,
       encoding: "utf8",
