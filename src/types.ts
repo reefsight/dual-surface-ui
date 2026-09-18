@@ -90,6 +90,7 @@ export interface AgentActionRequest {
   elementId: string;
   action: string;
   input?: unknown;
+  idempotencyKey?: string;
 }
 
 export interface AgentActionResult {
@@ -148,6 +149,7 @@ export interface AgentEffectVerificationRequest extends AgentPolicyRequest {
 export interface AgentSurfaceOptions {
   root?: ParentNode;
   surfaceId?: string;
+  idempotencyCacheSize?: number;
   getPrincipal?: () =>
     | AgentPrincipal
     | undefined

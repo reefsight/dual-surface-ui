@@ -195,6 +195,7 @@ describe("AgentSurface", () => {
       elementId: "confirm-order",
       action: "confirm_order",
       input: { orderId: "order-1" },
+      idempotencyKey: "order-1.confirm",
     });
     expect(handler).toHaveBeenCalledWith({ orderId: "order-1" }, button);
   });

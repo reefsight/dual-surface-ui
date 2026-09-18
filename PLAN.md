@@ -74,5 +74,6 @@ schema and fixtures; P1.2 added stable identity, revision safety, and action
 results; P1.3 added runtime input validation and stable error codes; P1.4 adds
 the deterministic policy and trusted-confirmation boundary; P1.5 added
 execution-time preconditions and authoritative effect verification; P1.6 adds
-the validated JSON handler-output contract.
+the validated JSON handler-output contract; P1.7 adds bounded keyed replay
+protection without retaining raw action input.
 Later-phase deliverables remain out of scope until the Phase 1 exit gate passes.

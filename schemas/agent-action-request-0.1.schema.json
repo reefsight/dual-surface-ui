@@ -28,6 +28,10 @@
       "minLength": 1,
       "maxLength": 64
     },
-    "input": {}
+    "input": {},
+    "idempotencyKey": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+    }
   }
 }

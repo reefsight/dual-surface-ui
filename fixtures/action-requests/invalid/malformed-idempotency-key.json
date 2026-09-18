@@ -1,0 +1,7 @@
+{
+  "surfaceId": "checkout",
+  "revision": "12",
+  "elementId": "submit-order",
+  "action": "submit_order",
+  "idempotencyKey": " contains spaces "
+}

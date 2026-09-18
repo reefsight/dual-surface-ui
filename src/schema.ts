@@ -141,6 +141,10 @@ export const AGENT_ACTION_REQUEST_SCHEMA = {
     elementId: { type: "string", minLength: 1 },
     action: { type: "string", minLength: 1, maxLength: 64 },
     input: {},
+    idempotencyKey: {
+      type: "string",
+      pattern: "^[A-Za-z0-9._~-]{1,128}$",
+    },
   },
 } as const;
 

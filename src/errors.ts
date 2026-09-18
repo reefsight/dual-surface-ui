@@ -10,7 +10,11 @@ export type AgentErrorCode =
   | "invalid_policy_decision"
   | "precondition_failed"
   | "verification_failed"
-  | "invalid_output";
+  | "invalid_output"
+  | "idempotency_key_required"
+  | "invalid_idempotency_key"
+  | "idempotency_conflict"
+  | "idempotency_unavailable";
 
 export class AgentError extends Error {
   readonly code: AgentErrorCode;
@@ -100,5 +104,38 @@ export class AgentVerificationFailedError extends AgentError {
 export class AgentOutputValidationError extends AgentError {
   constructor(actionName: string) {
     super("invalid_output", `Output for action "${actionName}" is invalid`);
+  }
+}
+
+export class AgentIdempotencyKeyRequiredError extends AgentError {
+  constructor(actionName: string) {
+    super(
+      "idempotency_key_required",
+      `Action "${actionName}" requires an idempotency key`,
+    );
+  }
+}
+
+export class AgentInvalidIdempotencyKeyError extends AgentError {
+  constructor() {
+    super("invalid_idempotency_key", "The idempotency key is invalid");
+  }
+}
+
+export class AgentIdempotencyConflictError extends AgentError {
+  constructor() {
+    super(
+      "idempotency_conflict",
+      "The idempotency key was already used for a different request",
+    );
+  }
+}
+
+export class AgentIdempotencyUnavailableError extends AgentError {
+  constructor() {
+    super(
+      "idempotency_unavailable",
+      "Secure idempotency fingerprinting is unavailable",
+    );
   }
 }

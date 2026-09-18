@@ -1,0 +1,10 @@
+{
+  "surfaceId": "checkout",
+  "revision": "12",
+  "elementId": "submit-order",
+  "action": "submit_order",
+  "input": {
+    "orderId": "order-123"
+  },
+  "idempotencyKey": "order-123.submit-1"
+}

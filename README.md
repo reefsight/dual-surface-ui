@@ -88,6 +88,7 @@ surface.register(button, {
       },
       preconditions: ["order_is_ready"],
       effects: ["order_submitted"],
+      idempotency: "keyed",
       handler: async () => {
         const order = await submitOrder();
         return { orderId: order.id, accepted: true };
@@ -107,6 +108,7 @@ const result = await surface.perform({
   elementId: "confirm-order",
   action: "confirm_order",
   input: { orderId: "order-123" },
+  idempotencyKey: "order-123.submit-1",
 });
 console.log(result.output);
 ```
@@ -134,6 +136,8 @@ execution.
 - Secret-safe snapshots: password and `data-agent-sensitive="true"` values are
   never serialized; agents can only see whether a value is present.
 - Reject stale actions: requests bind to the observed surface and revision.
+- Deduplicate retries: keyed actions bind an opaque idempotency key to the
+  principal, origin, revision, action, and canonical JSON input.
 - Validate before acting: declared JSON Schemas reject invalid input before
   authorization or handler execution.
 - Verify after acting: `perform()` returns a versioned result with the updated
@@ -156,6 +160,7 @@ Included:
 - Deterministic allow/deny/confirmation policy boundary
 - Execution-time preconditions and authoritative effect verification
 - JSON-safe handler output validation against declared schemas
+- Surface-local keyed replay protection with bounded result caching
 - Updated state returned after every action
 
 Not included yet:
@@ -164,6 +169,7 @@ Not included yet:
 - React/Vue/Svelte adapters
 - Mutation-stream or incremental snapshots
 - Structured transport failure envelopes
+- Persistent or distributed idempotency storage
 - Screenshot alignment and visual verification
 - Shadow DOM, iframe, canvas, or native desktop adapters
 

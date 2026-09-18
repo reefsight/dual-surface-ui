@@ -13,11 +13,18 @@ import {
   AgentConfirmationRequiredError,
   AgentDuplicateElementIdError,
   AgentElementNotFoundError,
+  AgentIdempotencyConflictError,
+  AgentIdempotencyKeyRequiredError,
+  AgentInvalidIdempotencyKeyError,
   AgentPreconditionFailedError,
   AgentStaleRevisionError,
   AgentSurfaceMismatchError,
   AgentVerificationFailedError,
 } from "./errors.js";
+import {
+  assertIdempotencyKeySyntax,
+  fingerprintActionRequest,
+} from "./idempotency.js";
 import { decideAgentAction } from "./policy.js";
 import { AGENT_CONTRACT_SCHEMA_VERSION } from "./schema.js";
 import type {
@@ -27,6 +34,7 @@ import type {
   AgentElementDefinition,
   AgentElementSnapshot,
   AgentJsonValue,
+  AgentPrincipal,
   AgentPolicyRequest,
   AgentSnapshot,
   AgentSurfaceOptions,
@@ -36,6 +44,16 @@ import {
   validateActionOutput,
 } from "./validation.js";
 
+interface AgentReplayRecord {
+  fingerprint: string;
+  promise: Promise<AgentActionResult>;
+  settled: boolean;
+}
+
+function cloneActionResult(result: AgentActionResult): AgentActionResult {
+  return JSON.parse(JSON.stringify(result)) as AgentActionResult;
+}
+
 export class AgentSurface {
   readonly #root: ParentNode;
   readonly #surfaceId: string;
@@ -43,11 +61,13 @@ export class AgentSurface {
   readonly #checkPrecondition: AgentSurfaceOptions["checkPrecondition"];
   readonly #confirm: AgentSurfaceOptions["confirm"];
   readonly #getPrincipal: AgentSurfaceOptions["getPrincipal"];
+  readonly #idempotencyCacheSize: number;
   readonly #policy: AgentSurfaceOptions["policy"];
   readonly #verifyEffect: AgentSurfaceOptions["verifyEffect"];
   readonly #definitions = new WeakMap<Element, AgentElementDefinition>();
   readonly #elementsById = new Map<string, Element>();
   readonly #generatedIds = new WeakMap<Element, string>();
+  readonly #replays = new Map<string, AgentReplayRecord>();
   #nextId = 1;
   #revision = 0;
   #semanticSignature: string | undefined;
@@ -61,6 +81,13 @@ export class AgentSurface {
     this.#checkPrecondition = options.checkPrecondition;
     this.#confirm = options.confirm;
     this.#getPrincipal = options.getPrincipal;
+    this.#idempotencyCacheSize = options.idempotencyCacheSize ?? 256;
+    if (
+      !Number.isInteger(this.#idempotencyCacheSize) ||
+      this.#idempotencyCacheSize < 1
+    ) {
+      throw new RangeError("idempotencyCacheSize must be a positive integer");
+    }
     this.#policy = options.policy;
     this.#verifyEffect = options.verifyEffect;
   }
@@ -108,12 +135,26 @@ export class AgentSurface {
   }
 
   async perform(request: AgentActionRequest): Promise<AgentActionResult> {
-    const before = this.snapshot();
     if (request.surfaceId !== this.#surfaceId) {
       throw new AgentSurfaceMismatchError(
         `Action surface "${request.surfaceId}" does not match "${this.#surfaceId}"`,
       );
     }
+    if (request.idempotencyKey !== undefined) {
+      assertIdempotencyKeySyntax(request.idempotencyKey);
+    }
+
+    const origin = this.#document().location?.origin ?? "null";
+    const replayScope = request.idempotencyKey
+      ? this.#replayScope(request)
+      : undefined;
+    const replay = replayScope ? this.#replays.get(replayScope) : undefined;
+    if (replay) {
+      const principal = await this.#getPrincipal?.();
+      return this.#resolveReplay(replay, request, principal, origin);
+    }
+
+    const before = this.snapshot();
     if (request.revision !== before.revision) {
       throw new AgentStaleRevisionError(
         `Action revision "${request.revision}" is stale; current revision is "${before.revision}"`,
@@ -130,13 +171,76 @@ export class AgentSurface {
     }
 
     validateActionInput(action, request.input);
+    this.#assertIdempotencyPolicy(action, request.idempotencyKey);
 
     const principal = await this.#getPrincipal?.();
+    if (action.idempotency === "keyed") {
+      const fingerprint = await fingerprintActionRequest(
+        request,
+        principal,
+        origin,
+      );
+      const scope = replayScope!;
+      const concurrent = this.#replays.get(scope);
+      if (concurrent) {
+        if (concurrent.fingerprint !== fingerprint) {
+          throw new AgentIdempotencyConflictError();
+        }
+        return cloneActionResult(await concurrent.promise);
+      }
+
+      const execution = this.#performOnce(
+        request,
+        before,
+        element,
+        snapshot,
+        action,
+        principal,
+        origin,
+      ).then(cloneActionResult);
+      const record: AgentReplayRecord = {
+        fingerprint,
+        promise: execution,
+        settled: false,
+      };
+      this.#replays.set(scope, record);
+      void execution.then(
+        () => {
+          record.settled = true;
+          this.#pruneReplayCache();
+        },
+        () => {
+          if (this.#replays.get(scope) === record) this.#replays.delete(scope);
+        },
+      );
+      return cloneActionResult(await execution);
+    }
+
+    return this.#performOnce(
+      request,
+      before,
+      element,
+      snapshot,
+      action,
+      principal,
+      origin,
+    );
+  }
+
+  async #performOnce(
+    request: AgentActionRequest,
+    before: AgentSnapshot,
+    element: Element,
+    elementSnapshot: AgentElementSnapshot,
+    action: AgentActionSnapshot,
+    principal: AgentPrincipal | undefined,
+    origin: string,
+  ): Promise<AgentActionResult> {
     const policyRequest = {
       ...request,
       risk: action.risk,
-      element: snapshot,
-      origin: this.#document().location?.origin ?? "null",
+      element: elementSnapshot,
+      origin,
       ...(principal ? { principal } : {}),
     };
     const decision = await decideAgentAction(
@@ -222,6 +326,52 @@ export class AgentSurface {
       ...(node ? { node } : {}),
       ...(output !== undefined ? { output } : {}),
     };
+  }
+
+  #assertIdempotencyPolicy(
+    action: AgentActionSnapshot,
+    key: string | undefined,
+  ): void {
+    const policy = action.idempotency ?? "none";
+    if (policy === "keyed") {
+      if (!key) throw new AgentIdempotencyKeyRequiredError(action.name);
+      return;
+    }
+    if (key !== undefined) throw new AgentInvalidIdempotencyKeyError();
+  }
+
+  #replayScope(request: AgentActionRequest): string {
+    return [
+      request.surfaceId,
+      request.elementId,
+      request.action,
+      request.idempotencyKey,
+    ].join("\u0000");
+  }
+
+  async #resolveReplay(
+    record: AgentReplayRecord,
+    request: AgentActionRequest,
+    principal: AgentPrincipal | undefined,
+    origin: string,
+  ): Promise<AgentActionResult> {
+    const fingerprint = await fingerprintActionRequest(
+      request,
+      principal,
+      origin,
+    );
+    if (fingerprint !== record.fingerprint) {
+      throw new AgentIdempotencyConflictError();
+    }
+    return cloneActionResult(await record.promise);
+  }
+
+  #pruneReplayCache(): void {
+    if (this.#replays.size <= this.#idempotencyCacheSize) return;
+    for (const [scope, record] of this.#replays) {
+      if (record.settled) this.#replays.delete(scope);
+      if (this.#replays.size <= this.#idempotencyCacheSize) break;
+    }
   }
 
   #defaultSurfaceId(): string {
