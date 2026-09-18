@@ -71,10 +71,13 @@ surface.register(button, {
 });
 
 // Give this JSON to an agent through an API, MCP server, or browser extension.
-console.log(surface.snapshot());
+const snapshot = surface.snapshot();
+console.log(snapshot);
 
 // Execute the agent's structured request through the same safety boundary.
 await surface.perform({
+  surfaceId: snapshot.surfaceId,
+  revision: snapshot.revision,
   elementId: "confirm-order",
   action: "confirm_order",
 });
@@ -99,7 +102,9 @@ actions require an `authorize` callback; without approval they fail closed.
   authorization.
 - Secret-safe snapshots: password and `data-agent-sensitive="true"` values are
   never serialized; agents can only see whether a value is present.
-- Verify after acting: `perform()` returns a fresh element snapshot.
+- Reject stale actions: requests bind to the observed surface and revision.
+- Verify after acting: `perform()` returns a versioned result with the updated
+  revision and target node when it is still present.
 - Vision remains a fallback for canvas, charts, maps, and unannotated legacy UI.
 
 ## Prototype scope
@@ -109,6 +114,7 @@ Included:
 - Semantic snapshots from a live browser DOM
 - Accessible names and common implicit roles
 - Stable agent element IDs
+- Duplicate-ID detection and semantic revision tracking
 - Inferred native actions for standard controls
 - Custom domain actions
 - Action risk metadata and authorization hook

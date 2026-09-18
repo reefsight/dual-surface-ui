@@ -1,0 +1,7 @@
+{
+  "surfaceId": "profile",
+  "revision": "4",
+  "elementId": "display-name",
+  "action": "set_value",
+  "input": "New name"
+}

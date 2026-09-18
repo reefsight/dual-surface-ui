@@ -10,6 +10,7 @@ import {
 import { AGENT_CONTRACT_SCHEMA_VERSION } from "./schema.js";
 import type {
   AgentActionRequest,
+  AgentActionResult,
   AgentActionSnapshot,
   AgentElementDefinition,
   AgentElementSnapshot,
@@ -20,6 +21,9 @@ import type {
 export class AgentElementNotFoundError extends Error {}
 export class AgentActionNotFoundError extends Error {}
 export class AgentAuthorizationRequiredError extends Error {}
+export class AgentDuplicateElementIdError extends Error {}
+export class AgentSurfaceMismatchError extends Error {}
+export class AgentStaleRevisionError extends Error {}
 
 export class AgentSurface {
   readonly #root: ParentNode;
@@ -30,6 +34,7 @@ export class AgentSurface {
   readonly #generatedIds = new WeakMap<Element, string>();
   #nextId = 1;
   #revision = 0;
+  #semanticSignature: string | undefined;
 
   constructor(options: AgentSurfaceOptions = {}) {
     const root = options.root ?? globalThis.document;
@@ -60,9 +65,8 @@ export class AgentSurface {
 
   snapshot(): AgentSnapshot {
     const document = this.#document();
-    const nodes = this.#allElements()
-      .filter(isSemanticCandidate)
-      .map((element) => this.#snapshotElement(element));
+    const nodes = this.#snapshotNodes();
+    this.#refreshRevision(nodes);
     const focusedElement = document.activeElement;
     const focusedElementId =
       focusedElement instanceof Element
@@ -82,7 +86,19 @@ export class AgentSurface {
     };
   }
 
-  async perform(request: AgentActionRequest): Promise<AgentElementSnapshot> {
+  async perform(request: AgentActionRequest): Promise<AgentActionResult> {
+    const before = this.snapshot();
+    if (request.surfaceId !== this.#surfaceId) {
+      throw new AgentSurfaceMismatchError(
+        `Action surface "${request.surfaceId}" does not match "${this.#surfaceId}"`,
+      );
+    }
+    if (request.revision !== before.revision) {
+      throw new AgentStaleRevisionError(
+        `Action revision "${request.revision}" is stale; current revision is "${before.revision}"`,
+      );
+    }
+
     const element = this.#findElement(request.elementId);
     const snapshot = this.#snapshotElement(element);
     const action = snapshot.actions.find((item) => item.name === request.action);
@@ -113,8 +129,19 @@ export class AgentSurface {
       runNativeAction(element, request.action, request.input);
     }
 
-    this.#revision += 1;
-    return this.#snapshotElement(element);
+    const after = this.snapshot();
+    const node = after.nodes.find((item) => item.id === request.elementId);
+    return {
+      schemaVersion: AGENT_CONTRACT_SCHEMA_VERSION,
+      surfaceId: this.#surfaceId,
+      previousRevision: before.revision,
+      revision: after.revision,
+      status: "succeeded",
+      action: request.action,
+      targetId: request.elementId,
+      targetPresent: !!node,
+      ...(node ? { node } : {}),
+    };
   }
 
   #defaultSurfaceId(): string {
@@ -132,6 +159,37 @@ export class AgentSurface {
     return this.#root instanceof Element
       ? [this.#root, ...descendants]
       : descendants;
+  }
+
+  #snapshotNodes(): AgentElementSnapshot[] {
+    const ids = new Set<string>();
+    const nodes: AgentElementSnapshot[] = [];
+
+    for (const element of this.#allElements().filter(isSemanticCandidate)) {
+      const node = this.#snapshotElement(element);
+      if (ids.has(node.id)) {
+        throw new AgentDuplicateElementIdError(
+          `Duplicate agent element id: ${node.id}`,
+        );
+      }
+      ids.add(node.id);
+      nodes.push(node);
+    }
+
+    return nodes;
+  }
+
+  #refreshRevision(nodes: AgentElementSnapshot[]): void {
+    const signature = JSON.stringify(
+      nodes.map(({ bounds: _bounds, ...semanticNode }) => semanticNode),
+    );
+    if (
+      this.#semanticSignature !== undefined &&
+      signature !== this.#semanticSignature
+    ) {
+      this.#revision += 1;
+    }
+    this.#semanticSignature = signature;
   }
 
   #idFor(element: Element): string {
@@ -160,6 +218,16 @@ export class AgentSurface {
       name,
       risk: value.risk ?? "write",
       ...(value.description ? { description: value.description } : {}),
+      ...(value.inputSchema ? { inputSchema: value.inputSchema } : {}),
+      ...(value.outputSchema ? { outputSchema: value.outputSchema } : {}),
+      ...(value.preconditions
+        ? { preconditions: value.preconditions }
+        : {}),
+      ...(value.effects ? { effects: value.effects } : {}),
+      ...(value.requiresConfirmation !== undefined
+        ? { requiresConfirmation: value.requiresConfirmation }
+        : {}),
+      ...(value.idempotency ? { idempotency: value.idempotency } : {}),
     }));
   }
 
@@ -181,7 +249,7 @@ export class AgentSurface {
 
   #findElement(id: string): Element {
     const cached = this.#elementsById.get(id);
-    if (cached?.isConnected) return cached;
+    if (cached?.isConnected && this.#idFor(cached) === id) return cached;
 
     const match = this.#allElements().find(
       (element) =>

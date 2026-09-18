@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "0.1",
+  "surfaceId": "profile",
+  "previousRevision": "4",
+  "revision": "5",
+  "status": "succeeded",
+  "action": "set_value",
+  "targetId": "display-name",
+  "targetPresent": true,
+  "node": {
+    "id": "display-name",
+    "role": "textbox",
+    "name": "Display name",
+    "state": {
+      "value": "New name"
+    },
+    "actions": [
+      {
+        "name": "set_value",
+        "risk": "write"
+      }
+    ]
+  }
+}

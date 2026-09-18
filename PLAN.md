@@ -1,6 +1,6 @@
 # Dual Surface UI — Master Plan
 
-Status: **Gate 0 accepted; Phase 1.1 in progress**
+Status: **Gate 0 accepted; Phase 1 in progress**
 
 Implementation status: the current code is an exploratory prototype only. It
 must not be treated as a stable API or a completed phase.
@@ -69,6 +69,7 @@ spikes are allowed only under `experiments/` and do not count as deliverables.
 
 ## Current decision
 
-Do not publish the exploratory package during Phase 1. The active task is Phase
-1.1: freeze the versioned core schema and its conformance fixtures. Later Phase
-1 deliverables remain out of scope until this task has review evidence.
+Do not publish the exploratory package during Phase 1. P1.1 froze the core
+schema and fixtures; P1.2 adds stable identity, revision safety, and action
+results. Later-phase deliverables remain out of scope until the Phase 1 exit
+gate passes.

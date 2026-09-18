@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/agent-action-request-0.1.json",
+  "title": "Dual Surface UI Agent Action Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "surfaceId",
+    "revision",
+    "elementId",
+    "action"
+  ],
+  "properties": {
+    "surfaceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "elementId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "input": {}
+  }
+}

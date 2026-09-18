@@ -2,6 +2,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   AgentAuthorizationRequiredError,
+  AgentDuplicateElementIdError,
+  AgentStaleRevisionError,
+  AgentSurfaceMismatchError,
   createAgentSurface,
 } from "../src/index.js";
 
@@ -51,9 +54,15 @@ describe("AgentSurface", () => {
   it("requires authorization before inferred write actions", async () => {
     document.body.innerHTML = `<button data-agent-id="save">Save</button>`;
     const surface = createAgentSurface();
+    const snapshot = surface.snapshot();
 
     await expect(
-      surface.perform({ elementId: "save", action: "click" }),
+      surface.perform({
+        surfaceId: snapshot.surfaceId,
+        revision: snapshot.revision,
+        elementId: "save",
+        action: "click",
+      }),
     ).rejects.toBeInstanceOf(AgentAuthorizationRequiredError);
   });
 
@@ -87,8 +96,11 @@ describe("AgentSurface", () => {
     input.addEventListener("input", inputEvent);
     const authorize = vi.fn(() => true);
     const surface = createAgentSurface({ authorize });
+    const snapshot = surface.snapshot();
 
     const result = await surface.perform({
+      surfaceId: snapshot.surfaceId,
+      revision: snapshot.revision,
       elementId: "name",
       action: "set_value",
       input: "New",
@@ -99,7 +111,19 @@ describe("AgentSurface", () => {
     expect(authorize).toHaveBeenCalledWith(
       expect.objectContaining({ risk: "write", elementId: "name" }),
     );
-    expect(result.state.value).toBe("New");
+    expect(result).toEqual(
+      expect.objectContaining({
+        schemaVersion: "0.1",
+        surfaceId: snapshot.surfaceId,
+        previousRevision: "0",
+        revision: "1",
+        status: "succeeded",
+        action: "set_value",
+        targetId: "name",
+        targetPresent: true,
+      }),
+    );
+    expect(result.node?.state.value).toBe("New");
   });
 
   it("supports explicit domain actions and risk metadata", async () => {
@@ -114,14 +138,23 @@ describe("AgentSurface", () => {
         confirm_order: {
           description: "Submit the order for payment",
           risk: "consequential",
+          inputSchema: {
+            type: "object",
+            required: ["orderId"],
+          },
+          preconditions: ["order_is_ready"],
+          effects: ["order_is_submitted"],
+          requiresConfirmation: true,
+          idempotency: "keyed",
           handler,
         },
       },
     });
 
-    const item = surface
-      .snapshot()
-      .nodes.find((element) => element.id === "confirm-order");
+    const snapshot = surface.snapshot();
+    const item = snapshot.nodes.find(
+      (element) => element.id === "confirm-order",
+    );
     expect(item).toEqual(
       expect.objectContaining({
         description: "Confirm and submit the current order",
@@ -129,16 +162,125 @@ describe("AgentSurface", () => {
           expect.objectContaining({
             name: "confirm_order",
             risk: "consequential",
+            inputSchema: {
+              type: "object",
+              required: ["orderId"],
+            },
+            preconditions: ["order_is_ready"],
+            effects: ["order_is_submitted"],
+            requiresConfirmation: true,
+            idempotency: "keyed",
           }),
         ],
       }),
     );
 
     await surface.perform({
+      surfaceId: snapshot.surfaceId,
+      revision: snapshot.revision,
       elementId: "confirm-order",
       action: "confirm_order",
       input: { orderId: "order-1" },
     });
     expect(handler).toHaveBeenCalledWith({ orderId: "order-1" }, button);
+  });
+
+  it("returns a successful result when the action removes its target", async () => {
+    document.body.innerHTML = `<button>Close</button>`;
+    const button = document.querySelector("button")!;
+    const surface = createAgentSurface({
+      surfaceId: "dialog",
+      authorize: () => true,
+    });
+    surface.register(button, {
+      id: "close-dialog",
+      actions: {
+        close: { risk: "write", handler: () => button.remove() },
+      },
+    });
+    const observed = surface.snapshot();
+
+    const result = await surface.perform({
+      surfaceId: observed.surfaceId,
+      revision: observed.revision,
+      elementId: "close-dialog",
+      action: "close",
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        previousRevision: "0",
+        revision: "1",
+        targetPresent: false,
+      }),
+    );
+    expect(result.node).toBeUndefined();
+  });
+
+  it("keeps element IDs stable and rejects duplicate declared IDs", () => {
+    document.body.innerHTML = `
+      <button data-agent-id="stable">First</button>
+    `;
+    const surface = createAgentSurface();
+
+    expect(surface.snapshot().nodes[0]?.id).toBe("stable");
+    expect(surface.snapshot().nodes[0]?.id).toBe("stable");
+
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      `<button data-agent-id="stable">Second</button>`,
+    );
+    expect(() => surface.snapshot()).toThrow(AgentDuplicateElementIdError);
+  });
+
+  it("advances revision only when semantic state changes", () => {
+    document.body.innerHTML = `
+      <label for="name">Name</label>
+      <input id="name" value="Old">
+    `;
+    const input = document.querySelector("input")!;
+    const surface = createAgentSurface();
+
+    expect(surface.snapshot().revision).toBe("0");
+    document.body.insertAdjacentHTML("beforeend", `<div class="decoration"></div>`);
+    expect(surface.snapshot().revision).toBe("0");
+
+    input.value = "New";
+    expect(surface.snapshot().revision).toBe("1");
+    expect(surface.snapshot().revision).toBe("1");
+  });
+
+  it("rejects wrong-surface and stale requests before authorization", async () => {
+    document.body.innerHTML = `
+      <label for="name">Name</label>
+      <input id="name" data-agent-id="name" value="Old">
+    `;
+    const authorize = vi.fn(() => true);
+    const surface = createAgentSurface({ surfaceId: "profile", authorize });
+    const observed = surface.snapshot();
+
+    await expect(
+      surface.perform({
+        surfaceId: "other",
+        revision: observed.revision,
+        elementId: "name",
+        action: "set_value",
+        input: "Wrong surface",
+      }),
+    ).rejects.toBeInstanceOf(AgentSurfaceMismatchError);
+
+    document.querySelector("input")!.value = "Changed elsewhere";
+    await expect(
+      surface.perform({
+        surfaceId: observed.surfaceId,
+        revision: observed.revision,
+        elementId: "name",
+        action: "set_value",
+        input: "Stale write",
+      }),
+    ).rejects.toBeInstanceOf(AgentStaleRevisionError);
+
+    expect(authorize).not.toHaveBeenCalled();
+    expect(document.querySelector("input")!.value).toBe("Changed elsewhere");
   });
 });

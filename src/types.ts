@@ -10,6 +10,12 @@ export type AgentIdempotency = "none" | "keyed" | "safe-retry";
 export interface AgentActionDefinition {
   description?: string;
   risk?: AgentRisk;
+  inputSchema?: Record<string, unknown>;
+  outputSchema?: Record<string, unknown>;
+  preconditions?: string[];
+  effects?: string[];
+  requiresConfirmation?: boolean;
+  idempotency?: AgentIdempotency;
   handler?: (input: unknown, element: Element) => void | Promise<void>;
 }
 
@@ -71,9 +77,23 @@ export interface AgentSnapshot {
 }
 
 export interface AgentActionRequest {
+  surfaceId: string;
+  revision: string;
   elementId: string;
   action: string;
   input?: unknown;
+}
+
+export interface AgentActionResult {
+  schemaVersion: "0.1";
+  surfaceId: string;
+  previousRevision: string;
+  revision: string;
+  status: "succeeded";
+  action: string;
+  targetId: string;
+  targetPresent: boolean;
+  node?: AgentElementSnapshot;
 }
 
 export interface AgentAuthorizationRequest extends AgentActionRequest {
