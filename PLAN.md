@@ -1,6 +1,6 @@
 # Dual Surface UI — Master Plan
 
-Status: **Gate 0 accepted; Phase 1 in progress**
+Status: **Phase 1 exit recommended; maintainer approval pending**
 
 Implementation status: the current code is an exploratory prototype only. It
 must not be treated as a stable API or a completed phase.
@@ -73,7 +73,10 @@ Do not publish the exploratory package during Phase 1. P1.1 froze the core
 schema and fixtures; P1.2 added stable identity, revision safety, and action
 results; P1.3 added runtime input validation and stable error codes; P1.4 adds
 the deterministic policy and trusted-confirmation boundary; P1.5 added
-execution-time preconditions and authoritative effect verification; P1.6 adds
-the validated JSON handler-output contract; P1.7 adds bounded keyed replay
-protection without retaining raw action input.
-Later-phase deliverables remain out of scope until the Phase 1 exit gate passes.
+execution-time preconditions and authoritative effect verification; P1.6 added
+the validated JSON handler-output contract; P1.7 added bounded keyed replay
+protection without retaining raw action input; P1.8–P1.11 completed structured
+failures, redacted lifecycle events, DOM conformance, and the example baseline.
+P1.12 verified the frozen contract, security evidence, clean installation,
+package consumer, and all 134 tests. The Phase 1 exit is recommended but still
+requires maintainer approval. Phase 2 has not started.

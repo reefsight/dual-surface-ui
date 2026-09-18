@@ -20,6 +20,9 @@ an architectural change requires an ADR.
 Active work-item records live under `work-items/` and carry the traceability and
 evidence required by `AI_SDLC.md`.
 
+Phase exit decisions and their combined evidence live under `reviews/`. The
+current candidate is [Phase 1 Exit Review](reviews/phase1-exit-review.md).
+
 ## Document ownership
 
 | Document | Must approve changes |
