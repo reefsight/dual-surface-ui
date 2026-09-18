@@ -13,6 +13,7 @@ import type {
 } from "./types.js";
 
 export type * from "./types.js";
+export * from "./declarative.js";
 
 const TOOL_NAME_PATTERN = /^[A-Za-z0-9_.-]{1,128}$/;
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._~-]{1,128}$/;

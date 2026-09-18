@@ -60,3 +60,33 @@ export interface WebMcpExportHandle {
   dispose(): void;
 }
 
+export interface WebMcpDeclarativeCapabilities {
+  /** General imperative WebMCP signal only; it does not prove declarative support. */
+  imperative: boolean;
+  submitEventExtensions: boolean;
+  activeSelectors: boolean;
+  declarative: "likely-supported" | "unknown";
+}
+
+export type WebMcpDeclarativeControl = HTMLInputElement | HTMLTextAreaElement;
+
+export interface WebMcpDeclarativeFieldBinding {
+  control: WebMcpDeclarativeControl;
+  /** Trusted developer-owned parameter description. */
+  description: string;
+}
+
+export interface WebMcpDeclarativeFormOptions {
+  form: HTMLFormElement;
+  /** Trusted developer-owned tool identifier; limited to the guidance budget. */
+  name: string;
+  /** Trusted developer-owned tool description. */
+  description: string;
+  fields: readonly WebMcpDeclarativeFieldBinding[];
+}
+
+export interface WebMcpDeclarativeFormHandle {
+  readonly form: HTMLFormElement;
+  readonly name: string;
+  dispose(): void;
+}

@@ -154,6 +154,35 @@ Calls use `{ input, idempotencyKey }`; `input` wraps the action's declared
 schema and `idempotencyKey` is present only for keyed actions. An unsupported
 browser takes a no-op path—there is no hidden automation fallback.
 
+For simple forms, the same optional subpath can mount native declarative
+annotations as a reversible progressive enhancement:
+
+```ts
+import { mountDeclarativeWebMcpForm } from "dual-surface-ui/webmcp";
+
+const declarative = mountDeclarativeWebMcpForm({
+  form: document.querySelector("#profile")!,
+  name: "profile.update",
+  description: "Prepare the visible profile form for human review",
+  fields: [
+    {
+      control: document.querySelector("#display-name")!,
+      description: "Public display name",
+    },
+  ],
+});
+
+// On unmount, restore every annotation to its exact previous state.
+declarative.dispose();
+```
+
+This compatibility layer intentionally does not enable `toolautosubmit`, infer
+descriptions from page text, or pretend to detect native declarative support
+reliably. The current draft still leaves portable schema synthesis unfinished.
+Applications must explicitly choose either these inert-safe native annotations,
+the imperative `performSafe()` path above, or the ordinary human-only form;
+the package never registers both automatically.
+
 Snapshots conform to the published `0.1` JSON Schema in
 `schemas/agent-snapshot-0.1.schema.json`. The schema includes a surface ID,
 revision, capabilities, semantic nodes, and typed action metadata. Sensitive
@@ -236,7 +265,7 @@ Included:
 Not included yet:
 
 - MCP or HTTP transport
-- WebMCP declarative markup, polyfill, or cross-origin exposure
+- WebMCP declarative autosubmit, synthetic polyfill, or cross-origin exposure
 - React/Vue/Svelte adapters
 - Mutation-stream or incremental snapshots
 - Durable audit storage, delivery retries, and retention policy

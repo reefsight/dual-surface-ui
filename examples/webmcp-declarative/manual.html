@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dual Surface UI — Declarative WebMCP probe</title>
+    <style>
+      body { font: 16px/1.5 system-ui, sans-serif; max-width: 720px; margin: 4rem auto; padding: 0 1.5rem; }
+      form, output { display: grid; gap: .75rem; padding: 1rem; border: 2px solid #666; border-radius: .5rem; }
+      input, textarea, button { font: inherit; padding: .6rem; }
+      output { margin-top: 1rem; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>Declarative WebMCP browser probe</h1>
+    <p>The form stays visible and requires human submission. It never uses <code>toolautosubmit</code>.</p>
+    <form
+      id="profile"
+      action="/examples/webmcp-declarative/manual.html"
+      method="get"
+      toolname="profile.prepare"
+      tooldescription="Prepare the visible profile form for human review">
+      <label for="display-name">Display name</label>
+      <input id="display-name" name="displayName" required
+        toolparamdescription="Public display name">
+      <label for="biography">Biography</label>
+      <textarea id="biography" name="biography"
+        toolparamdescription="Public profile biography"></textarea>
+      <button type="submit">Review and submit</button>
+    </form>
+    <output id="result">Checking diagnostic signals…</output>
+    <script type="module">
+      const result = document.querySelector("#result");
+      const imperative = typeof document.modelContext?.registerTool === "function";
+      const submitExtensions =
+        "agentInvoked" in SubmitEvent.prototype &&
+        typeof SubmitEvent.prototype.respondWith === "function";
+      let activeSelectors = false;
+      try {
+        activeSelectors =
+          CSS.supports("selector(form:tool-form-active)") &&
+          CSS.supports("selector(:tool-submit-active)");
+      } catch {}
+      const diagnostic =
+        imperative && submitExtensions && activeSelectors
+          ? "LIKELY SUPPORTED"
+          : "UNKNOWN — ordinary human form remains available";
+      result.textContent = `Declarative capability: ${diagnostic}`;
+      document.querySelector("#profile").addEventListener("submit", (event) => {
+        event.preventDefault();
+        result.textContent = "Human submit handler ran; no automatic navigation occurred.";
+      });
+    </script>
+  </body>
+</html>
