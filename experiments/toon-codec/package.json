@@ -1,0 +1,15 @@
+{
+  "name": "@dual-surface-ui-experiments/toon-codec",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "benchmark": "node benchmark.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@toon-format/toon": "4.1.1",
+    "gpt-tokenizer": "4.0.0",
+    "jsdom": "26.1.0"
+  }
+}
