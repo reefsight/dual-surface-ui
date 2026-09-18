@@ -95,6 +95,7 @@ packages/
   core/                 Versioned types, schema, policy interfaces
   dom/                  DOM/ARIA compiler and native HTML actions
   policy/               Default risk, consent, origin, redaction policies
+  domain/               Strict trusted action authoring/compiler layer
   webmcp/               WebMCP exporter and compatibility layer
   mcp/                  MCP tools/resources exporter
   react/                React bindings

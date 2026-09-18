@@ -32,6 +32,10 @@ import {
 } from "./idempotency.js";
 import { decideAgentAction } from "./policy.js";
 import { AGENT_CONTRACT_SCHEMA_VERSION } from "./schema.js";
+import {
+  captureRegisteredElementDefinition,
+  cloneRegisteredMetadata,
+} from "./definition.js";
 import type {
   AgentAuditEvent,
   AgentAuditEventName,
@@ -42,7 +46,6 @@ import type {
   AgentActionOutcome,
   AgentActionResult,
   AgentActionSnapshot,
-  AgentActionDefinition,
   AgentElementDefinition,
   AgentElementSnapshot,
   AgentJsonValue,
@@ -56,77 +59,6 @@ import {
   validateActionInput,
   validateActionOutput,
 } from "./validation.js";
-
-function cloneStructuredMetadata<T>(
-  value: T,
-  seen = new WeakMap<object, object>(),
-): T {
-  if (Array.isArray(value)) {
-    const existing = seen.get(value);
-    if (existing) return existing as T;
-    const clone: unknown[] = [];
-    seen.set(value, clone);
-    for (const item of value) clone.push(cloneStructuredMetadata(item, seen));
-    return clone as T;
-  }
-  if (value && typeof value === "object") {
-    const existing = seen.get(value);
-    if (existing) return existing as T;
-    const prototype = Object.getPrototypeOf(value);
-    if (prototype !== Object.prototype && prototype !== null) return value;
-    const clone = Object.create(prototype) as Record<string, unknown>;
-    seen.set(value, clone);
-    for (const [key, item] of Object.entries(value)) {
-      Object.defineProperty(clone, key, {
-        configurable: true,
-        enumerable: true,
-        value: cloneStructuredMetadata(item, seen),
-        writable: true,
-      });
-    }
-    return clone as T;
-  }
-  return value;
-}
-
-function cloneActionDefinition(
-  definition: AgentActionDefinition,
-): AgentActionDefinition {
-  return {
-    ...definition,
-    ...(definition.inputSchema
-      ? { inputSchema: cloneStructuredMetadata(definition.inputSchema) }
-      : {}),
-    ...(definition.outputSchema
-      ? { outputSchema: cloneStructuredMetadata(definition.outputSchema) }
-      : {}),
-    ...(definition.preconditions
-      ? { preconditions: [...definition.preconditions] }
-      : {}),
-    ...(definition.effects ? { effects: [...definition.effects] } : {}),
-  };
-}
-
-function cloneElementDefinition(
-  definition: AgentElementDefinition,
-): AgentElementDefinition {
-  return {
-    id: definition.id,
-    ...(definition.description !== undefined
-      ? { description: definition.description }
-      : {}),
-    ...(definition.actions
-      ? {
-          actions: Object.fromEntries(
-            Object.entries(definition.actions).map(([name, action]) => [
-              name,
-              cloneActionDefinition(action),
-            ]),
-          ),
-        }
-      : {}),
-  };
-}
 
 interface AgentReplayRecord {
   actionName: string;
@@ -198,7 +130,7 @@ export class AgentSurface {
   }
 
   register(element: Element, definition: AgentElementDefinition): () => void {
-    const registeredDefinition = cloneElementDefinition(definition);
+    const registeredDefinition = captureRegisteredElementDefinition(definition);
     const registeredId = registeredDefinition.id;
     const existing = this.#elementsById.get(registeredId);
     if (existing && existing !== element) {
@@ -873,10 +805,10 @@ export class AgentSurface {
       risk: value.risk ?? "write",
       ...(value.description ? { description: value.description } : {}),
       ...(value.inputSchema
-        ? { inputSchema: cloneStructuredMetadata(value.inputSchema) }
+        ? { inputSchema: cloneRegisteredMetadata(value.inputSchema) }
         : {}),
       ...(value.outputSchema
-        ? { outputSchema: cloneStructuredMetadata(value.outputSchema) }
+        ? { outputSchema: cloneRegisteredMetadata(value.outputSchema) }
         : {}),
       ...(value.preconditions
         ? { preconditions: [...value.preconditions] }

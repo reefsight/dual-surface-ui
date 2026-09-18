@@ -95,5 +95,10 @@ builds. Browser hydration proof remains explicitly pending and no hydration
 compatibility is claimed. P2.5 is implemented and verified as an additive Vue
 3.3–3.5 plugin/composable boundary with lifecycle and `KeepAlive` cleanup,
 real Node SSR, SSR-to-client hydration, isolated root installation, and packed
-Vue 3.3.13/3.5.43 SFC production builds. P2.6 (domain-action annotations) is
-next; later Phase 2 deliverables remain gated by the roadmap.
+Vue 3.3.13/3.5.43 SFC production builds. P2.6 added the strict additive
+`dual-surface-ui/domain` compiler, one-pass trusted metadata capture, explicit
+WebMCP allowlists, shared portable-schema hardening, strict compile-time schema
+preflight, adversarial tests, and packed-consumer proof. Its full gate passes
+20 files and 224 tests while preserving the frozen 32/6/5 root contract.
+P2.7 (semantic drift checker) is next; later Phase 2 deliverables remain gated
+by the roadmap.

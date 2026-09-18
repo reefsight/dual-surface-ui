@@ -366,6 +366,37 @@ describe("AgentSurface", () => {
     expect(handler).not.toHaveBeenCalled();
   });
 
+  it("preserves permissive root registration compatibility outside the strict compiler", () => {
+    document.body.innerHTML = `<button>Legacy</button>`;
+    const longId = "element-" + "x".repeat(128);
+    const longAction = "a".repeat(65);
+    const conditions = Array.from(
+      { length: 33 },
+      (_, index) => `legacy condition ${index}`,
+    );
+    const surface = createAgentSurface();
+
+    expect(() =>
+      surface.register(document.querySelector("button")!, {
+        id: longId,
+        description: "",
+        actions: {
+          [longAction]: {
+            description: "",
+            risk: "read",
+            preconditions: conditions,
+          },
+        },
+      }),
+    ).not.toThrow();
+
+    const node = surface.snapshot().nodes.find((item) => item.id === longId);
+    expect(node?.actions[0]).toMatchObject({
+      name: longAction,
+      preconditions: conditions,
+    });
+  });
+
   it("binds disposal to the registered id even if the definition mutates", () => {
     document.body.innerHTML = `<button>First</button><button>Second</button>`;
     const [first, second] = Array.from(document.querySelectorAll("button"));
@@ -495,13 +526,17 @@ describe("AgentSurface", () => {
     const pending = new Promise<void>((resolve) => {
       releasePolicy = resolve;
     });
+    const customPrototypeAction = Object.assign(
+      Object.create({ inheritedMetadata: "ignored" }),
+      {
+        risk: "read" as const,
+        handler: originalHandler,
+      },
+    );
     const value: AgentElementDefinition = {
       id: "run",
       actions: {
-        run: {
-          risk: "read",
-          handler: originalHandler,
-        },
+        run: customPrototypeAction,
       },
     };
     const surface = createAgentSurface({
@@ -521,7 +556,7 @@ describe("AgentSurface", () => {
       action: "run",
     });
     await started;
-    value.actions!.run!.handler = replacementHandler;
+    customPrototypeAction.handler = replacementHandler;
     releasePolicy();
     await execution;
 

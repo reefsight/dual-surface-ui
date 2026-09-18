@@ -116,6 +116,60 @@ if (outcome.status === "succeeded") console.log(outcome.output);
 else console.error(outcome.error.code);
 ```
 
+### Trusted domain-action compiler
+
+The additive `dual-surface-ui/domain` entry point captures a strict,
+developer-owned action definition once and derives an explicit WebMCP
+allowlist from the same metadata. It does not create another executor or infer
+authority from DOM, ARIA, URL, user, or model content:
+
+```ts
+import { defineDomainElement } from "dual-surface-ui/domain";
+import { exportAgentSurfaceToWebMcp } from "dual-surface-ui/webmcp";
+
+const approval = defineDomainElement({
+  id: "document-approval",
+  description: "Document approval controls",
+  actions: {
+    approve: {
+      description: "Approve the reviewed document",
+      risk: "consequential",
+      inputSchema: {
+        type: "object",
+        properties: { documentId: { type: "string" } },
+        required: ["documentId"],
+        additionalProperties: false,
+      },
+      outputSchema: {
+        type: "object",
+        properties: { approved: { type: "boolean" } },
+        required: ["approved"],
+        additionalProperties: false,
+      },
+      preconditions: ["required_widgets_complete"],
+      effects: ["document_approved"],
+      requiresConfirmation: true,
+      idempotency: "keyed",
+      webMcpName: "documents.approve",
+      handler: approveDocument,
+    },
+  },
+});
+
+const unregister = surface.register(button, approval.definition);
+const webMcp = await exportAgentSurfaceToWebMcp(surface, {
+  bindings: approval.webMcpBindings,
+});
+```
+
+Every action requires a static description, explicit risk, and handler.
+Non-read actions require declared effects; consequential and destructive
+actions also require confirmation. `webMcpName` is an explicit opt-in and
+credential-risk actions cannot be exported. Input validation, authorization,
+confirmation, preconditions, output validation, effect verification, replay,
+and audit remain owned by the core surface. `verifyEffect` must read
+authoritative application state rather than trusting the handler response.
+
 ### Optional WebMCP imperative adapter
 
 Supported experimental browsers can discover an explicit subset of the same
