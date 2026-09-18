@@ -19,6 +19,9 @@ const TOOL_NAME_PATTERN = /^[A-Za-z0-9_.-]{1,128}$/;
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._~-]{1,128}$/;
 const CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f]/;
 const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_SCHEMA_DEPTH = 20;
+const MAX_SCHEMA_NODES = 1_000;
+const MAX_SCHEMA_LENGTH = 32_768;
 
 interface ModelContextDocument extends Document {
   modelContext?: WebMcpModelContext;
@@ -78,31 +81,96 @@ function validateTrustedBinding(binding: WebMcpToolBinding): void {
   }
 }
 
-function assertPortableSchema(value: unknown, path = "inputSchema"): void {
-  if (value === null || typeof value !== "object") return;
-  if (Array.isArray(value)) {
-    value.forEach((item, index) =>
-      assertPortableSchema(item, `${path}[${index}]`),
-    );
-    return;
+function invalidPortableSchema(): never {
+  throw new TypeError("WebMCP inputSchema must be portable JSON Schema");
+}
+
+function clonePortableSchemaValue(
+  value: unknown,
+  depth: number,
+  stack: Set<object>,
+  budget: { nodes: number },
+): unknown {
+  if (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "boolean"
+  ) {
+    return value;
   }
-  for (const [key, child] of Object.entries(value)) {
-    if (key === "$ref" || key === "$dynamicRef") {
-      throw new TypeError(
-        `WebMCP ${path} contains unsupported reference keyword "${key}"`,
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) return invalidPortableSchema();
+    return value;
+  }
+  if (typeof value !== "object" || depth > MAX_SCHEMA_DEPTH) {
+    return invalidPortableSchema();
+  }
+  if (stack.has(value)) return invalidPortableSchema();
+  budget.nodes += 1;
+  if (budget.nodes > MAX_SCHEMA_NODES) return invalidPortableSchema();
+  stack.add(value);
+
+  let clone: unknown;
+  if (Array.isArray(value)) {
+    const ownKeys = Reflect.ownKeys(value);
+    if (
+      ownKeys.some(
+        (key) =>
+          typeof key === "symbol" ||
+          (key !== "length" && !/^(0|[1-9]\d*)$/.test(key)),
+      )
+    ) {
+      return invalidPortableSchema();
+    }
+    const items: unknown[] = [];
+    for (let index = 0; index < value.length; index += 1) {
+      if (!Object.hasOwn(value, index)) return invalidPortableSchema();
+      items.push(
+        clonePortableSchemaValue(value[index], depth + 1, stack, budget),
       );
     }
-    assertPortableSchema(child, `${path}.${key}`);
+    clone = items;
+  } else {
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) {
+      return invalidPortableSchema();
+    }
+    const record: Record<string, unknown> = {};
+    for (const key of Reflect.ownKeys(value)) {
+      if (typeof key === "symbol" || key === "$ref" || key === "$dynamicRef") {
+        return invalidPortableSchema();
+      }
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (!descriptor?.enumerable || !("value" in descriptor)) {
+        return invalidPortableSchema();
+      }
+      record[key] = clonePortableSchemaValue(
+        descriptor.value,
+        depth + 1,
+        stack,
+        budget,
+      );
+    }
+    clone = record;
   }
+  stack.delete(value);
+  return clone;
 }
 
 function cloneSchema(schema: Record<string, unknown>): Record<string, unknown> {
-  assertPortableSchema(schema);
-  try {
-    return JSON.parse(JSON.stringify(schema)) as Record<string, unknown>;
-  } catch {
-    throw new TypeError("WebMCP inputSchema must be JSON serializable");
+  const clone = clonePortableSchemaValue(
+    schema,
+    0,
+    new Set(),
+    { nodes: 0 },
+  );
+  if (!clone || Array.isArray(clone) || typeof clone !== "object") {
+    return invalidPortableSchema();
   }
+  if (JSON.stringify(clone).length > MAX_SCHEMA_LENGTH) {
+    return invalidPortableSchema();
+  }
+  return clone as Record<string, unknown>;
 }
 
 function envelopeSchema(action: AgentActionSnapshot): Record<string, unknown> {
@@ -158,7 +226,7 @@ function resolveBindings(
         `WebMCP binding "${binding.name}" cannot export a credential action`,
       );
     }
-    if (action.inputSchema) assertPortableSchema(action.inputSchema);
+    if (action.inputSchema) cloneSchema(action.inputSchema);
     return { binding, action };
   });
 }
@@ -231,8 +299,7 @@ function createTool(
     annotations: {
       readOnlyHint: action.risk === "read",
       consequentialHint:
-        action.risk === "consequential" ||
-        action.risk === "destructive" ||
+        action.risk !== "read" ||
         action.requiresConfirmation === true,
       untrustedContentHint: true,
     },

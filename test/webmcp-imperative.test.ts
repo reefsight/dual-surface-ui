@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createAgentSurface } from "../src/index.js";
+import { createAgentSurface, type AgentSnapshot } from "../src/index.js";
 import {
   exportAgentSurfaceToWebMcp,
   isWebMcpImperativeSupported,
   type WebMcpModelContext,
+  type WebMcpSurface,
   type WebMcpTool,
 } from "../src/webmcp/index.js";
 
@@ -52,6 +53,33 @@ const binding = {
   elementId: "target",
   action: "run",
 } as const;
+
+function surfaceWithInputSchema(
+  inputSchema: Record<string, unknown>,
+): WebMcpSurface {
+  const snapshot: AgentSnapshot = {
+    schemaVersion: "0.1",
+    surfaceId: "portable-schema",
+    revision: "0",
+    title: "",
+    url: "https://example.test/",
+    generatedAt: "2026-09-18T00:00:00.000Z",
+    capabilities: ["snapshot", "perform"],
+    nodes: [
+      {
+        id: "target",
+        role: "button",
+        name: "Run",
+        state: {},
+        actions: [{ name: "run", risk: "read", inputSchema }],
+      },
+    ],
+  };
+  return {
+    snapshot: () => snapshot,
+    performSafe: vi.fn(),
+  };
+}
 
 describe("WebMCP imperative exporter", () => {
   beforeEach(() => {
@@ -109,6 +137,86 @@ describe("WebMCP imperative exporter", () => {
     });
     handle.dispose();
   });
+
+  it.each([
+    ["read", false, true],
+    ["write", true, false],
+    ["consequential", true, false],
+    ["destructive", true, false],
+  ] as const)(
+    "maps %s risk to conservative WebMCP hints",
+    async (risk, consequentialHint, readOnlyHint) => {
+      const { surface } = registeredSurface({ risk });
+      const context = new FakeModelContext();
+      const handle = await exportAgentSurfaceToWebMcp(surface, {
+        modelContext: context,
+        bindings: [binding],
+      });
+
+      expect(context.tools.get(binding.name)?.annotations).toEqual({
+        readOnlyHint,
+        consequentialHint,
+        untrustedContentHint: true,
+      });
+      handle.dispose();
+    },
+  );
+
+  it.each([
+    ["function", () => ({ type: "string", unsafe: () => true })],
+    ["non-finite number", () => ({ type: "number", maximum: Infinity })],
+    ["non-plain object", () => ({ type: "string", metadata: new Date() })],
+    ["unsupported reference", () => ({ $ref: "#/$defs/value" })],
+    [
+      "accessor",
+      () => {
+        const schema: Record<string, unknown> = { type: "string" };
+        Object.defineProperty(schema, "title", {
+          enumerable: true,
+          get: () => "must not execute",
+        });
+        return schema;
+      },
+    ],
+    [
+      "cycle",
+      () => {
+        const schema: Record<string, unknown> = { type: "object" };
+        schema.self = schema;
+        return schema;
+      },
+    ],
+    ["oversized schema", () => ({ description: "x".repeat(33_000) })],
+    [
+      "excessive depth",
+      () => {
+        const root: Record<string, unknown> = {};
+        let current = root;
+        for (let depth = 0; depth < 22; depth += 1) {
+          const child: Record<string, unknown> = {};
+          current.child = child;
+          current = child;
+        }
+        return root;
+      },
+    ],
+  ] as const)(
+    "rejects a non-portable %s before any tool registration",
+    async (_case, createSchema) => {
+      const context = new FakeModelContext();
+
+      await expect(
+        exportAgentSurfaceToWebMcp(surfaceWithInputSchema(createSchema()), {
+          modelContext: context,
+          bindings: [binding],
+        }),
+      ).rejects.toThrow(
+        "WebMCP inputSchema must be portable JSON Schema",
+      );
+      expect(context.registrations).toEqual([]);
+      expect(context.tools.size).toBe(0);
+    },
+  );
 
   it("delegates valid calls to performSafe and keeps invalid input redacted", async () => {
     const { surface, handler } = registeredSurface({
