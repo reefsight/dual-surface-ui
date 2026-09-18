@@ -183,6 +183,46 @@ Applications must explicitly choose either these inert-safe native annotations,
 the imperative `performSafe()` path above, or the ordinary human-only form;
 the package never registers both automatically.
 
+### React lifecycle adapter
+
+React 18.2 and 19 applications can keep surface creation and security policy at
+the application boundary, then bind explicit definitions with a ref:
+
+```tsx
+import { useMemo } from "react";
+import {
+  AgentSurfaceProvider,
+  useAgentElement,
+} from "dual-surface-ui/react";
+
+function ConfirmButton() {
+  const definition = useMemo(() => ({
+    id: "confirm-order",
+    actions: {
+      confirm_order: {
+        risk: "consequential" as const,
+        effects: ["order_submitted"],
+        handler: submitOrder,
+      },
+    },
+  }), []);
+  const ref = useAgentElement<HTMLButtonElement>(definition);
+  return <button ref={ref}>Confirm order</button>;
+}
+
+root.render(
+  <AgentSurfaceProvider surface={surface}>
+    <ConfirmButton />
+  </AgentSurfaceProvider>,
+);
+```
+
+The provider accepts an already configured surface. The adapter registers only
+committed DOM refs and calls the exact core disposer on ref replacement or
+unmount. It contains no policy, action execution, schema inference, DOM-text
+extraction, snapshot subscription, or automatic WebMCP export. Memoize
+definitions to avoid safe but unnecessary unregister/register churn.
+
 Snapshots conform to the published `0.1` JSON Schema in
 `schemas/agent-snapshot-0.1.schema.json`. The schema includes a surface ID,
 revision, capabilities, semantic nodes, and typed action metadata. Sensitive
@@ -261,12 +301,13 @@ Included:
 - Redacted, correlated lifecycle events for observation and action execution
 - Updated state returned after every action
 - Optional allowlisted WebMCP imperative export with revision-bound execution
+- Optional React 18.2/19 provider and committed-ref lifecycle bindings
 
 Not included yet:
 
 - MCP or HTTP transport
 - WebMCP declarative autosubmit, synthetic polyfill, or cross-origin exposure
-- React/Vue/Svelte adapters
+- Angular/Vue/Svelte adapters
 - Mutation-stream or incremental snapshots
 - Durable audit storage, delivery retries, and retention policy
 - Persistent or distributed idempotency storage

@@ -86,5 +86,7 @@ not expose the experimental API, so supported-browser Inspector/manual proof
 remains open. P2.2 added reversible declarative form annotations, conservative
 capability diagnostics, and an explicit no-synthetic-polyfill decision; its
 automated gates pass while supported-browser proof remains open for the same
-environment reason. P2.3 (React adapter) is next; later Phase 2 deliverables
+environment reason. P2.3 is implemented and verified as a thin React
+provider/ref lifecycle boundary across React 18.2 consumer and React 19.3
+StrictMode/SSR tests. P2.4 (Angular adapter) is next; later Phase 2 deliverables
 remain gated by the roadmap.
