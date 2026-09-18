@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "0.1",
+  "surfaceId": "example:invalid-risk",
+  "revision": "0",
+  "title": "Invalid risk",
+  "url": "https://example.test/invalid-risk",
+  "generatedAt": "2026-09-18T00:00:00.000Z",
+  "capabilities": ["perform"],
+  "nodes": [
+    {
+      "id": "submit",
+      "role": "button",
+      "name": "Submit",
+      "state": {},
+      "actions": [
+        {
+          "name": "submit",
+          "risk": "unknown"
+        }
+      ]
+    }
+  ]
+}

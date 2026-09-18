@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "0.1",
+  "surfaceId": "document:DS-2026-001",
+  "revision": "12",
+  "title": "Document approval",
+  "url": "https://example.test/documents/DS-2026-001",
+  "generatedAt": "2026-09-18T00:00:00.000Z",
+  "focusedElementId": "approve-document",
+  "capabilities": ["snapshot", "perform"],
+  "nodes": [
+    {
+      "id": "approve-document",
+      "role": "button",
+      "name": "Approve",
+      "description": "Approve document DS-2026-001",
+      "state": {
+        "disabled": false
+      },
+      "actions": [
+        {
+          "name": "approve_document",
+          "description": "Approve the current document",
+          "risk": "consequential",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "comment": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "preconditions": ["required_widgets_complete"],
+          "effects": ["document_status_is_approved"],
+          "requiresConfirmation": true,
+          "idempotency": "keyed"
+        }
+      ]
+    },
+    {
+      "id": "password",
+      "role": "textbox",
+      "name": "Password",
+      "state": {
+        "sensitive": true,
+        "valuePresent": true
+      },
+      "actions": [
+        {
+          "name": "set_value",
+          "risk": "credential"
+        }
+      ]
+    }
+  ]
+}

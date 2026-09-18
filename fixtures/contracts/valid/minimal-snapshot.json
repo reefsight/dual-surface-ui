@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "0.1",
+  "surfaceId": "example:minimal",
+  "revision": "0",
+  "title": "Minimal",
+  "url": "https://example.test/minimal",
+  "generatedAt": "2026-09-18T00:00:00.000Z",
+  "capabilities": ["snapshot"],
+  "nodes": []
+}

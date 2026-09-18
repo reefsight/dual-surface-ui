@@ -1,0 +1,45 @@
+{
+  "name": "dual-surface-ui",
+  "version": "0.1.0",
+  "description": "A semantic interaction layer that lets AI agents understand and operate web UIs without changing the human interface.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/generate-schema.mjs",
+    "schema:generate": "node scripts/generate-schema.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "ai-agent",
+    "accessibility-tree",
+    "semantic-ui",
+    "computer-use",
+    "automation"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "vitest": "^5.0.1"
+  }
+}
