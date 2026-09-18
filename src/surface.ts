@@ -20,6 +20,7 @@ import {
   AgentStaleRevisionError,
   AgentSurfaceMismatchError,
   AgentVerificationFailedError,
+  normalizeAgentFailure,
 } from "./errors.js";
 import {
   assertIdempotencyKeySyntax,
@@ -29,6 +30,7 @@ import { decideAgentAction } from "./policy.js";
 import { AGENT_CONTRACT_SCHEMA_VERSION } from "./schema.js";
 import type {
   AgentActionRequest,
+  AgentActionOutcome,
   AgentActionResult,
   AgentActionSnapshot,
   AgentElementDefinition,
@@ -225,6 +227,26 @@ export class AgentSurface {
       principal,
       origin,
     );
+  }
+
+  async performSafe(request: AgentActionRequest): Promise<AgentActionOutcome> {
+    try {
+      return await this.perform(request);
+    } catch (error) {
+      let revision = String(this.#revision);
+      try {
+        revision = this.snapshot().revision;
+      } catch {
+        // Failure normalization must still succeed when observation fails.
+      }
+      return {
+        schemaVersion: AGENT_CONTRACT_SCHEMA_VERSION,
+        surfaceId: this.#surfaceId,
+        revision,
+        status: "failed",
+        error: normalizeAgentFailure(error),
+      };
+    }
   }
 
   async #performOnce(

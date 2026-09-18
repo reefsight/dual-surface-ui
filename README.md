@@ -102,7 +102,7 @@ const snapshot = surface.snapshot();
 console.log(snapshot);
 
 // Execute the agent's structured request through the same safety boundary.
-const result = await surface.perform({
+const outcome = await surface.performSafe({
   surfaceId: snapshot.surfaceId,
   revision: snapshot.revision,
   elementId: "confirm-order",
@@ -110,7 +110,8 @@ const result = await surface.perform({
   input: { orderId: "order-123" },
   idempotencyKey: "order-123.submit-1",
 });
-console.log(result.output);
+if (outcome.status === "succeeded") console.log(outcome.output);
+else console.error(outcome.error.code);
 ```
 
 Snapshots conform to the published `0.1` JSON Schema in
@@ -161,6 +162,7 @@ Included:
 - Execution-time preconditions and authoritative effect verification
 - JSON-safe handler output validation against declared schemas
 - Surface-local keyed replay protection with bounded result caching
+- Opt-in structured failure results with fixed secret-safe messages
 - Updated state returned after every action
 
 Not included yet:
@@ -168,7 +170,6 @@ Not included yet:
 - MCP or HTTP transport
 - React/Vue/Svelte adapters
 - Mutation-stream or incremental snapshots
-- Structured transport failure envelopes
 - Persistent or distributed idempotency storage
 - Screenshot alignment and visual verification
 - Shadow DOM, iframe, canvas, or native desktop adapters

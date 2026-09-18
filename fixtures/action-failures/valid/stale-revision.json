@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "0.1",
+  "surfaceId": "checkout",
+  "revision": "8",
+  "status": "failed",
+  "error": {
+    "code": "stale_revision",
+    "message": "The observed surface revision is stale"
+  }
+}

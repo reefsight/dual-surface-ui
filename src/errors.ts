@@ -1,20 +1,56 @@
-export type AgentErrorCode =
-  | "element_not_found"
-  | "action_not_found"
-  | "authorization_required"
-  | "duplicate_element_id"
-  | "surface_mismatch"
-  | "stale_revision"
-  | "invalid_input"
-  | "confirmation_required"
-  | "invalid_policy_decision"
-  | "precondition_failed"
-  | "verification_failed"
-  | "invalid_output"
-  | "idempotency_key_required"
-  | "invalid_idempotency_key"
-  | "idempotency_conflict"
-  | "idempotency_unavailable";
+export const AGENT_ERROR_CODES = [
+  "element_not_found",
+  "action_not_found",
+  "authorization_required",
+  "duplicate_element_id",
+  "surface_mismatch",
+  "stale_revision",
+  "invalid_input",
+  "confirmation_required",
+  "invalid_policy_decision",
+  "precondition_failed",
+  "verification_failed",
+  "invalid_output",
+  "idempotency_key_required",
+  "invalid_idempotency_key",
+  "idempotency_conflict",
+  "idempotency_unavailable",
+] as const;
+
+export type AgentErrorCode = (typeof AGENT_ERROR_CODES)[number];
+
+export const AGENT_FAILURE_CODES = [
+  ...AGENT_ERROR_CODES,
+  "internal_error",
+] as const;
+
+export type AgentFailureCode = (typeof AGENT_FAILURE_CODES)[number];
+
+export interface AgentFailureDetail {
+  code: AgentFailureCode;
+  message: string;
+}
+
+export const AGENT_FAILURE_MESSAGES = {
+  element_not_found: "The target element was not found",
+  action_not_found: "The requested action is unavailable",
+  authorization_required: "The action is not authorized",
+  duplicate_element_id: "The surface contains duplicate element identifiers",
+  surface_mismatch: "The request targets a different surface",
+  stale_revision: "The observed surface revision is stale",
+  invalid_input: "The action input is invalid",
+  confirmation_required: "The action requires trusted confirmation",
+  invalid_policy_decision: "The policy decision is invalid",
+  precondition_failed: "An action precondition was not satisfied",
+  verification_failed: "The action effects could not be verified",
+  invalid_output: "The action output is invalid",
+  idempotency_key_required: "The action requires an idempotency key",
+  invalid_idempotency_key: "The idempotency key is invalid",
+  idempotency_conflict:
+    "The idempotency key conflicts with an earlier request",
+  idempotency_unavailable: "Secure idempotency protection is unavailable",
+  internal_error: "The action failed unexpectedly",
+} as const satisfies Record<AgentFailureCode, string>;
 
 export class AgentError extends Error {
   readonly code: AgentErrorCode;
@@ -138,4 +174,22 @@ export class AgentIdempotencyUnavailableError extends AgentError {
       "Secure idempotency fingerprinting is unavailable",
     );
   }
+}
+
+export function normalizeAgentFailure(error: unknown): AgentFailureDetail {
+  try {
+    if (error instanceof AgentError) {
+      const code: string = error.code;
+      if (Object.hasOwn(AGENT_FAILURE_MESSAGES, code)) {
+        const knownCode = code as AgentErrorCode;
+        return { code: knownCode, message: AGENT_FAILURE_MESSAGES[knownCode] };
+      }
+    }
+  } catch {
+    // Unknown thrown values may be hostile proxies or malformed subclasses.
+  }
+  return {
+    code: "internal_error",
+    message: AGENT_FAILURE_MESSAGES.internal_error,
+  };
 }

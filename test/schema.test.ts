@@ -7,6 +7,7 @@ import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 
 import {
+  AGENT_ACTION_FAILURE_SCHEMA,
   AGENT_ACTION_REQUEST_SCHEMA,
   AGENT_ACTION_RESULT_SCHEMA,
   AGENT_SNAPSHOT_SCHEMA,
@@ -81,4 +82,10 @@ verifyContract(
   "action-results",
   "agent-action-result-0.1.schema.json",
   AGENT_ACTION_RESULT_SCHEMA,
+);
+verifyContract(
+  "agent action failure schema 0.1",
+  "action-failures",
+  "agent-action-failure-0.1.schema.json",
+  AGENT_ACTION_FAILURE_SCHEMA,
 );

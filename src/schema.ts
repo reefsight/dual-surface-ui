@@ -1,3 +1,8 @@
+import {
+  AGENT_FAILURE_CODES,
+  AGENT_FAILURE_MESSAGES,
+} from "./errors.js";
+
 export const AGENT_CONTRACT_SCHEMA_VERSION = "0.1" as const;
 
 const AGENT_COMMON_DEFS = {
@@ -195,4 +200,30 @@ export const AGENT_ACTION_RESULT_SCHEMA = {
     },
   ],
   $defs: AGENT_COMMON_DEFS,
+} as const;
+
+export const AGENT_ACTION_FAILURE_SCHEMA = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://dual-surface-ui.dev/schema/agent-action-failure-0.1.json",
+  title: "Dual Surface UI Agent Action Failure",
+  type: "object",
+  additionalProperties: false,
+  required: ["schemaVersion", "surfaceId", "revision", "status", "error"],
+  properties: {
+    schemaVersion: { const: AGENT_CONTRACT_SCHEMA_VERSION },
+    surfaceId: { type: "string", minLength: 1 },
+    revision: { type: "string", minLength: 1 },
+    status: { const: "failed" },
+    error: {
+      oneOf: AGENT_FAILURE_CODES.map((code) => ({
+        type: "object",
+        additionalProperties: false,
+        required: ["code", "message"],
+        properties: {
+          code: { const: code },
+          message: { const: AGENT_FAILURE_MESSAGES[code] },
+        },
+      })),
+    },
+  },
 } as const;

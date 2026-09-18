@@ -18,6 +18,7 @@ import {
   AgentStaleRevisionError,
   AgentSurfaceMismatchError,
   AgentVerificationFailedError,
+  normalizeAgentFailure,
 } from "../src/index.js";
 
 describe("stable agent errors", () => {
@@ -45,5 +46,29 @@ describe("stable agent errors", () => {
     expect(error).toBeInstanceOf(AgentError);
     expect(error.code).toBe(code);
     expect(error.name).toBe(error.constructor.name);
+    expect(normalizeAgentFailure(error)).toEqual({
+      code,
+      message: expect.any(String),
+    });
+  });
+
+  it("normalizes unknown and hostile thrown values without inspecting payloads", () => {
+    const secret = "never-serialize-this";
+    const hostile = new Proxy(
+      {},
+      {
+        getPrototypeOf() {
+          throw new Error(secret);
+        },
+      },
+    );
+
+    const normalized = normalizeAgentFailure(hostile);
+
+    expect(normalized).toEqual({
+      code: "internal_error",
+      message: "The action failed unexpectedly",
+    });
+    expect(JSON.stringify(normalized)).not.toContain(secret);
   });
 });

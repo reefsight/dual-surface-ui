@@ -1,3 +1,5 @@
+import type { AgentFailureDetail } from "./errors.js";
+
 export type AgentRisk =
   | "read"
   | "write"
@@ -105,6 +107,16 @@ export interface AgentActionResult {
   node?: AgentElementSnapshot;
   output?: AgentJsonValue;
 }
+
+export interface AgentActionFailureResult {
+  schemaVersion: "0.1";
+  surfaceId: string;
+  revision: string;
+  status: "failed";
+  error: AgentFailureDetail;
+}
+
+export type AgentActionOutcome = AgentActionResult | AgentActionFailureResult;
 
 export interface AgentAuthorizationRequest extends AgentActionRequest {
   risk: AgentRisk;

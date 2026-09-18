@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "0.1",
+  "surfaceId": "checkout",
+  "revision": "7",
+  "status": "failed",
+  "error": {
+    "code": "internal_error",
+    "message": "The action failed unexpectedly",
+    "stack": "Error: database password leaked"
+  }
+}

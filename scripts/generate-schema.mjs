@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  AGENT_ACTION_FAILURE_SCHEMA,
   AGENT_ACTION_REQUEST_SCHEMA,
   AGENT_ACTION_RESULT_SCHEMA,
   AGENT_SNAPSHOT_SCHEMA,
@@ -16,6 +17,7 @@ const schemas = [
   ["agent-snapshot-0.1.schema.json", AGENT_SNAPSHOT_SCHEMA],
   ["agent-action-request-0.1.schema.json", AGENT_ACTION_REQUEST_SCHEMA],
   ["agent-action-result-0.1.schema.json", AGENT_ACTION_RESULT_SCHEMA],
+  ["agent-action-failure-0.1.schema.json", AGENT_ACTION_FAILURE_SCHEMA],
 ];
 
 for (const [fileName, schema] of schemas) {
