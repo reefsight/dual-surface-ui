@@ -7,6 +7,14 @@ export type AgentRisk =
 
 export type AgentIdempotency = "none" | "keyed" | "safe-retry";
 
+export type AgentJsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | AgentJsonValue[]
+  | { [key: string]: AgentJsonValue };
+
 export interface AgentActionDefinition {
   description?: string;
   risk?: AgentRisk;
@@ -16,7 +24,7 @@ export interface AgentActionDefinition {
   effects?: string[];
   requiresConfirmation?: boolean;
   idempotency?: AgentIdempotency;
-  handler?: (input: unknown, element: Element) => void | Promise<void>;
+  handler?: (input: unknown, element: Element) => unknown | Promise<unknown>;
 }
 
 export interface AgentElementDefinition {
@@ -94,6 +102,7 @@ export interface AgentActionResult {
   targetId: string;
   targetPresent: boolean;
   node?: AgentElementSnapshot;
+  output?: AgentJsonValue;
 }
 
 export interface AgentAuthorizationRequest extends AgentActionRequest {

@@ -170,6 +170,7 @@ export const AGENT_ACTION_RESULT_SCHEMA = {
     targetId: { type: "string", minLength: 1 },
     targetPresent: { type: "boolean" },
     node: { $ref: "#/$defs/node" },
+    output: {},
   },
   allOf: [
     {

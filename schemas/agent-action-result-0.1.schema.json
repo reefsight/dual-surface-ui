@@ -47,7 +47,8 @@
     },
     "node": {
       "$ref": "#/$defs/node"
-    }
+    },
+    "output": {}
   },
   "allOf": [
     {

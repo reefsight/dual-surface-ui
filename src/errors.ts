@@ -9,7 +9,8 @@ export type AgentErrorCode =
   | "confirmation_required"
   | "invalid_policy_decision"
   | "precondition_failed"
-  | "verification_failed";
+  | "verification_failed"
+  | "invalid_output";
 
 export class AgentError extends Error {
   readonly code: AgentErrorCode;
@@ -93,5 +94,11 @@ export class AgentVerificationFailedError extends AgentError {
       "verification_failed",
       `The effects of action "${actionName}" could not be verified`,
     );
+  }
+}
+
+export class AgentOutputValidationError extends AgentError {
+  constructor(actionName: string) {
+    super("invalid_output", `Output for action "${actionName}" is invalid`);
   }
 }

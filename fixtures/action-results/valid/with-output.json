@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "0.1",
+  "surfaceId": "checkout",
+  "previousRevision": "8",
+  "revision": "9",
+  "status": "succeeded",
+  "action": "submit_order",
+  "targetId": "submit-order",
+  "targetPresent": true,
+  "node": {
+    "id": "submit-order",
+    "role": "button",
+    "name": "Submit order",
+    "state": {
+      "disabled": true
+    },
+    "actions": [
+      {
+        "name": "submit_order",
+        "risk": "consequential"
+      }
+    ]
+  },
+  "output": {
+    "orderId": "order-123",
+    "accepted": true
+  }
+}

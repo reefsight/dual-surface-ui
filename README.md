@@ -77,10 +77,20 @@ surface.register(button, {
         properties: { orderId: { type: "string" } },
         required: ["orderId"],
       },
+      outputSchema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          orderId: { type: "string" },
+          accepted: { type: "boolean" },
+        },
+        required: ["orderId", "accepted"],
+      },
       preconditions: ["order_is_ready"],
       effects: ["order_submitted"],
       handler: async () => {
-        await submitOrder();
+        const order = await submitOrder();
+        return { orderId: order.id, accepted: true };
       },
     },
   },
@@ -91,13 +101,14 @@ const snapshot = surface.snapshot();
 console.log(snapshot);
 
 // Execute the agent's structured request through the same safety boundary.
-await surface.perform({
+const result = await surface.perform({
   surfaceId: snapshot.surfaceId,
   revision: snapshot.revision,
   elementId: "confirm-order",
   action: "confirm_order",
   input: { orderId: "order-123" },
 });
+console.log(result.output);
 ```
 
 Snapshots conform to the published `0.1` JSON Schema in
@@ -144,6 +155,7 @@ Included:
 - Runtime JSON Schema validation and stable typed error codes
 - Deterministic allow/deny/confirmation policy boundary
 - Execution-time preconditions and authoritative effect verification
+- JSON-safe handler output validation against declared schemas
 - Updated state returned after every action
 
 Not included yet:
@@ -151,7 +163,7 @@ Not included yet:
 - MCP or HTTP transport
 - React/Vue/Svelte adapters
 - Mutation-stream or incremental snapshots
-- Output-schema validation
+- Structured transport failure envelopes
 - Screenshot alignment and visual verification
 - Shadow DOM, iframe, canvas, or native desktop adapters
 

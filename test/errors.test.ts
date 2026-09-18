@@ -9,6 +9,7 @@ import {
   AgentError,
   AgentInputValidationError,
   AgentInvalidPolicyDecisionError,
+  AgentOutputValidationError,
   AgentPreconditionFailedError,
   AgentStaleRevisionError,
   AgentSurfaceMismatchError,
@@ -26,6 +27,7 @@ describe("stable agent errors", () => {
     [new AgentInputValidationError("submit"), "invalid_input"],
     [new AgentConfirmationRequiredError("submit"), "confirmation_required"],
     [new AgentInvalidPolicyDecisionError(), "invalid_policy_decision"],
+    [new AgentOutputValidationError("submit"), "invalid_output"],
     [new AgentPreconditionFailedError("submit"), "precondition_failed"],
     [new AgentVerificationFailedError("submit"), "verification_failed"],
   ] as const)("maps %s to %s", (error, code) => {

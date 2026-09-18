@@ -26,11 +26,15 @@ import type {
   AgentActionSnapshot,
   AgentElementDefinition,
   AgentElementSnapshot,
+  AgentJsonValue,
   AgentPolicyRequest,
   AgentSnapshot,
   AgentSurfaceOptions,
 } from "./types.js";
-import { validateActionInput } from "./validation.js";
+import {
+  validateActionInput,
+  validateActionOutput,
+} from "./validation.js";
 
 export class AgentSurface {
   readonly #root: ParentNode;
@@ -177,10 +181,21 @@ export class AgentSurface {
     const customHandler =
       this.#definitions.get(element)?.actions?.[request.action]?.handler;
     this.#assertVerificationAvailable(action, customHandler !== undefined);
+    let handlerOutput: unknown;
     if (customHandler) {
-      await customHandler(request.input, element);
+      handlerOutput = await customHandler(request.input, element);
     } else {
       runNativeAction(element, request.action, request.input);
+    }
+
+    let output: AgentJsonValue | undefined;
+    let outputError: unknown;
+    if (action.outputSchema) {
+      try {
+        output = validateActionOutput(action, handlerOutput);
+      } catch (error) {
+        outputError = error;
+      }
     }
 
     let after = this.snapshot();
@@ -192,6 +207,7 @@ export class AgentSurface {
       customHandler !== undefined,
       request.input,
     );
+    if (outputError) throw outputError;
     after = this.snapshot();
     const node = after.nodes.find((item) => item.id === request.elementId);
     return {
@@ -204,6 +220,7 @@ export class AgentSurface {
       targetId: request.elementId,
       targetPresent: !!node,
       ...(node ? { node } : {}),
+      ...(output !== undefined ? { output } : {}),
     };
   }
 
