@@ -56,6 +56,10 @@ const surface = createAgentSurface({
   },
   confirm: async ({ action, element }) =>
     window.confirm(`Allow ${action} on ${element.name}?`),
+  checkPrecondition: ({ precondition }) =>
+    precondition === "order_is_ready" && orderStore.isReady(),
+  verifyEffect: ({ effect }) =>
+    effect === "order_submitted" && orderStore.isSubmitted(),
 });
 
 const button = document.querySelector("#place-order")!;
@@ -73,6 +77,8 @@ surface.register(button, {
         properties: { orderId: { type: "string" } },
         required: ["orderId"],
       },
+      preconditions: ["order_is_ready"],
+      effects: ["order_submitted"],
       handler: async () => {
         await submitOrder();
       },
@@ -120,7 +126,8 @@ execution.
 - Validate before acting: declared JSON Schemas reject invalid input before
   authorization or handler execution.
 - Verify after acting: `perform()` returns a versioned result with the updated
-  revision and target node when it is still present.
+  revision and target node only after declared effects or deterministic native
+  state transitions are verified.
 - Vision remains a fallback for canvas, charts, maps, and unannotated legacy UI.
 
 ## Prototype scope
@@ -136,6 +143,7 @@ Included:
 - Action risk metadata and authorization hook
 - Runtime JSON Schema validation and stable typed error codes
 - Deterministic allow/deny/confirmation policy boundary
+- Execution-time preconditions and authoritative effect verification
 - Updated state returned after every action
 
 Not included yet:
@@ -143,7 +151,7 @@ Not included yet:
 - MCP or HTTP transport
 - React/Vue/Svelte adapters
 - Mutation-stream or incremental snapshots
-- Output validation and declared-effect verification
+- Output-schema validation
 - Screenshot alignment and visual verification
 - Shadow DOM, iframe, canvas, or native desktop adapters
 

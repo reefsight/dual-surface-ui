@@ -137,7 +137,9 @@ describe("AgentSurface", () => {
     const handler = vi.fn();
     const surface = createAgentSurface({
       authorize: () => true,
+      checkPrecondition: () => true,
       confirm: () => true,
+      verifyEffect: () => true,
     });
     surface.register(button, {
       id: "confirm-order",
@@ -203,11 +205,17 @@ describe("AgentSurface", () => {
     const surface = createAgentSurface({
       surfaceId: "dialog",
       authorize: () => true,
+      verifyEffect: ({ after }) =>
+        !after.nodes.some((item) => item.id === "close-dialog"),
     });
     surface.register(button, {
       id: "close-dialog",
       actions: {
-        close: { risk: "write", handler: () => button.remove() },
+        close: {
+          risk: "write",
+          effects: ["dialog_closed"],
+          handler: () => button.remove(),
+        },
       },
     });
     const observed = surface.snapshot();

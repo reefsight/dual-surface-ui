@@ -7,7 +7,9 @@ export type AgentErrorCode =
   | "stale_revision"
   | "invalid_input"
   | "confirmation_required"
-  | "invalid_policy_decision";
+  | "invalid_policy_decision"
+  | "precondition_failed"
+  | "verification_failed";
 
 export class AgentError extends Error {
   readonly code: AgentErrorCode;
@@ -73,5 +75,23 @@ export class AgentConfirmationRequiredError extends AgentError {
 export class AgentInvalidPolicyDecisionError extends AgentError {
   constructor() {
     super("invalid_policy_decision", "Policy returned an invalid decision");
+  }
+}
+
+export class AgentPreconditionFailedError extends AgentError {
+  constructor(actionName: string) {
+    super(
+      "precondition_failed",
+      `A precondition for action "${actionName}" was not satisfied`,
+    );
+  }
+}
+
+export class AgentVerificationFailedError extends AgentError {
+  constructor(actionName: string) {
+    super(
+      "verification_failed",
+      `The effects of action "${actionName}" could not be verified`,
+    );
   }
 }

@@ -21,6 +21,7 @@ describe("AgentSurface policy boundary", () => {
     const handler = vi.fn();
     const surface = createAgentSurface({
       surfaceId: "checkout",
+      verifyEffect: () => true,
       ...options,
     });
     surface.register(document.querySelector("button")!, {
@@ -28,6 +29,7 @@ describe("AgentSurface policy boundary", () => {
       actions: {
         submit_order: {
           risk: "consequential",
+          effects: ["order_submitted"],
           ...(definition.requiresConfirmation !== undefined
             ? { requiresConfirmation: definition.requiresConfirmation }
             : {}),

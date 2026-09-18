@@ -125,6 +125,17 @@ export interface AgentConfirmationRequest extends AgentPolicyRequest {
   decision: AgentPolicyDecision;
 }
 
+export interface AgentPreconditionRequest extends AgentPolicyRequest {
+  precondition: string;
+  snapshot: AgentSnapshot;
+}
+
+export interface AgentEffectVerificationRequest extends AgentPolicyRequest {
+  effect: string;
+  before: AgentSnapshot;
+  after: AgentSnapshot;
+}
+
 export interface AgentSurfaceOptions {
   root?: ParentNode;
   surfaceId?: string;
@@ -137,6 +148,12 @@ export interface AgentSurfaceOptions {
   ) => AgentPolicyDecision | Promise<AgentPolicyDecision>;
   confirm?: (
     request: AgentConfirmationRequest,
+  ) => boolean | Promise<boolean>;
+  checkPrecondition?: (
+    request: AgentPreconditionRequest,
+  ) => boolean | Promise<boolean>;
+  verifyEffect?: (
+    request: AgentEffectVerificationRequest,
   ) => boolean | Promise<boolean>;
   authorize?: (
     request: AgentAuthorizationRequest,

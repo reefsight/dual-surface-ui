@@ -13,8 +13,10 @@ import {
   AgentConfirmationRequiredError,
   AgentDuplicateElementIdError,
   AgentElementNotFoundError,
+  AgentPreconditionFailedError,
   AgentStaleRevisionError,
   AgentSurfaceMismatchError,
+  AgentVerificationFailedError,
 } from "./errors.js";
 import { decideAgentAction } from "./policy.js";
 import { AGENT_CONTRACT_SCHEMA_VERSION } from "./schema.js";
@@ -24,6 +26,7 @@ import type {
   AgentActionSnapshot,
   AgentElementDefinition,
   AgentElementSnapshot,
+  AgentPolicyRequest,
   AgentSnapshot,
   AgentSurfaceOptions,
 } from "./types.js";
@@ -33,9 +36,11 @@ export class AgentSurface {
   readonly #root: ParentNode;
   readonly #surfaceId: string;
   readonly #authorize: AgentSurfaceOptions["authorize"];
+  readonly #checkPrecondition: AgentSurfaceOptions["checkPrecondition"];
   readonly #confirm: AgentSurfaceOptions["confirm"];
   readonly #getPrincipal: AgentSurfaceOptions["getPrincipal"];
   readonly #policy: AgentSurfaceOptions["policy"];
+  readonly #verifyEffect: AgentSurfaceOptions["verifyEffect"];
   readonly #definitions = new WeakMap<Element, AgentElementDefinition>();
   readonly #elementsById = new Map<string, Element>();
   readonly #generatedIds = new WeakMap<Element, string>();
@@ -49,9 +54,11 @@ export class AgentSurface {
     this.#root = root;
     this.#surfaceId = options.surfaceId ?? this.#defaultSurfaceId();
     this.#authorize = options.authorize;
+    this.#checkPrecondition = options.checkPrecondition;
     this.#confirm = options.confirm;
     this.#getPrincipal = options.getPrincipal;
     this.#policy = options.policy;
+    this.#verifyEffect = options.verifyEffect;
   }
 
   register(element: Element, definition: AgentElementDefinition): () => void {
@@ -159,15 +166,33 @@ export class AgentSurface {
       );
     }
 
+    await this.#checkActionPreconditions(action, policyRequest, current);
+    const ready = this.snapshot();
+    if (ready.revision !== before.revision) {
+      throw new AgentStaleRevisionError(
+        `Action revision "${request.revision}" is stale; current revision is "${ready.revision}"`,
+      );
+    }
+
     const customHandler =
       this.#definitions.get(element)?.actions?.[request.action]?.handler;
+    this.#assertVerificationAvailable(action, customHandler !== undefined);
     if (customHandler) {
       await customHandler(request.input, element);
     } else {
       runNativeAction(element, request.action, request.input);
     }
 
-    const after = this.snapshot();
+    let after = this.snapshot();
+    await this.#verifyAction(
+      action,
+      policyRequest,
+      ready,
+      after,
+      customHandler !== undefined,
+      request.input,
+    );
+    after = this.snapshot();
     const node = after.nodes.find((item) => item.id === request.elementId);
     return {
       schemaVersion: AGENT_CONTRACT_SCHEMA_VERSION,
@@ -185,6 +210,95 @@ export class AgentSurface {
   #defaultSurfaceId(): string {
     const document = this.#document();
     return document.location?.href || "document";
+  }
+
+  async #checkActionPreconditions(
+    action: AgentActionSnapshot,
+    request: AgentPolicyRequest,
+    snapshot: AgentSnapshot,
+  ): Promise<void> {
+    for (const precondition of action.preconditions ?? []) {
+      let satisfied = false;
+      try {
+        satisfied =
+          (await this.#checkPrecondition?.({
+            ...request,
+            precondition,
+            snapshot,
+          })) === true;
+      } catch {
+        satisfied = false;
+      }
+      if (!satisfied) {
+        throw new AgentPreconditionFailedError(action.name);
+      }
+    }
+  }
+
+  async #verifyAction(
+    action: AgentActionSnapshot,
+    request: AgentPolicyRequest,
+    before: AgentSnapshot,
+    after: AgentSnapshot,
+    custom: boolean,
+    input: unknown,
+  ): Promise<void> {
+    if (action.effects?.length) {
+      for (const effect of action.effects) {
+        let verified = false;
+        try {
+          verified =
+            (await this.#verifyEffect?.({
+              ...request,
+              effect,
+              before,
+              after,
+            })) === true;
+        } catch {
+          verified = false;
+        }
+        if (!verified) throw new AgentVerificationFailedError(action.name);
+      }
+      return;
+    }
+
+    if (action.risk === "read") return;
+    if (custom) throw new AgentVerificationFailedError(action.name);
+
+    const previousNode = before.nodes.find(
+      (item) => item.id === request.elementId,
+    );
+    const nextNode = after.nodes.find((item) => item.id === request.elementId);
+    if (action.name === "set_value" && typeof input === "string" && nextNode) {
+      const verified = nextNode.state.sensitive
+        ? nextNode.state.valuePresent === (input.length > 0)
+        : nextNode.state.value === input;
+      if (verified) return;
+    } else if (
+      action.name === "toggle" &&
+      previousNode?.state.checked !== undefined &&
+      nextNode?.state.checked === !previousNode.state.checked
+    ) {
+      return;
+    } else if (action.name === "click" && after.revision !== before.revision) {
+      return;
+    }
+
+    throw new AgentVerificationFailedError(action.name);
+  }
+
+  #assertVerificationAvailable(
+    action: AgentActionSnapshot,
+    custom: boolean,
+  ): void {
+    if (action.effects?.length) {
+      if (!this.#verifyEffect) {
+        throw new AgentVerificationFailedError(action.name);
+      }
+      return;
+    }
+    if (action.risk === "read") return;
+    if (custom) throw new AgentVerificationFailedError(action.name);
   }
 
   #document(): Document {

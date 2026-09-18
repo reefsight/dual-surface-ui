@@ -9,8 +9,10 @@ import {
   AgentError,
   AgentInputValidationError,
   AgentInvalidPolicyDecisionError,
+  AgentPreconditionFailedError,
   AgentStaleRevisionError,
   AgentSurfaceMismatchError,
+  AgentVerificationFailedError,
 } from "../src/index.js";
 
 describe("stable agent errors", () => {
@@ -24,6 +26,8 @@ describe("stable agent errors", () => {
     [new AgentInputValidationError("submit"), "invalid_input"],
     [new AgentConfirmationRequiredError("submit"), "confirmation_required"],
     [new AgentInvalidPolicyDecisionError(), "invalid_policy_decision"],
+    [new AgentPreconditionFailedError("submit"), "precondition_failed"],
+    [new AgentVerificationFailedError("submit"), "verification_failed"],
   ] as const)("maps %s to %s", (error, code) => {
     expect(error).toBeInstanceOf(AgentError);
     expect(error.code).toBe(code);
