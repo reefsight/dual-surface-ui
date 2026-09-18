@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "1",
+  "experiment": "toon-codec",
+  "measuredAt": "2026-09-18T11:56:29.864Z",
+  "sourceCommit": "ef92bdb8b30b797b4f22cf7551989490ec6478fa",
+  "environment": {
+    "node": "v24.16.0",
+    "platform": "win32",
+    "architecture": "x64",
+    "tokenizer": "o200k_base via gpt-tokenizer 4.0.0",
+    "toon": "@toon-format/toon 4.1.1 strict decode"
+  },
+  "safety": {
+    "inputSecretSentinelAbsent": true,
+    "commaRoundTrip": true,
+    "tabRoundTrip": true
+  },
+  "datasets": [
+    {
+      "name": "document-approval-snapshot",
+      "formats": {
+        "jsonCompact": {
+          "utf8Bytes": 2431,
+          "tokensO200kBase": 576,
+          "medianEncodeMs": 0.012,
+          "tokenReductionVsCompactJsonPercent": 0
+        },
+        "toonComma": {
+          "utf8Bytes": 2628,
+          "tokensO200kBase": 661,
+          "medianEncodeMs": 0.97,
+          "tokenReductionVsCompactJsonPercent": -14.8
+        },
+        "toonTab": {
+          "utf8Bytes": 2640,
+          "tokensO200kBase": 668,
+          "medianEncodeMs": 1.41,
+          "tokenReductionVsCompactJsonPercent": -16
+        }
+      }
+    },
+    {
+      "name": "document-approval-snapshot-scaled-20x",
+      "formats": {
+        "jsonCompact": {
+          "utf8Bytes": 43991,
+          "tokensO200kBase": 10423,
+          "medianEncodeMs": 0.175,
+          "tokenReductionVsCompactJsonPercent": 0
+        },
+        "toonComma": {
+          "utf8Bytes": 48274,
+          "tokensO200kBase": 12047,
+          "medianEncodeMs": 25.338,
+          "tokenReductionVsCompactJsonPercent": -15.6
+        },
+        "toonTab": {
+          "utf8Bytes": 48476,
+          "tokensO200kBase": 12149,
+          "medianEncodeMs": 20.039,
+          "tokenReductionVsCompactJsonPercent": -16.6
+        }
+      }
+    },
+    {
+      "name": "uniform-action-catalog",
+      "formats": {
+        "jsonCompact": {
+          "utf8Bytes": 35556,
+          "tokensO200kBase": 7803,
+          "medianEncodeMs": 0.107,
+          "tokenReductionVsCompactJsonPercent": 0
+        },
+        "toonComma": {
+          "utf8Bytes": 15558,
+          "tokensO200kBase": 4021,
+          "medianEncodeMs": 2.045,
+          "tokenReductionVsCompactJsonPercent": 48.5
+        },
+        "toonTab": {
+          "utf8Bytes": 15559,
+          "tokensO200kBase": 3858,
+          "medianEncodeMs": 1.934,
+          "tokenReductionVsCompactJsonPercent": 50.6
+        }
+      }
+    }
+  ]
+}

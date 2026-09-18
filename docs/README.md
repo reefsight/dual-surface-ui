@@ -23,6 +23,10 @@ evidence required by `AI_SDLC.md`.
 Phase exit decisions and their combined evidence live under `reviews/`. The
 current candidate is [Phase 1 Exit Review](reviews/phase1-exit-review.md).
 
+Experimental architecture decisions remain non-binding until accepted. The
+current TOON evaluation is recorded in
+[ADR 0006](adr/0006-toon-optional-projection.md).
+
 ## Document ownership
 
 | Document | Must approve changes |
