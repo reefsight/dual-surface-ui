@@ -138,6 +138,22 @@ publish no actions. Selects expose enabled choices through `select`, while forms
 use native `submit`; both must pass the same policy and post-action verification
 boundary as every other mutation.
 
+## Reference workflow and Phase 1 baseline
+
+The document-approval example demonstrates one human-visible state shared by a
+normal click path and an agent path with typed actions, policy, confirmation,
+preconditions, effect verification, idempotency, and redacted audit events.
+
+```bash
+npm run example:document-approval
+npm run baseline:phase1
+```
+
+The baseline is a deterministic 25-run scripted measurement, not a model or
+vision evaluation. It records completion, interaction steps, latency, safety
+counters, and a clearly labeled provider-neutral context-token estimate. See
+`docs/adr/0005-phase1-baseline-method.md` before comparing its numbers.
+
 ## Design principles
 
 - One state, two representations: never maintain a separate hidden AI page.
