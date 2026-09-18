@@ -25,7 +25,7 @@
     "schema:generate": "node scripts/generate-schema.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "test:gate": "vitest run --pool=forks --no-file-parallelism",
+    "test:gate": "node scripts/run-phase1-gate-tests.mjs",
     "test:watch": "vitest"
   },
   "keywords": [
