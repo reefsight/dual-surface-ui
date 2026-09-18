@@ -48,7 +48,9 @@ availability must be checked again immediately before publishing.
 import { createAgentSurface } from "dual-surface-ui";
 
 const surface = createAgentSurface({
+  surfaceId: "checkout",
   getPrincipal: () => ({ id: currentUser.id, roles: currentUser.roles }),
+  onAudit: (event) => auditSink.write(event),
   policy: async ({ principal, risk }) => {
     if (!principal) return { outcome: "deny" };
     if (risk === "read") return { outcome: "allow" };
@@ -119,6 +121,11 @@ Snapshots conform to the published `0.1` JSON Schema in
 revision, capabilities, semantic nodes, and typed action metadata. Sensitive
 fields expose only whether a value is present.
 
+Audit events conform to `schemas/agent-audit-event-0.1.schema.json`. Enabling
+`onAudit` requires an explicit opaque URL-safe `surfaceId`; raw page URLs,
+request data, results, principals, and exception details are not event fields.
+The observer is best effort, so durable delivery remains the host's job.
+
 Standard controls work without registration. Inputs, selects, textareas,
 buttons, and links receive generated IDs and inferred actions. Inferred write
 actions require an explicit policy decision; without a policy or legacy
@@ -163,6 +170,7 @@ Included:
 - JSON-safe handler output validation against declared schemas
 - Surface-local keyed replay protection with bounded result caching
 - Opt-in structured failure results with fixed secret-safe messages
+- Redacted, correlated lifecycle events for observation and action execution
 - Updated state returned after every action
 
 Not included yet:
@@ -170,6 +178,7 @@ Not included yet:
 - MCP or HTTP transport
 - React/Vue/Svelte adapters
 - Mutation-stream or incremental snapshots
+- Durable audit storage, delivery retries, and retention policy
 - Persistent or distributed idempotency storage
 - Screenshot alignment and visual verification
 - Shadow DOM, iframe, canvas, or native desktop adapters

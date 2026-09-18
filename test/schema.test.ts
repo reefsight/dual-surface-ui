@@ -10,6 +10,7 @@ import {
   AGENT_ACTION_FAILURE_SCHEMA,
   AGENT_ACTION_REQUEST_SCHEMA,
   AGENT_ACTION_RESULT_SCHEMA,
+  AGENT_AUDIT_EVENT_SCHEMA,
   AGENT_SNAPSHOT_SCHEMA,
 } from "../src/schema.js";
 
@@ -88,4 +89,10 @@ verifyContract(
   "action-failures",
   "agent-action-failure-0.1.schema.json",
   AGENT_ACTION_FAILURE_SCHEMA,
+);
+verifyContract(
+  "agent audit event schema 0.1",
+  "audit-events",
+  "agent-audit-event-0.1.schema.json",
+  AGENT_AUDIT_EVENT_SCHEMA,
 );

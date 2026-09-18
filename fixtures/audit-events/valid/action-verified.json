@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "0.1",
+  "event": "action_verified",
+  "correlationId": "action-456",
+  "surfaceId": "checkout",
+  "revision": "5",
+  "sequence": 4,
+  "timestamp": "2026-09-18T05:00:01.000Z",
+  "durationMs": 12.5,
+  "outcome": "succeeded",
+  "action": "submit_order"
+}

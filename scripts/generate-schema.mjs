@@ -6,6 +6,7 @@ import {
   AGENT_ACTION_FAILURE_SCHEMA,
   AGENT_ACTION_REQUEST_SCHEMA,
   AGENT_ACTION_RESULT_SCHEMA,
+  AGENT_AUDIT_EVENT_SCHEMA,
   AGENT_SNAPSHOT_SCHEMA,
 } from "../dist/schema.js";
 
@@ -18,6 +19,7 @@ const schemas = [
   ["agent-action-request-0.1.schema.json", AGENT_ACTION_REQUEST_SCHEMA],
   ["agent-action-result-0.1.schema.json", AGENT_ACTION_RESULT_SCHEMA],
   ["agent-action-failure-0.1.schema.json", AGENT_ACTION_FAILURE_SCHEMA],
+  ["agent-audit-event-0.1.schema.json", AGENT_AUDIT_EVENT_SCHEMA],
 ];
 
 for (const [fileName, schema] of schemas) {

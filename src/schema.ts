@@ -2,6 +2,10 @@ import {
   AGENT_FAILURE_CODES,
   AGENT_FAILURE_MESSAGES,
 } from "./errors.js";
+import {
+  AGENT_AUDIT_EVENT_NAMES,
+  AGENT_AUDIT_OUTCOMES,
+} from "./audit.js";
 
 export const AGENT_CONTRACT_SCHEMA_VERSION = "0.1" as const;
 
@@ -226,4 +230,91 @@ export const AGENT_ACTION_FAILURE_SCHEMA = {
       })),
     },
   },
+} as const;
+
+export const AGENT_AUDIT_EVENT_SCHEMA = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://dual-surface-ui.dev/schema/agent-audit-event-0.1.json",
+  title: "Dual Surface UI Agent Audit Event",
+  type: "object",
+  additionalProperties: false,
+  required: [
+    "schemaVersion",
+    "event",
+    "correlationId",
+    "surfaceId",
+    "revision",
+    "sequence",
+    "timestamp",
+    "durationMs",
+    "outcome",
+  ],
+  properties: {
+    schemaVersion: { const: AGENT_CONTRACT_SCHEMA_VERSION },
+    event: { enum: AGENT_AUDIT_EVENT_NAMES },
+    correlationId: {
+      type: "string",
+      pattern: "^[A-Za-z0-9._~-]{1,128}$",
+    },
+    surfaceId: {
+      type: "string",
+      pattern: "^[A-Za-z0-9._~-]{1,128}$",
+    },
+    revision: { type: "string", minLength: 1 },
+    sequence: { type: "integer", minimum: 1 },
+    timestamp: { type: "string", format: "date-time" },
+    durationMs: { type: "number", minimum: 0 },
+    outcome: { enum: AGENT_AUDIT_OUTCOMES },
+    action: { type: "string", minLength: 1, maxLength: 64 },
+  },
+  allOf: [
+    {
+      if: { properties: { event: { const: "surface_observed" } } },
+      then: {
+        properties: { outcome: { const: "observed" } },
+        not: { properties: { action: {} }, required: ["action"] },
+      },
+    },
+    {
+      if: { properties: { event: { const: "action_requested" } } },
+      then: {
+        properties: { outcome: { const: "requested" } },
+        required: ["action"],
+      },
+    },
+    {
+      if: { properties: { event: { const: "policy_decided" } } },
+      then: {
+        properties: {
+          outcome: { enum: ["allow", "deny", "require_confirmation"] },
+        },
+        required: ["action"],
+      },
+    },
+    {
+      if: { properties: { event: { const: "confirmation_requested" } } },
+      then: {
+        properties: { outcome: { const: "requested" } },
+        required: ["action"],
+      },
+    },
+    {
+      if: { properties: { event: { const: "action_started" } } },
+      then: {
+        properties: { outcome: { const: "started" } },
+        required: ["action"],
+      },
+    },
+    {
+      if: { properties: { event: { const: "action_verified" } } },
+      then: {
+        properties: { outcome: { enum: ["succeeded", "replayed"] } },
+        required: ["action"],
+      },
+    },
+    {
+      if: { properties: { event: { const: "action_failed" } } },
+      then: { properties: { outcome: { enum: AGENT_FAILURE_CODES } } },
+    },
+  ],
 } as const;

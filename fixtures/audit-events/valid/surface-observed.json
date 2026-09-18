@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "0.1",
+  "event": "surface_observed",
+  "correlationId": "observe-123",
+  "surfaceId": "checkout",
+  "revision": "4",
+  "sequence": 1,
+  "timestamp": "2026-09-18T05:00:00.000Z",
+  "durationMs": 0.25,
+  "outcome": "observed"
+}

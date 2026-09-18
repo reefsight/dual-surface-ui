@@ -1,4 +1,5 @@
 import type { AgentFailureDetail } from "./errors.js";
+import type { AgentAuditEvent } from "./audit.js";
 
 export type AgentRisk =
   | "read"
@@ -162,6 +163,8 @@ export interface AgentSurfaceOptions {
   root?: ParentNode;
   surfaceId?: string;
   idempotencyCacheSize?: number;
+  onAudit?: (event: AgentAuditEvent) => unknown;
+  createCorrelationId?: () => string;
   getPrincipal?: () =>
     | AgentPrincipal
     | undefined

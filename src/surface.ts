@@ -7,6 +7,7 @@ import {
   runNativeAction,
   stateOf,
 } from "./dom.js";
+import { isValidAgentAuditIdentifier } from "./audit.js";
 import {
   AgentActionNotFoundError,
   AgentAuthorizationRequiredError,
@@ -29,6 +30,11 @@ import {
 import { decideAgentAction } from "./policy.js";
 import { AGENT_CONTRACT_SCHEMA_VERSION } from "./schema.js";
 import type {
+  AgentAuditEvent,
+  AgentAuditEventName,
+  AgentAuditOutcome,
+} from "./audit.js";
+import type {
   AgentActionRequest,
   AgentActionOutcome,
   AgentActionResult,
@@ -47,9 +53,17 @@ import {
 } from "./validation.js";
 
 interface AgentReplayRecord {
+  actionName: string;
   fingerprint: string;
   promise: Promise<AgentActionResult>;
   settled: boolean;
+}
+
+interface AgentAuditContext {
+  action?: string;
+  correlationId: string;
+  sequence: number;
+  startedAt: number;
 }
 
 function cloneActionResult(result: AgentActionResult): AgentActionResult {
@@ -64,6 +78,8 @@ export class AgentSurface {
   readonly #confirm: AgentSurfaceOptions["confirm"];
   readonly #getPrincipal: AgentSurfaceOptions["getPrincipal"];
   readonly #idempotencyCacheSize: number;
+  readonly #createCorrelationId: AgentSurfaceOptions["createCorrelationId"];
+  readonly #onAudit: AgentSurfaceOptions["onAudit"];
   readonly #policy: AgentSurfaceOptions["policy"];
   readonly #verifyEffect: AgentSurfaceOptions["verifyEffect"];
   readonly #definitions = new WeakMap<Element, AgentElementDefinition>();
@@ -71,17 +87,25 @@ export class AgentSurface {
   readonly #generatedIds = new WeakMap<Element, string>();
   readonly #replays = new Map<string, AgentReplayRecord>();
   #nextId = 1;
+  #nextCorrelationId = 1;
   #revision = 0;
   #semanticSignature: string | undefined;
+  #emittingAudit = false;
 
   constructor(options: AgentSurfaceOptions = {}) {
     const root = options.root ?? globalThis.document;
     if (!root) throw new Error("AgentSurface requires a DOM root");
     this.#root = root;
     this.#surfaceId = options.surfaceId ?? this.#defaultSurfaceId();
+    if (options.onAudit && !isValidAgentAuditIdentifier(this.#surfaceId)) {
+      throw new RangeError(
+        "onAudit requires an opaque URL-safe surfaceId of 1-128 characters",
+      );
+    }
     this.#authorize = options.authorize;
     this.#checkPrecondition = options.checkPrecondition;
     this.#confirm = options.confirm;
+    this.#createCorrelationId = options.createCorrelationId;
     this.#getPrincipal = options.getPrincipal;
     this.#idempotencyCacheSize = options.idempotencyCacheSize ?? 256;
     if (
@@ -91,6 +115,7 @@ export class AgentSurface {
       throw new RangeError("idempotencyCacheSize must be a positive integer");
     }
     this.#policy = options.policy;
+    this.#onAudit = options.onAudit;
     this.#verifyEffect = options.verifyEffect;
   }
 
@@ -114,6 +139,18 @@ export class AgentSurface {
   }
 
   snapshot(): AgentSnapshot {
+    const snapshot = this.#captureSnapshot();
+    const audit = this.#newAuditContext();
+    this.#emitAudit(
+      audit,
+      "surface_observed",
+      "observed",
+      snapshot.revision,
+    );
+    return snapshot;
+  }
+
+  #captureSnapshot(): AgentSnapshot {
     const document = this.#document();
     const nodes = this.#snapshotNodes();
     this.#refreshRevision(nodes);
@@ -137,6 +174,32 @@ export class AgentSurface {
   }
 
   async perform(request: AgentActionRequest): Promise<AgentActionResult> {
+    const audit = this.#newAuditContext();
+    try {
+      return await this.#performRequest(request, audit);
+    } catch (error) {
+      if (audit) {
+        let revision = String(this.#revision);
+        try {
+          revision = this.#captureSnapshot().revision;
+        } catch {
+          // Audit failure reporting uses the last safely observed revision.
+        }
+        this.#emitAudit(
+          audit,
+          "action_failed",
+          normalizeAgentFailure(error).code,
+          revision,
+        );
+      }
+      throw error;
+    }
+  }
+
+  async #performRequest(
+    request: AgentActionRequest,
+    audit: AgentAuditContext | undefined,
+  ): Promise<AgentActionResult> {
     if (request.surfaceId !== this.#surfaceId) {
       throw new AgentSurfaceMismatchError(
         `Action surface "${request.surfaceId}" does not match "${this.#surfaceId}"`,
@@ -152,11 +215,30 @@ export class AgentSurface {
       : undefined;
     const replay = replayScope ? this.#replays.get(replayScope) : undefined;
     if (replay) {
+      if (audit) audit.action = replay.actionName;
+      this.#emitAudit(
+        audit,
+        "action_requested",
+        "requested",
+        String(this.#revision),
+      );
       const principal = await this.#getPrincipal?.();
-      return this.#resolveReplay(replay, request, principal, origin);
+      const result = await this.#resolveReplay(
+        replay,
+        request,
+        principal,
+        origin,
+      );
+      this.#emitAudit(
+        audit,
+        "action_verified",
+        "replayed",
+        result.revision,
+      );
+      return result;
     }
 
-    const before = this.snapshot();
+    const before = this.#captureSnapshot();
     if (request.revision !== before.revision) {
       throw new AgentStaleRevisionError(
         `Action revision "${request.revision}" is stale; current revision is "${before.revision}"`,
@@ -171,6 +253,14 @@ export class AgentSurface {
         `Action "${request.action}" is not available on "${request.elementId}"`,
       );
     }
+
+    if (audit) audit.action = action.name;
+    this.#emitAudit(
+      audit,
+      "action_requested",
+      "requested",
+      before.revision,
+    );
 
     validateActionInput(action, request.input);
     this.#assertIdempotencyPolicy(action, request.idempotencyKey);
@@ -188,7 +278,14 @@ export class AgentSurface {
         if (concurrent.fingerprint !== fingerprint) {
           throw new AgentIdempotencyConflictError();
         }
-        return cloneActionResult(await concurrent.promise);
+        const result = cloneActionResult(await concurrent.promise);
+        this.#emitAudit(
+          audit,
+          "action_verified",
+          "replayed",
+          result.revision,
+        );
+        return result;
       }
 
       const execution = this.#performOnce(
@@ -199,8 +296,10 @@ export class AgentSurface {
         action,
         principal,
         origin,
+        audit,
       ).then(cloneActionResult);
       const record: AgentReplayRecord = {
+        actionName: action.name,
         fingerprint,
         promise: execution,
         settled: false,
@@ -226,6 +325,7 @@ export class AgentSurface {
       action,
       principal,
       origin,
+      audit,
     );
   }
 
@@ -235,7 +335,7 @@ export class AgentSurface {
     } catch (error) {
       let revision = String(this.#revision);
       try {
-        revision = this.snapshot().revision;
+        revision = this.#captureSnapshot().revision;
       } catch {
         // Failure normalization must still succeed when observation fails.
       }
@@ -257,6 +357,7 @@ export class AgentSurface {
     action: AgentActionSnapshot,
     principal: AgentPrincipal | undefined,
     origin: string,
+    audit: AgentAuditContext | undefined,
   ): Promise<AgentActionResult> {
     const policyRequest = {
       ...request,
@@ -270,6 +371,12 @@ export class AgentSurface {
       this.#policy,
       this.#authorize,
     );
+    this.#emitAudit(
+      audit,
+      "policy_decided",
+      decision.outcome,
+      before.revision,
+    );
     if (decision.outcome === "deny") {
       throw new AgentAuthorizationRequiredError(
         `Action "${request.action}" requires authorization`,
@@ -280,6 +387,12 @@ export class AgentSurface {
       action.requiresConfirmation === true ||
       decision.outcome === "require_confirmation"
     ) {
+      this.#emitAudit(
+        audit,
+        "confirmation_requested",
+        "requested",
+        before.revision,
+      );
       const confirmed = await this.#confirm?.({
         ...policyRequest,
         decision,
@@ -289,7 +402,7 @@ export class AgentSurface {
       }
     }
 
-    const current = this.snapshot();
+    const current = this.#captureSnapshot();
     if (current.revision !== before.revision) {
       throw new AgentStaleRevisionError(
         `Action revision "${request.revision}" is stale; current revision is "${current.revision}"`,
@@ -297,7 +410,7 @@ export class AgentSurface {
     }
 
     await this.#checkActionPreconditions(action, policyRequest, current);
-    const ready = this.snapshot();
+    const ready = this.#captureSnapshot();
     if (ready.revision !== before.revision) {
       throw new AgentStaleRevisionError(
         `Action revision "${request.revision}" is stale; current revision is "${ready.revision}"`,
@@ -307,6 +420,12 @@ export class AgentSurface {
     const customHandler =
       this.#definitions.get(element)?.actions?.[request.action]?.handler;
     this.#assertVerificationAvailable(action, customHandler !== undefined);
+    this.#emitAudit(
+      audit,
+      "action_started",
+      "started",
+      ready.revision,
+    );
     let handlerOutput: unknown;
     if (customHandler) {
       handlerOutput = await customHandler(request.input, element);
@@ -324,7 +443,7 @@ export class AgentSurface {
       }
     }
 
-    let after = this.snapshot();
+    let after = this.#captureSnapshot();
     await this.#verifyAction(
       action,
       policyRequest,
@@ -334,9 +453,9 @@ export class AgentSurface {
       request.input,
     );
     if (outputError) throw outputError;
-    after = this.snapshot();
+    after = this.#captureSnapshot();
     const node = after.nodes.find((item) => item.id === request.elementId);
-    return {
+    const result: AgentActionResult = {
       schemaVersion: AGENT_CONTRACT_SCHEMA_VERSION,
       surfaceId: this.#surfaceId,
       previousRevision: before.revision,
@@ -348,6 +467,13 @@ export class AgentSurface {
       ...(node ? { node } : {}),
       ...(output !== undefined ? { output } : {}),
     };
+    this.#emitAudit(
+      audit,
+      "action_verified",
+      "succeeded",
+      result.revision,
+    );
+    return result;
   }
 
   #assertIdempotencyPolicy(
@@ -393,6 +519,71 @@ export class AgentSurface {
     for (const [scope, record] of this.#replays) {
       if (record.settled) this.#replays.delete(scope);
       if (this.#replays.size <= this.#idempotencyCacheSize) break;
+    }
+  }
+
+  #newAuditContext(): AgentAuditContext | undefined {
+    if (!this.#onAudit || this.#emittingAudit) return undefined;
+    return {
+      correlationId: this.#newCorrelationId(),
+      sequence: 0,
+      startedAt: this.#monotonicNow(),
+    };
+  }
+
+  #newCorrelationId(): string {
+    try {
+      const candidate =
+        this.#createCorrelationId?.() ?? globalThis.crypto?.randomUUID?.();
+      if (isValidAgentAuditIdentifier(candidate)) return candidate;
+    } catch {
+      // A trusted factory cannot make observation or execution fail.
+    }
+    return `audit-${this.#nextCorrelationId++}`;
+  }
+
+  #monotonicNow(): number {
+    try {
+      const value = globalThis.performance?.now();
+      if (Number.isFinite(value)) return value;
+    } catch {
+      // Fall back to a coarse clock when the platform clock is unavailable.
+    }
+    return Date.now();
+  }
+
+  #emitAudit(
+    context: AgentAuditContext | undefined,
+    eventName: AgentAuditEventName,
+    outcome: AgentAuditOutcome,
+    revision: string,
+  ): void {
+    if (!context || !this.#onAudit || this.#emittingAudit) return;
+
+    try {
+      const elapsed = this.#monotonicNow() - context.startedAt;
+      const event: AgentAuditEvent = Object.freeze({
+        schemaVersion: AGENT_CONTRACT_SCHEMA_VERSION,
+        event: eventName,
+        correlationId: context.correlationId,
+        surfaceId: this.#surfaceId,
+        revision,
+        sequence: ++context.sequence,
+        timestamp: new Date().toISOString(),
+        durationMs: Number.isFinite(elapsed) ? Math.max(0, elapsed) : 0,
+        outcome,
+        ...(context.action ? { action: context.action } : {}),
+      });
+
+      this.#emittingAudit = true;
+      try {
+        const result = this.#onAudit(event);
+        void Promise.resolve(result).catch(() => undefined);
+      } finally {
+        this.#emittingAudit = false;
+      }
+    } catch {
+      this.#emittingAudit = false;
     }
   }
 
