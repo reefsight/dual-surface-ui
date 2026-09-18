@@ -116,6 +116,44 @@ if (outcome.status === "succeeded") console.log(outcome.output);
 else console.error(outcome.error.code);
 ```
 
+### Optional WebMCP imperative adapter
+
+Supported experimental browsers can discover an explicit subset of the same
+surface through the additive `dual-surface-ui/webmcp` entry point:
+
+```ts
+import { exportAgentSurfaceToWebMcp } from "dual-surface-ui/webmcp";
+
+const webMcp = await exportAgentSurfaceToWebMcp(surface, {
+  bindings: [
+    {
+      name: "checkout.confirm_order",
+      description: "Submit the reviewed order for payment",
+      elementId: "confirm-order",
+      action: "confirm_order",
+    },
+  ],
+});
+
+if (!webMcp.supported) {
+  console.info("This browser does not expose the WebMCP imperative API");
+}
+
+// Re-register against a new semantic revision after an application transition.
+await webMcp.refresh();
+
+// Unregister every tool owned by this adapter during unmount/navigation.
+webMcp.dispose();
+```
+
+Bindings are an allowlist: names and descriptions must be trusted application
+metadata, never page or user text. The adapter never exports credential-risk
+actions, never enables cross-origin exposure, and never bypasses the core
+policy, confirmation, validation, replay, or effect-verification boundary.
+Calls use `{ input, idempotencyKey }`; `input` wraps the action's declared
+schema and `idempotencyKey` is present only for keyed actions. An unsupported
+browser takes a no-op path—there is no hidden automation fallback.
+
 Snapshots conform to the published `0.1` JSON Schema in
 `schemas/agent-snapshot-0.1.schema.json`. The schema includes a surface ID,
 revision, capabilities, semantic nodes, and typed action metadata. Sensitive
@@ -193,10 +231,12 @@ Included:
 - Opt-in structured failure results with fixed secret-safe messages
 - Redacted, correlated lifecycle events for observation and action execution
 - Updated state returned after every action
+- Optional allowlisted WebMCP imperative export with revision-bound execution
 
 Not included yet:
 
 - MCP or HTTP transport
+- WebMCP declarative markup, polyfill, or cross-origin exposure
 - React/Vue/Svelte adapters
 - Mutation-stream or incremental snapshots
 - Durable audit storage, delivery retries, and retention policy

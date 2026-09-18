@@ -80,4 +80,8 @@ failures, redacted lifecycle events, DOM conformance, and the example baseline.
 P1.12 verified the frozen contract, security evidence, clean installation,
 package consumer, and all 134 tests. The maintainer accepted the Phase 1 exit
 gate on 2026-09-18 and authorized Phase 2. P2.1 starts with the imperative
-WebMCP exporter; later Phase 2 deliverables remain gated by the roadmap.
+WebMCP exporter. Its allowlisted adapter, lifecycle, tests, and package subpath
+are implemented and pass automated gates; the current Chrome installation does
+not expose the experimental API, so supported-browser Inspector/manual proof
+remains open. P2.2 is the next implementation item; later Phase 2 deliverables
+remain gated by the roadmap.

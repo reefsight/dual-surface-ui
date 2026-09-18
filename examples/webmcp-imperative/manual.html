@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dual Surface UI — WebMCP browser probe</title>
+    <style>
+      body { font: 16px/1.5 system-ui, sans-serif; max-width: 720px; margin: 4rem auto; padding: 0 1.5rem; }
+      output { display: block; padding: 1rem; border: 2px solid currentColor; border-radius: .5rem; white-space: pre-wrap; }
+      .pass { color: #08783e; }
+      .pending { color: #8a4b00; }
+    </style>
+  </head>
+  <body>
+    <h1>WebMCP imperative browser probe</h1>
+    <p>This page registers one read-only probe tool when the browser exposes the experimental API.</p>
+    <output id="result" class="pending">Checking…</output>
+    <script type="module">
+      const result = document.querySelector("#result");
+      const modelContext = document.modelContext;
+      if (!modelContext || typeof modelContext.registerTool !== "function") {
+        result.textContent = "UNSUPPORTED\ndocument.modelContext.registerTool is unavailable.";
+      } else {
+        const controller = new AbortController();
+        try {
+          await modelContext.registerTool({
+            name: "dual_surface_probe",
+            description: "Return a fixed browser-probe result without changing application state",
+            inputSchema: { type: "object", additionalProperties: false, properties: {} },
+            annotations: {
+              readOnlyHint: true,
+              consequentialHint: false,
+              untrustedContentHint: true,
+            },
+            execute: () => ({ status: "succeeded", probe: "dual-surface-ui-webmcp" }),
+          }, { signal: controller.signal });
+          window.addEventListener("pagehide", () => controller.abort(), { once: true });
+          result.className = "pass";
+          result.textContent = "REGISTERED\ndual_surface_probe is available for Inspector/manual invocation.";
+        } catch {
+          result.textContent = "REGISTRATION FAILED\nThe API exists but rejected the probe tool.";
+        }
+      }
+    </script>
+  </body>
+</html>
