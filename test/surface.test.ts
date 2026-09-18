@@ -7,6 +7,7 @@ import {
   AgentStaleRevisionError,
   AgentSurfaceMismatchError,
   createAgentSurface,
+  type AgentElementDefinition,
 } from "../src/index.js";
 
 describe("AgentSurface", () => {
@@ -379,6 +380,153 @@ describe("AgentSurface", () => {
     expect(() =>
       surface.register(second!, { id: "stable", description: "Replacement" }),
     ).not.toThrow();
+  });
+
+  it("captures registration semantics until the definition is explicitly registered again", async () => {
+    document.body.innerHTML = `<button>Run</button>`;
+    const button = document.querySelector("button")!;
+    const originalHandler = vi.fn(() => ({ accepted: true }));
+    const replacementHandler = vi.fn(() => ({ accepted: 1 }));
+    const inputSchema = {
+      type: "object",
+      additionalProperties: false,
+      properties: { value: { type: "string" } },
+      required: ["value"],
+    };
+    const outputSchema = {
+      type: "object",
+      additionalProperties: false,
+      properties: { accepted: { type: "boolean" } },
+      required: ["accepted"],
+    };
+    const value: AgentElementDefinition = {
+      id: "stable",
+      description: "Original definition",
+      actions: {
+        run: {
+          description: "Original action",
+          risk: "read",
+          inputSchema,
+          outputSchema,
+          preconditions: ["ready"],
+          effects: ["ran"],
+          requiresConfirmation: false,
+          idempotency: "none",
+          handler: originalHandler,
+        },
+      },
+    };
+    const surface = createAgentSurface({
+      checkPrecondition: () => true,
+      verifyEffect: () => true,
+    });
+    surface.register(button, value);
+
+    value.id = "mutated";
+    value.description = "Mutated definition";
+    const action = value.actions!.run!;
+    action.description = "Mutated action";
+    action.risk = "consequential";
+    inputSchema.properties.value.type = "number";
+    inputSchema.required.push("extra");
+    outputSchema.properties.accepted.type = "number";
+    action.preconditions!.push("mutated_precondition");
+    action.effects!.push("mutated_effect");
+    action.requiresConfirmation = true;
+    action.idempotency = "keyed";
+    action.handler = replacementHandler;
+    delete value.actions!.run;
+    value.actions!.replacement = action;
+
+    const observed = surface.snapshot();
+    const node = observed.nodes.find((item) => item.id === "stable");
+    expect(node).toMatchObject({
+      id: "stable",
+      description: "Original definition",
+      actions: [
+        {
+          name: "run",
+          description: "Original action",
+          risk: "read",
+          inputSchema: {
+            properties: { value: { type: "string" } },
+            required: ["value"],
+          },
+          outputSchema: {
+            properties: { accepted: { type: "boolean" } },
+          },
+          preconditions: ["ready"],
+          effects: ["ran"],
+          requiresConfirmation: false,
+          idempotency: "none",
+        },
+      ],
+    });
+    expect(button.dataset.agentId).toBe("stable");
+
+    const result = await surface.perform({
+      surfaceId: observed.surfaceId,
+      revision: observed.revision,
+      elementId: "stable",
+      action: "run",
+      input: { value: "allowed" },
+    });
+    expect(result.output).toEqual({ accepted: true });
+    expect(originalHandler).toHaveBeenCalledOnce();
+    expect(replacementHandler).not.toHaveBeenCalled();
+
+    surface.register(button, value);
+    const rebound = surface.snapshot();
+    expect(rebound.nodes.some((item) => item.id === "stable")).toBe(false);
+    expect(rebound.nodes.find((item) => item.id === "mutated")?.actions[0]?.name)
+      .toBe("replacement");
+  });
+
+  it("cannot swap a registered handler while asynchronous policy is pending", async () => {
+    document.body.innerHTML = `<button>Run</button>`;
+    const button = document.querySelector("button")!;
+    const originalHandler = vi.fn();
+    const replacementHandler = vi.fn();
+    let policyStarted!: () => void;
+    let releasePolicy!: () => void;
+    const started = new Promise<void>((resolve) => {
+      policyStarted = resolve;
+    });
+    const pending = new Promise<void>((resolve) => {
+      releasePolicy = resolve;
+    });
+    const value: AgentElementDefinition = {
+      id: "run",
+      actions: {
+        run: {
+          risk: "read",
+          handler: originalHandler,
+        },
+      },
+    };
+    const surface = createAgentSurface({
+      policy: async () => {
+        policyStarted();
+        await pending;
+        return { outcome: "allow" };
+      },
+    });
+    surface.register(button, value);
+    const observed = surface.snapshot();
+
+    const execution = surface.perform({
+      surfaceId: observed.surfaceId,
+      revision: observed.revision,
+      elementId: "run",
+      action: "run",
+    });
+    await started;
+    value.actions!.run!.handler = replacementHandler;
+    releasePolicy();
+    await execution;
+
+    expect(originalHandler).toHaveBeenCalledOnce();
+    expect(replacementHandler).not.toHaveBeenCalled();
   });
 
   it("prevents an older disposer from removing a newer registration", () => {
