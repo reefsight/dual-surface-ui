@@ -36,7 +36,7 @@ export function measureEncoding(formatter, value, repetitions = 50) {
     encoded,
     utf8Bytes: Buffer.byteLength(encoded, "utf8"),
     tokensO200kBase: tokenize(encoded).length,
-    medianEncodeMs: median(samples),
+    medianEncodeMs: Number(median(samples).toFixed(3)),
   };
 }
 
