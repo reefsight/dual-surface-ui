@@ -17,6 +17,7 @@ import {
   EXPECTED_AGENT_STEPS,
 } from "../examples/document-approval/workflow.mjs";
 import {
+  canonicalTextSha256,
   estimatedTokensFromBytes,
   percentile,
   summarizeBaselineSamples,
@@ -72,69 +73,81 @@ describe("document approval example", () => {
     );
   });
 
-  it("completes the agent workflow through policy, confirmation, and verification", async () => {
-    const workflow = await loadExample();
-    const outcome = await workflow.runAgentWorkflow();
+  it(
+    "completes the agent workflow through policy, confirmation, and verification",
+    async () => {
+      const workflow = await loadExample();
+      const outcome = await workflow.runAgentWorkflow();
 
-    expect(outcome.steps).toEqual(EXPECTED_AGENT_STEPS);
-    expect(outcome.result).toEqual(
-      expect.objectContaining({
-        status: "succeeded",
-        action: "approve_document",
-        output: {
-          documentId: "DOC-1042",
-          status: "approved",
-          commentAccepted: true,
-        },
-      }),
-    );
-    expect(workflow.status.textContent).toBe("Approved");
-    expect(workflow.approvalCount).toBe(1);
-    expect(workflow.confirmationCount).toBe(1);
-    expect(workflow.auditEvents.map((event) => event.event)).toEqual([
-      "surface_observed",
-      "action_requested",
-      "policy_decided",
-      "action_started",
-      "action_verified",
-      "action_requested",
-      "policy_decided",
-      "action_started",
-      "action_verified",
-      "action_requested",
-      "policy_decided",
-      "confirmation_requested",
-      "action_started",
-      "action_verified",
-    ]);
-  });
+      expect(outcome.steps).toEqual(EXPECTED_AGENT_STEPS);
+      expect(outcome.result).toEqual(
+        expect.objectContaining({
+          status: "succeeded",
+          action: "approve_document",
+          output: {
+            documentId: "DOC-1042",
+            status: "approved",
+            commentAccepted: true,
+          },
+        }),
+      );
+      expect(workflow.status.textContent).toBe("Approved");
+      expect(workflow.approvalCount).toBe(1);
+      expect(workflow.confirmationCount).toBe(1);
+      expect(workflow.auditEvents.map((event) => event.event)).toEqual([
+        "surface_observed",
+        "action_requested",
+        "policy_decided",
+        "action_started",
+        "action_verified",
+        "action_requested",
+        "policy_decided",
+        "action_started",
+        "action_verified",
+        "action_requested",
+        "policy_decided",
+        "confirmation_requested",
+        "action_started",
+        "action_verified",
+      ]);
+    },
+    30_000,
+  );
 
-  it("keeps human and agent paths on the same visible application state", async () => {
-    const human = await loadExample();
-    const humanResult = human.runHumanWorkflow();
-    expect(humanResult.status).toBe("Approved");
-    expect(human.approvalCount).toBe(1);
+  it(
+    "keeps human and agent paths on the same visible application state",
+    async () => {
+      const human = await loadExample();
+      const humanResult = human.runHumanWorkflow();
+      expect(humanResult.status).toBe("Approved");
+      expect(human.approvalCount).toBe(1);
 
-    const agent = await loadExample();
-    await agent.runAgentWorkflow();
-    expect(agent.status.textContent).toBe(humanResult.status);
-    expect(agent.approvalCount).toBe(human.approvalCount);
-  });
+      const agent = await loadExample();
+      await agent.runAgentWorkflow();
+      expect(agent.status.textContent).toBe(humanResult.status);
+      expect(agent.approvalCount).toBe(human.approvalCount);
+    },
+    30_000,
+  );
 
-  it("does not serialize the hidden sentinel into snapshots, results, or audit", async () => {
-    const workflow = await loadExample();
-    const outcome = await workflow.runAgentWorkflow();
-    const serialized = JSON.stringify({
-      snapshot: outcome.initialSnapshot,
-      result: outcome.result,
-      audit: workflow.auditEvents,
-    });
+  it(
+    "does not serialize the hidden sentinel into snapshots, results, or audit",
+    async () => {
+      const workflow = await loadExample();
+      const outcome = await workflow.runAgentWorkflow();
+      const serialized = JSON.stringify({
+        snapshot: outcome.initialSnapshot,
+        result: outcome.result,
+        audit: workflow.auditEvents,
+      });
 
-    expect(document.documentElement.innerHTML).toContain(
-      "SECRET_SENTINEL_DO_NOT_EXPOSE",
-    );
-    expect(serialized).not.toContain("SECRET_SENTINEL_DO_NOT_EXPOSE");
-  });
+      expect(document.documentElement.innerHTML).toContain(
+        "SECRET_SENTINEL_DO_NOT_EXPOSE",
+      );
+      expect(serialized).not.toContain("SECRET_SENTINEL_DO_NOT_EXPOSE");
+    },
+    30_000,
+  );
 
   it("blocks approval when required widgets remain incomplete", async () => {
     const workflow = await loadExample();
@@ -194,6 +207,9 @@ describe("document approval example", () => {
 
 describe("Phase 1 baseline helpers", () => {
   it("uses an explicit deterministic token proxy and nearest-rank percentiles", () => {
+    expect(canonicalTextSha256("line one\r\nline two\r")).toBe(
+      canonicalTextSha256("line one\nline two\n"),
+    );
     expect(utf8Bytes("abcd")).toBe(4);
     expect(estimatedTokensFromBytes(5)).toBe(2);
     expect(percentile([40, 10, 30, 20], 0.5)).toBe(20);

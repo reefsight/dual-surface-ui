@@ -1,5 +1,4 @@
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { performance } from "node:perf_hooks";
@@ -12,7 +11,11 @@ import {
   EXPECTED_AGENT_STEPS,
   installWindowGlobals,
 } from "../examples/document-approval/workflow.mjs";
-import { round, summarizeBaselineSamples } from "./phase1-baseline-lib.mjs";
+import {
+  canonicalTextSha256,
+  round,
+  summarizeBaselineSamples,
+} from "./phase1-baseline-lib.mjs";
 
 const repetitions = 25;
 const html = await readFile(
@@ -95,7 +98,7 @@ console.log(
         encoding: "utf8",
       }).trim(),
       fixture: "examples/document-approval/index.html",
-      fixtureSha256: createHash("sha256").update(html).digest("hex"),
+      fixtureSha256: canonicalTextSha256(html),
       workflowPath:
         "observe -> toggle identity -> toggle terms -> approve_document",
       latencyScope:

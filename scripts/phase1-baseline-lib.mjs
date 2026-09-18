@@ -1,3 +1,11 @@
+import { createHash } from "node:crypto";
+
+export function canonicalTextSha256(value) {
+  return createHash("sha256")
+    .update(value.replace(/\r\n?/g, "\n"))
+    .digest("hex");
+}
+
 export function utf8Bytes(value) {
   return new TextEncoder().encode(value).byteLength;
 }

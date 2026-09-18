@@ -1,9 +1,10 @@
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
+
+import { canonicalTextSha256 } from "../scripts/phase1-baseline-lib.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const reportPath = resolve(
@@ -22,7 +23,7 @@ describe("committed Phase 1 baseline", () => {
   it("is tied to the unchanged fixture and records the frozen method", async () => {
     const report = JSON.parse(await readFile(reportPath, "utf8"));
     const fixture = await readFile(fixturePath, "utf8");
-    const fixtureSha256 = createHash("sha256").update(fixture).digest("hex");
+    const fixtureSha256 = canonicalTextSha256(fixture);
 
     expect(report).toEqual(
       expect.objectContaining({

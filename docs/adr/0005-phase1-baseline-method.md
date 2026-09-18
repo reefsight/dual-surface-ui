@@ -35,7 +35,9 @@ contract under test.
 - Count confirmation, hidden-sentinel leakage, wrong actions, and consequential
   execution without exactly one confirmation on every repetition.
 - Record the source commit, fixture SHA-256, environment, timestamp, aggregate
-  metrics, and raw latency/step/completion samples.
+  metrics, and raw latency/step/completion samples. Canonicalize CRLF and lone
+  CR line endings to LF before hashing so Windows checkouts verify the same
+  committed fixture.
 - Label the report `deterministic-scripted-no-model`. It establishes the Phase 1
   baseline but makes no claim about model selection quality or vision success.
 
