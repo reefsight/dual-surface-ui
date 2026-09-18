@@ -2,7 +2,9 @@ import {
   accessibleNameOf,
   boundsOf,
   inferredActions,
+  isEffectivelyDisabled,
   isSemanticCandidate,
+  isValidNativeActionInput,
   roleOf,
   runNativeAction,
   stateOf,
@@ -16,6 +18,7 @@ import {
   AgentElementNotFoundError,
   AgentIdempotencyConflictError,
   AgentIdempotencyKeyRequiredError,
+  AgentInputValidationError,
   AgentInvalidIdempotencyKeyError,
   AgentPreconditionFailedError,
   AgentStaleRevisionError,
@@ -263,6 +266,9 @@ export class AgentSurface {
     );
 
     validateActionInput(action, request.input);
+    if (!isValidNativeActionInput(element, action.name, request.input)) {
+      throw new AgentInputValidationError(action.name);
+    }
     this.#assertIdempotencyPolicy(action, request.idempotencyKey);
 
     const principal = await this.#getPrincipal?.();
@@ -655,12 +661,22 @@ export class AgentSurface {
         : nextNode.state.value === input;
       if (verified) return;
     } else if (
+      action.name === "select" &&
+      typeof input === "string" &&
+      nextNode
+    ) {
+      const target = this.#elementsById.get(request.elementId);
+      if (target instanceof HTMLSelectElement && target.value === input) return;
+    } else if (
       action.name === "toggle" &&
       previousNode?.state.checked !== undefined &&
       nextNode?.state.checked === !previousNode.state.checked
     ) {
       return;
-    } else if (action.name === "click" && after.revision !== before.revision) {
+    } else if (
+      (action.name === "click" || action.name === "submit") &&
+      after.revision !== before.revision
+    ) {
       return;
     }
 
@@ -743,6 +759,7 @@ export class AgentSurface {
   }
 
   #actionsFor(element: Element): AgentActionSnapshot[] {
+    if (isEffectivelyDisabled(element)) return [];
     const definition = this.#definitions.get(element);
     if (!definition?.actions) return inferredActions(element);
 
@@ -781,14 +798,20 @@ export class AgentSurface {
 
   #findElement(id: string): Element {
     const cached = this.#elementsById.get(id);
-    if (cached?.isConnected && this.#idFor(cached) === id) return cached;
+    if (
+      cached?.isConnected &&
+      isSemanticCandidate(cached) &&
+      this.#idFor(cached) === id
+    ) {
+      return cached;
+    }
 
     const match = this.#allElements().find(
       (element) =>
         element.getAttribute("data-agent-id") === id ||
         this.#generatedIds.get(element) === id,
     );
-    if (!match) {
+    if (!match || !isSemanticCandidate(match)) {
       throw new AgentElementNotFoundError(`Agent element not found: ${id}`);
     }
     this.#elementsById.set(id, match);

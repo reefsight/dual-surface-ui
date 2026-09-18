@@ -1,0 +1,18 @@
+<label for="color">Color</label>
+<select id="color" data-agent-id="color">
+  <option value="red" selected>Red primary</option>
+  <option value="red">Red duplicate</option>
+  <optgroup label="Unavailable" disabled>
+    <option value="blue">Blue</option>
+  </optgroup>
+  <option value="green" disabled>Green</option>
+  <option value="purple" hidden>Purple</option>
+  <option value="yellow">Yellow</option>
+</select>
+
+<form aria-label="Checkout" data-agent-id="checkout-form">
+  <label for="email">Email</label>
+  <input id="email" type="email" required value="person@example.com">
+  <button type="submit">Place order</button>
+  <output data-agent-id="submit-status">Pending</output>
+</form>

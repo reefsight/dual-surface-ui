@@ -133,6 +133,11 @@ actions require an explicit policy decision; without a policy or legacy
 confirmation, and the runtime rechecks the surface revision immediately before
 execution.
 
+Hidden and inert subtrees are omitted. Disabled controls remain observable but
+publish no actions. Selects expose enabled choices through `select`, while forms
+use native `submit`; both must pass the same policy and post-action verification
+boundary as every other mutation.
+
 ## Design principles
 
 - One state, two representations: never maintain a separate hidden AI page.

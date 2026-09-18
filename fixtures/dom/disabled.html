@@ -1,0 +1,19 @@
+<button data-agent-id="disabled-button" disabled>Disabled</button>
+<fieldset disabled>
+  <label for="fieldset-input">Fieldset input</label>
+  <input id="fieldset-input" data-agent-id="fieldset-input" value="locked">
+</fieldset>
+<div aria-disabled=" TRUE ">
+  <button data-agent-id="aria-disabled-child">ARIA child</button>
+</div>
+<div role="button" aria-disabled="true" data-agent-id="aria-disabled-role">
+  ARIA role
+</div>
+<button data-agent-id="enabled-button">Enabled</button>
+<select aria-label="Options" data-agent-id="option-select">
+  <optgroup label="Unavailable" disabled>
+    <option data-agent-id="disabled-optgroup-option" value="group">Group</option>
+  </optgroup>
+  <option data-agent-id="disabled-option" value="direct" disabled>Direct</option>
+  <option value="enabled">Enabled option</option>
+</select>

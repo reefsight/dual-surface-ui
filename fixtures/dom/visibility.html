@@ -1,0 +1,32 @@
+<button data-agent-id="visible">Visible action</button>
+<main data-agent-id="visible-container">
+  Visible container
+  <span hidden>nested-text-secret</span>
+</main>
+<section hidden>
+  <button data-agent-id="hidden-parent">hidden-parent-secret</button>
+</section>
+<div aria-hidden="true">
+  <input data-agent-id="aria-hidden-child" value="aria-hidden-secret">
+</div>
+<div inert>
+  <button data-agent-id="inert-child">inert-secret</button>
+</div>
+<div style="display: none">
+  <button data-agent-id="display-none-child">display-secret</button>
+</div>
+<div style="visibility: hidden">
+  <button data-agent-id="visibility-hidden-child">visibility-secret</button>
+</div>
+<input type="hidden" data-agent-id="hidden-input" value="hidden-input-secret">
+<dialog>
+  <button data-agent-id="closed-dialog-child">dialog-secret</button>
+</dialog>
+<details>
+  <summary data-agent-id="closed-summary">Closed details</summary>
+  <button data-agent-id="closed-details-child">details-secret</button>
+</details>
+<details open>
+  <summary>Open details</summary>
+  <button data-agent-id="open-details-child">Open details action</button>
+</details>
