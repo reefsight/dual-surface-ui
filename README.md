@@ -48,10 +48,14 @@ availability must be checked again immediately before publishing.
 import { createAgentSurface } from "dual-surface-ui";
 
 const surface = createAgentSurface({
-  authorize: async ({ risk, element, action }) => {
-    if (risk === "read") return true;
-    return window.confirm(`Allow ${action} on ${element.name}?`);
+  getPrincipal: () => ({ id: currentUser.id, roles: currentUser.roles }),
+  policy: async ({ principal, risk }) => {
+    if (!principal) return { outcome: "deny" };
+    if (risk === "read") return { outcome: "allow" };
+    return { outcome: "require_confirmation" };
   },
+  confirm: async ({ action, element }) =>
+    window.confirm(`Allow ${action} on ${element.name}?`),
 });
 
 const button = document.querySelector("#place-order")!;
@@ -97,7 +101,10 @@ fields expose only whether a value is present.
 
 Standard controls work without registration. Inputs, selects, textareas,
 buttons, and links receive generated IDs and inferred actions. Inferred write
-actions require an `authorize` callback; without approval they fail closed.
+actions require an explicit policy decision; without a policy or legacy
+`authorize` callback they fail closed. Actions can require trusted host
+confirmation, and the runtime rechecks the surface revision immediately before
+execution.
 
 ## Design principles
 
@@ -128,6 +135,7 @@ Included:
 - Custom domain actions
 - Action risk metadata and authorization hook
 - Runtime JSON Schema validation and stable typed error codes
+- Deterministic allow/deny/confirmation policy boundary
 - Updated state returned after every action
 
 Not included yet:

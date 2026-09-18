@@ -3,10 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   AgentActionNotFoundError,
   AgentAuthorizationRequiredError,
+  AgentConfirmationRequiredError,
   AgentDuplicateElementIdError,
   AgentElementNotFoundError,
   AgentError,
   AgentInputValidationError,
+  AgentInvalidPolicyDecisionError,
   AgentStaleRevisionError,
   AgentSurfaceMismatchError,
 } from "../src/index.js";
@@ -20,6 +22,8 @@ describe("stable agent errors", () => {
     [new AgentSurfaceMismatchError("wrong surface"), "surface_mismatch"],
     [new AgentStaleRevisionError("stale"), "stale_revision"],
     [new AgentInputValidationError("submit"), "invalid_input"],
+    [new AgentConfirmationRequiredError("submit"), "confirmation_required"],
+    [new AgentInvalidPolicyDecisionError(), "invalid_policy_decision"],
   ] as const)("maps %s to %s", (error, code) => {
     expect(error).toBeInstanceOf(AgentError);
     expect(error.code).toBe(code);

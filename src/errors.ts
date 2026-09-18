@@ -5,7 +5,9 @@ export type AgentErrorCode =
   | "duplicate_element_id"
   | "surface_mismatch"
   | "stale_revision"
-  | "invalid_input";
+  | "invalid_input"
+  | "confirmation_required"
+  | "invalid_policy_decision";
 
 export class AgentError extends Error {
   readonly code: AgentErrorCode;
@@ -56,5 +58,20 @@ export class AgentStaleRevisionError extends AgentError {
 export class AgentInputValidationError extends AgentError {
   constructor(actionName: string) {
     super("invalid_input", `Input for action "${actionName}" is invalid`);
+  }
+}
+
+export class AgentConfirmationRequiredError extends AgentError {
+  constructor(actionName: string) {
+    super(
+      "confirmation_required",
+      `Action "${actionName}" requires trusted confirmation`,
+    );
+  }
+}
+
+export class AgentInvalidPolicyDecisionError extends AgentError {
+  constructor() {
+    super("invalid_policy_decision", "Policy returned an invalid decision");
   }
 }

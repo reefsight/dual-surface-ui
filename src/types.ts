@@ -101,9 +101,43 @@ export interface AgentAuthorizationRequest extends AgentActionRequest {
   element: AgentElementSnapshot;
 }
 
+export interface AgentPrincipal {
+  id: string;
+  roles?: string[];
+}
+
+export type AgentPolicyOutcome =
+  | "allow"
+  | "deny"
+  | "require_confirmation";
+
+export interface AgentPolicyDecision {
+  outcome: AgentPolicyOutcome;
+  reason?: string;
+}
+
+export interface AgentPolicyRequest extends AgentAuthorizationRequest {
+  origin: string;
+  principal?: AgentPrincipal;
+}
+
+export interface AgentConfirmationRequest extends AgentPolicyRequest {
+  decision: AgentPolicyDecision;
+}
+
 export interface AgentSurfaceOptions {
   root?: ParentNode;
   surfaceId?: string;
+  getPrincipal?: () =>
+    | AgentPrincipal
+    | undefined
+    | Promise<AgentPrincipal | undefined>;
+  policy?: (
+    request: AgentPolicyRequest,
+  ) => AgentPolicyDecision | Promise<AgentPolicyDecision>;
+  confirm?: (
+    request: AgentConfirmationRequest,
+  ) => boolean | Promise<boolean>;
   authorize?: (
     request: AgentAuthorizationRequest,
   ) => boolean | Promise<boolean>;

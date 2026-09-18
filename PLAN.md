@@ -71,5 +71,6 @@ spikes are allowed only under `experiments/` and do not count as deliverables.
 
 Do not publish the exploratory package during Phase 1. P1.1 froze the core
 schema and fixtures; P1.2 added stable identity, revision safety, and action
-results; P1.3 adds runtime input validation and stable error codes.
+results; P1.3 added runtime input validation and stable error codes; P1.4 adds
+the deterministic policy and trusted-confirmation boundary.
 Later-phase deliverables remain out of scope until the Phase 1 exit gate passes.

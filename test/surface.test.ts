@@ -135,7 +135,10 @@ describe("AgentSurface", () => {
     document.body.innerHTML = `<button>Confirm</button>`;
     const button = document.querySelector("button")!;
     const handler = vi.fn();
-    const surface = createAgentSurface({ authorize: () => true });
+    const surface = createAgentSurface({
+      authorize: () => true,
+      confirm: () => true,
+    });
     surface.register(button, {
       id: "confirm-order",
       description: "Confirm and submit the current order",

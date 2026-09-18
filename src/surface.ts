@@ -10,11 +10,13 @@ import {
 import {
   AgentActionNotFoundError,
   AgentAuthorizationRequiredError,
+  AgentConfirmationRequiredError,
   AgentDuplicateElementIdError,
   AgentElementNotFoundError,
   AgentStaleRevisionError,
   AgentSurfaceMismatchError,
 } from "./errors.js";
+import { decideAgentAction } from "./policy.js";
 import { AGENT_CONTRACT_SCHEMA_VERSION } from "./schema.js";
 import type {
   AgentActionRequest,
@@ -31,6 +33,9 @@ export class AgentSurface {
   readonly #root: ParentNode;
   readonly #surfaceId: string;
   readonly #authorize: AgentSurfaceOptions["authorize"];
+  readonly #confirm: AgentSurfaceOptions["confirm"];
+  readonly #getPrincipal: AgentSurfaceOptions["getPrincipal"];
+  readonly #policy: AgentSurfaceOptions["policy"];
   readonly #definitions = new WeakMap<Element, AgentElementDefinition>();
   readonly #elementsById = new Map<string, Element>();
   readonly #generatedIds = new WeakMap<Element, string>();
@@ -44,6 +49,9 @@ export class AgentSurface {
     this.#root = root;
     this.#surfaceId = options.surfaceId ?? this.#defaultSurfaceId();
     this.#authorize = options.authorize;
+    this.#confirm = options.confirm;
+    this.#getPrincipal = options.getPrincipal;
+    this.#policy = options.policy;
   }
 
   register(element: Element, definition: AgentElementDefinition): () => void {
@@ -112,17 +120,43 @@ export class AgentSurface {
 
     validateActionInput(action, request.input);
 
-    if (action.risk !== "read") {
-      const allowed = await this.#authorize?.({
-        ...request,
-        risk: action.risk,
-        element: snapshot,
+    const principal = await this.#getPrincipal?.();
+    const policyRequest = {
+      ...request,
+      risk: action.risk,
+      element: snapshot,
+      origin: this.#document().location?.origin ?? "null",
+      ...(principal ? { principal } : {}),
+    };
+    const decision = await decideAgentAction(
+      policyRequest,
+      this.#policy,
+      this.#authorize,
+    );
+    if (decision.outcome === "deny") {
+      throw new AgentAuthorizationRequiredError(
+        `Action "${request.action}" requires authorization`,
+      );
+    }
+
+    if (
+      action.requiresConfirmation === true ||
+      decision.outcome === "require_confirmation"
+    ) {
+      const confirmed = await this.#confirm?.({
+        ...policyRequest,
+        decision,
       });
-      if (!allowed) {
-        throw new AgentAuthorizationRequiredError(
-          `Action "${request.action}" requires authorization`,
-        );
+      if (!confirmed) {
+        throw new AgentConfirmationRequiredError(request.action);
       }
+    }
+
+    const current = this.snapshot();
+    if (current.revision !== before.revision) {
+      throw new AgentStaleRevisionError(
+        `Action revision "${request.revision}" is stale; current revision is "${current.revision}"`,
+      );
     }
 
     const customHandler =
