@@ -86,6 +86,8 @@ export class AgentSurface {
   readonly #policy: AgentSurfaceOptions["policy"];
   readonly #verifyEffect: AgentSurfaceOptions["verifyEffect"];
   readonly #definitions = new WeakMap<Element, AgentElementDefinition>();
+  readonly #registeredIds = new WeakMap<Element, string>();
+  readonly #registrationTokens = new WeakMap<Element, symbol>();
   readonly #elementsById = new Map<string, Element>();
   readonly #generatedIds = new WeakMap<Element, string>();
   readonly #replays = new Map<string, AgentReplayRecord>();
@@ -123,19 +125,36 @@ export class AgentSurface {
   }
 
   register(element: Element, definition: AgentElementDefinition): () => void {
-    const existing = this.#elementsById.get(definition.id);
+    const registeredId = definition.id;
+    const existing = this.#elementsById.get(registeredId);
     if (existing && existing !== element) {
-      throw new Error(`Duplicate agent element id: ${definition.id}`);
+      throw new Error(`Duplicate agent element id: ${registeredId}`);
     }
 
+    const previousId = this.#registeredIds.get(element);
+    if (
+      previousId &&
+      previousId !== registeredId &&
+      this.#elementsById.get(previousId) === element
+    ) {
+      this.#elementsById.delete(previousId);
+    }
+    const token = Symbol(registeredId);
     this.#definitions.set(element, definition);
-    this.#elementsById.set(definition.id, element);
-    element.setAttribute("data-agent-id", definition.id);
+    this.#registeredIds.set(element, registeredId);
+    this.#registrationTokens.set(element, token);
+    this.#elementsById.set(registeredId, element);
+    element.setAttribute("data-agent-id", registeredId);
 
     return () => {
+      if (this.#registrationTokens.get(element) !== token) return;
+      this.#registrationTokens.delete(element);
+      this.#registeredIds.delete(element);
       this.#definitions.delete(element);
-      this.#elementsById.delete(definition.id);
-      if (element.getAttribute("data-agent-id") === definition.id) {
+      if (this.#elementsById.get(registeredId) === element) {
+        this.#elementsById.delete(registeredId);
+      }
+      if (element.getAttribute("data-agent-id") === registeredId) {
         element.removeAttribute("data-agent-id");
       }
     };

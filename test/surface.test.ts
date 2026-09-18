@@ -364,4 +364,75 @@ describe("AgentSurface", () => {
     expect(authorize).not.toHaveBeenCalled();
     expect(handler).not.toHaveBeenCalled();
   });
+
+  it("binds disposal to the registered id even if the definition mutates", () => {
+    document.body.innerHTML = `<button>First</button><button>Second</button>`;
+    const [first, second] = Array.from(document.querySelectorAll("button"));
+    const surface = createAgentSurface();
+    const value = { id: "stable", description: "Original" };
+    const unregister = surface.register(first!, value);
+
+    value.id = "mutated-after-registration";
+    unregister();
+
+    expect(first!.hasAttribute("data-agent-id")).toBe(false);
+    expect(() =>
+      surface.register(second!, { id: "stable", description: "Replacement" }),
+    ).not.toThrow();
+  });
+
+  it("prevents an older disposer from removing a newer registration", () => {
+    document.body.innerHTML = `<button>Run</button>`;
+    const button = document.querySelector("button")!;
+    const surface = createAgentSurface();
+    const unregisterOld = surface.register(button, {
+      id: "owned",
+      actions: { old_action: { risk: "read" } },
+    });
+    const unregisterNew = surface.register(button, {
+      id: "owned",
+      actions: { new_action: { risk: "read" } },
+    });
+
+    unregisterOld();
+
+    const node = surface.snapshot().nodes.find((item) => item.id === "owned");
+    expect(node?.actions.map((action) => action.name)).toContain("new_action");
+    expect(button.dataset.agentId).toBe("owned");
+
+    unregisterNew();
+    expect(button.hasAttribute("data-agent-id")).toBe(false);
+  });
+
+  it("replaces an overlapping id on the same element without a stale lookup", async () => {
+    document.body.innerHTML = `<button>Run</button>`;
+    const button = document.querySelector("button")!;
+    const surface = createAgentSurface();
+    const unregisterOld = surface.register(button, {
+      id: "old-id",
+      actions: { old_action: { risk: "read" } },
+    });
+    const unregisterNew = surface.register(button, {
+      id: "new-id",
+      actions: { new_action: { risk: "read" } },
+    });
+
+    unregisterOld();
+    const snapshot = surface.snapshot();
+
+    expect(snapshot.nodes.some((item) => item.id === "old-id")).toBe(false);
+    expect(snapshot.nodes.some((item) => item.id === "new-id")).toBe(true);
+    await expect(
+      surface.performSafe({
+        surfaceId: snapshot.surfaceId,
+        revision: snapshot.revision,
+        elementId: "old-id",
+        action: "old_action",
+      }),
+    ).resolves.toMatchObject({
+      status: "failed",
+      error: { code: "element_not_found" },
+    });
+    unregisterNew();
+  });
 });
