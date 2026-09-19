@@ -53,4 +53,3 @@ cannot be dropped or renamed experimental to pass the exit gate.
 - independent security and compatibility review has no unresolved
   critical/high finding; and
 - P3.10 presents limitations and non-claims honestly for maintainer approval.
-
