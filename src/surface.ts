@@ -11,36 +11,16 @@ import {
 } from "./dom.js";
 import { isValidAgentAuditIdentifier } from "./audit.js";
 import {
-  AgentActionNotFoundError,
-  AgentAuthorizationRequiredError,
-  AgentConfirmationRequiredError,
   AgentDuplicateElementIdError,
   AgentElementNotFoundError,
-  AgentIdempotencyConflictError,
-  AgentIdempotencyKeyRequiredError,
-  AgentInputValidationError,
-  AgentInvalidIdempotencyKeyError,
-  AgentPreconditionFailedError,
   AgentStaleRevisionError,
-  AgentSurfaceMismatchError,
-  AgentVerificationFailedError,
-  normalizeAgentFailure,
 } from "./errors.js";
-import {
-  assertIdempotencyKeySyntax,
-  fingerprintActionRequest,
-} from "./idempotency.js";
-import { decideAgentAction } from "./policy.js";
 import { AGENT_CONTRACT_SCHEMA_VERSION } from "./schema.js";
+import { AgentActionLifecycleCoordinator } from "./internal/action-lifecycle.js";
 import {
   captureRegisteredElementDefinition,
   cloneRegisteredMetadata,
 } from "./definition.js";
-import type {
-  AgentAuditEvent,
-  AgentAuditEventName,
-  AgentAuditOutcome,
-} from "./audit.js";
 import type {
   AgentActionRequest,
   AgentActionOutcome,
@@ -48,89 +28,281 @@ import type {
   AgentActionSnapshot,
   AgentElementDefinition,
   AgentElementSnapshot,
-  AgentJsonValue,
-  AgentPrincipal,
-  AgentPolicyRequest,
   AgentSnapshot,
   AgentSurfaceOptions,
 } from "./types.js";
-import {
-  preflightActionSchemas,
-  validateActionInput,
-  validateActionOutput,
-} from "./validation.js";
 
-interface AgentReplayRecord {
-  actionName: string;
-  fingerprint: string;
-  promise: Promise<AgentActionResult>;
-  settled: boolean;
-  navigationEpoch: number;
-  url: string;
+interface DomTargetVersion {
+  readonly sequence: number;
 }
 
-interface AgentAuditContext {
-  action?: string;
-  correlationId: string;
-  sequence: number;
-  startedAt: number;
+interface LoggedDomMutation {
+  readonly record: MutationRecord;
+  readonly sequence: number;
 }
 
-function cloneActionResult(result: AgentActionResult): AgentActionResult {
-  return JSON.parse(JSON.stringify(result)) as AgentActionResult;
+class DomMutationTracker {
+  readonly #observer: MutationObserver;
+  readonly #records: LoggedDomMutation[] = [];
+  #discardedThrough = 0;
+  #sequence = 0;
+
+  constructor(root: Node, Observer: typeof MutationObserver) {
+    this.#observer = new Observer((records) => this.#record(records));
+    this.#observer.observe(root, {
+      attributes: true,
+      characterData: true,
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  capture(target: Element): DomTargetVersion {
+    this.#flush();
+    return { sequence: this.#sequence };
+  }
+
+  isCurrent(captured: DomTargetVersion, target: Element): boolean {
+    this.#flush();
+    if (captured.sequence < this.#discardedThrough) return false;
+    return !this.#records.some(
+      ({ record, sequence }) =>
+        sequence > captured.sequence && this.#affects(record, target),
+    );
+  }
+
+  #flush(): void {
+    this.#record(this.#observer.takeRecords());
+  }
+
+  #record(records: readonly MutationRecord[]): void {
+    for (const record of records) {
+      this.#records.push({ record, sequence: ++this.#sequence });
+      if (this.#records.length > 1024) {
+        this.#discardedThrough = this.#records.shift()!.sequence;
+      }
+    }
+  }
+
+  #affects(record: MutationRecord, target: Element): boolean {
+    const related = (node: Node) =>
+      node === target || target.contains(node) || node.contains(target);
+    if (record.type === "childList") {
+      if (record.target === target || target.contains(record.target)) return true;
+      return [...record.addedNodes, ...record.removedNodes].some(related);
+    }
+    return related(record.target);
+  }
+}
+
+const mutationTrackers = new WeakMap<Node, DomMutationTracker>();
+
+class DocumentNavigationTracker {
+  #currentUrl: string;
+  #sequence = 0;
+
+  constructor(document: Document) {
+    const view = document.defaultView;
+    this.#currentUrl = view?.location.href ?? document.location?.href ?? "";
+    if (!view) return;
+    this.#patchHistory(view.history, "pushState", () => view.location.href);
+    this.#patchHistory(view.history, "replaceState", () => view.location.href);
+    view.addEventListener("popstate", () => {
+      this.#recordUrl(view.location.href);
+    });
+    view.addEventListener("hashchange", (event) => {
+      if (event.oldURL !== this.#currentUrl) return;
+      this.#currentUrl = event.newURL;
+      this.#advance();
+    });
+    const navigation = (view as Window & { navigation?: EventTarget })
+      .navigation;
+    navigation?.addEventListener("navigate", () => this.#advance());
+  }
+
+  capture(): number {
+    return this.#sequence;
+  }
+
+  #advance(): void {
+    this.#sequence += 1;
+  }
+
+  #patchHistory(
+    history: History,
+    method: "pushState" | "replaceState",
+    currentUrl: () => string,
+  ): void {
+    const original = history[method];
+    const recordUrl = (url: string) => this.#recordUrl(url);
+    history[method] = function (
+      this: History,
+      data: unknown,
+      unused: string,
+      url?: string | URL | null,
+    ): void {
+      Reflect.apply(original, this, [data, unused, url]);
+      recordUrl(currentUrl());
+    };
+  }
+
+  #recordUrl(url: string): void {
+    if (url === this.#currentUrl) return;
+    this.#currentUrl = url;
+    this.#advance();
+  }
+}
+
+const navigationTrackers = new WeakMap<Document, DocumentNavigationTracker>();
+
+function navigationTrackerFor(
+  document: Document,
+): DocumentNavigationTracker {
+  const existing = navigationTrackers.get(document);
+  if (existing) return existing;
+  const tracker = new DocumentNavigationTracker(document);
+  navigationTrackers.set(document, tracker);
+  return tracker;
+}
+
+function mutationTrackerFor(root: Node): DomMutationTracker | undefined {
+  const Observer = root.ownerDocument?.defaultView?.MutationObserver ??
+    (root instanceof Document ? root.defaultView?.MutationObserver : undefined);
+  if (!Observer) return undefined;
+  const existing = mutationTrackers.get(root);
+  if (existing) return existing;
+  const tracker = new DomMutationTracker(root, Observer);
+  mutationTrackers.set(root, tracker);
+  return tracker;
 }
 
 export class AgentSurface {
   readonly #root: ParentNode;
   readonly #surfaceId: string;
-  readonly #authorize: AgentSurfaceOptions["authorize"];
-  readonly #checkPrecondition: AgentSurfaceOptions["checkPrecondition"];
-  readonly #confirm: AgentSurfaceOptions["confirm"];
-  readonly #getPrincipal: AgentSurfaceOptions["getPrincipal"];
-  readonly #idempotencyCacheSize: number;
-  readonly #createCorrelationId: AgentSurfaceOptions["createCorrelationId"];
-  readonly #onAudit: AgentSurfaceOptions["onAudit"];
-  readonly #policy: AgentSurfaceOptions["policy"];
-  readonly #verifyEffect: AgentSurfaceOptions["verifyEffect"];
+  readonly #coordinator: AgentActionLifecycleCoordinator<Element>;
   readonly #definitions = new WeakMap<Element, AgentElementDefinition>();
   readonly #registeredIds = new WeakMap<Element, string>();
   readonly #registrationTokens = new WeakMap<Element, symbol>();
   readonly #elementsById = new Map<string, Element>();
   readonly #generatedIds = new WeakMap<Element, string>();
-  readonly #replays = new Map<string, AgentReplayRecord>();
+  readonly #mutationTracker: DomMutationTracker | undefined;
+  readonly #navigationTracker: DocumentNavigationTracker;
   #nextId = 1;
-  #nextCorrelationId = 1;
+  #bindingGeneration = 0;
   #navigationEpoch = 0;
   #observedUrl: string | undefined;
   #revision = 0;
   #semanticSignature: string | undefined;
-  #emittingAudit = false;
 
   constructor(options: AgentSurfaceOptions = {}) {
     const root = options.root ?? globalThis.document;
     if (!root) throw new Error("AgentSurface requires a DOM root");
     this.#root = root;
     this.#surfaceId = options.surfaceId ?? this.#defaultSurfaceId();
+    this.#mutationTracker = mutationTrackerFor(this.#root);
+    this.#navigationTracker = navigationTrackerFor(this.#document());
     if (options.onAudit && !isValidAgentAuditIdentifier(this.#surfaceId)) {
       throw new RangeError(
         "onAudit requires an opaque URL-safe surfaceId of 1-128 characters",
       );
     }
-    this.#authorize = options.authorize;
-    this.#checkPrecondition = options.checkPrecondition;
-    this.#confirm = options.confirm;
-    this.#createCorrelationId = options.createCorrelationId;
-    this.#getPrincipal = options.getPrincipal;
-    this.#idempotencyCacheSize = options.idempotencyCacheSize ?? 256;
+    const idempotencyCacheSize = options.idempotencyCacheSize ?? 256;
     if (
-      !Number.isInteger(this.#idempotencyCacheSize) ||
-      this.#idempotencyCacheSize < 1
+      !Number.isInteger(idempotencyCacheSize) ||
+      idempotencyCacheSize < 1
     ) {
       throw new RangeError("idempotencyCacheSize must be a positive integer");
     }
-    this.#policy = options.policy;
-    this.#onAudit = options.onAudit;
-    this.#verifyEffect = options.verifyEffect;
+    this.#coordinator = new AgentActionLifecycleCoordinator<Element>({
+      backend: {
+        captureContext: () => this.#captureContext(),
+        captureSnapshot: () => this.#captureSnapshot(),
+        lastKnownRevision: () => String(this.#revision),
+        resolveTarget: (_snapshot, request, _targetSnapshot, action) => {
+          const element = this.#findElement(request.elementId);
+          const targetVersion = this.#mutationTracker?.capture(element);
+          const customHandler =
+            this.#definitions.get(element)?.actions?.[request.action]?.handler;
+          const isCurrent = () => {
+            try {
+              return (
+                this.#findElement(request.elementId) === element &&
+                (!targetVersion ||
+                  this.#mutationTracker?.isCurrent(targetVersion, element) ===
+                    true)
+              );
+            } catch {
+              return false;
+            }
+          };
+          return {
+            execute: async (input: unknown) => {
+              if (!isCurrent()) {
+                throw new AgentStaleRevisionError(
+                  `Action revision "${request.revision}" is stale`,
+                );
+              }
+              if (customHandler) return customHandler(input, element);
+              runNativeAction(element, request.action, input);
+            },
+            isCurrent,
+            target: element,
+            ...(!customHandler
+              ? {
+                  verifyDefault: ({
+                    after,
+                    before,
+                    input,
+                  }: {
+                    after: AgentSnapshot;
+                    before: AgentSnapshot;
+                    input: unknown;
+                  }) =>
+                    this.#verifyNativeAction(
+                      action,
+                      request,
+                      before,
+                      after,
+                      input,
+                    ),
+                }
+              : {}),
+          };
+        },
+        surfaceId: this.#surfaceId,
+        settleContext: () =>
+          new Promise<void>((resolve) => {
+            const view = this.#document().defaultView;
+            if (view) view.setTimeout(resolve, 0);
+            else globalThis.setTimeout(resolve, 0);
+          }),
+        validateTargetInput: (resolved, action, input) =>
+          isValidNativeActionInput(
+            resolved.target,
+            action.name,
+            input,
+          ),
+      },
+      hooks: {
+        ...(options.authorize ? { authorize: options.authorize } : {}),
+        ...(options.checkPrecondition
+          ? { checkPrecondition: options.checkPrecondition }
+          : {}),
+        ...(options.confirm ? { confirm: options.confirm } : {}),
+        ...(options.createCorrelationId
+          ? { createCorrelationId: options.createCorrelationId }
+          : {}),
+        ...(options.getPrincipal
+          ? { getPrincipal: options.getPrincipal }
+          : {}),
+        ...(options.onAudit ? { onAudit: options.onAudit } : {}),
+        ...(options.policy ? { policy: options.policy } : {}),
+        ...(options.verifyEffect
+          ? { verifyEffect: options.verifyEffect }
+          : {}),
+      },
+      idempotencyCacheSize,
+    });
   }
 
   register(element: Element, definition: AgentElementDefinition): () => void {
@@ -155,6 +327,7 @@ export class AgentSurface {
     this.#registrationTokens.set(element, token);
     this.#elementsById.set(registeredId, element);
     element.setAttribute("data-agent-id", registeredId);
+    this.#bindingGeneration += 1;
 
     return () => {
       if (this.#registrationTokens.get(element) !== token) return;
@@ -167,18 +340,13 @@ export class AgentSurface {
       if (element.getAttribute("data-agent-id") === registeredId) {
         element.removeAttribute("data-agent-id");
       }
+      this.#bindingGeneration += 1;
     };
   }
 
   snapshot(): AgentSnapshot {
     const snapshot = this.#captureSnapshot();
-    const audit = this.#newAuditContext();
-    this.#emitAudit(
-      audit,
-      "surface_observed",
-      "observed",
-      snapshot.revision,
-    );
+    this.#coordinator.observe(snapshot);
     return snapshot;
   }
 
@@ -208,445 +376,11 @@ export class AgentSurface {
   }
 
   async perform(request: AgentActionRequest): Promise<AgentActionResult> {
-    const audit = this.#newAuditContext();
-    try {
-      return await this.#performRequest(request, audit);
-    } catch (error) {
-      if (audit) {
-        let revision = String(this.#revision);
-        try {
-          revision = this.#captureSnapshot().revision;
-        } catch {
-          // Audit failure reporting uses the last safely observed revision.
-        }
-        this.#emitAudit(
-          audit,
-          "action_failed",
-          normalizeAgentFailure(error).code,
-          revision,
-        );
-      }
-      throw error;
-    }
-  }
-
-  async #performRequest(
-    request: AgentActionRequest,
-    audit: AgentAuditContext | undefined,
-  ): Promise<AgentActionResult> {
-    if (request.surfaceId !== this.#surfaceId) {
-      throw new AgentSurfaceMismatchError(
-        `Action surface "${request.surfaceId}" does not match "${this.#surfaceId}"`,
-      );
-    }
-    if (request.idempotencyKey !== undefined) {
-      assertIdempotencyKeySyntax(request.idempotencyKey);
-    }
-
-    const origin = this.#document().location?.origin ?? "null";
-    const replayScope = request.idempotencyKey
-      ? this.#replayScope(request)
-      : undefined;
-    const replay = replayScope ? this.#replays.get(replayScope) : undefined;
-    if (replay) {
-      const currentUrl = this.#document().location?.href ?? "";
-      this.#observeNavigation(currentUrl);
-      if (
-        replay.url !== currentUrl ||
-        replay.navigationEpoch !== this.#navigationEpoch
-      ) {
-        const current = this.#captureSnapshot();
-        throw new AgentStaleRevisionError(
-          `Action revision "${request.revision}" is stale; current revision is "${current.revision}"`,
-        );
-      }
-      if (audit) audit.action = replay.actionName;
-      this.#emitAudit(
-        audit,
-        "action_requested",
-        "requested",
-        String(this.#revision),
-      );
-      const principal = await this.#getPrincipal?.();
-      const result = await this.#resolveReplay(
-        replay,
-        request,
-        principal,
-        origin,
-      );
-      this.#emitAudit(
-        audit,
-        "action_verified",
-        "replayed",
-        result.revision,
-      );
-      return result;
-    }
-
-    const before = this.#captureSnapshot();
-    if (request.revision !== before.revision) {
-      throw new AgentStaleRevisionError(
-        `Action revision "${request.revision}" is stale; current revision is "${before.revision}"`,
-      );
-    }
-
-    const element = this.#findElement(request.elementId);
-    const snapshot = this.#snapshotElement(element);
-    const action = snapshot.actions.find((item) => item.name === request.action);
-    if (!action) {
-      throw new AgentActionNotFoundError(
-        `Action "${request.action}" is not available on "${request.elementId}"`,
-      );
-    }
-
-    if (audit) audit.action = action.name;
-    this.#emitAudit(
-      audit,
-      "action_requested",
-      "requested",
-      before.revision,
-    );
-
-    preflightActionSchemas(action);
-    validateActionInput(action, request.input);
-    if (!isValidNativeActionInput(element, action.name, request.input)) {
-      throw new AgentInputValidationError(action.name);
-    }
-    this.#assertIdempotencyPolicy(action, request.idempotencyKey);
-
-    const principal = await this.#getPrincipal?.();
-    if (action.idempotency === "keyed") {
-      const fingerprint = await fingerprintActionRequest(
-        request,
-        principal,
-        origin,
-      );
-      const scope = replayScope!;
-      const concurrent = this.#replays.get(scope);
-      if (concurrent) {
-        if (concurrent.fingerprint !== fingerprint) {
-          throw new AgentIdempotencyConflictError();
-        }
-        const result = cloneActionResult(await concurrent.promise);
-        this.#emitAudit(
-          audit,
-          "action_verified",
-          "replayed",
-          result.revision,
-        );
-        return result;
-      }
-
-      let actionStarted = false;
-      const execution = this.#performOnce(
-        request,
-        before,
-        element,
-        snapshot,
-        action,
-        principal,
-        origin,
-        audit,
-        () => {
-          actionStarted = true;
-        },
-      ).then(cloneActionResult);
-      const record: AgentReplayRecord = {
-        actionName: action.name,
-        fingerprint,
-        promise: execution,
-        settled: false,
-        navigationEpoch: this.#navigationEpoch,
-        url: before.url,
-      };
-      this.#replays.set(scope, record);
-      void execution.then(
-        () => {
-          record.settled = true;
-          this.#pruneReplayCache();
-        },
-        () => {
-          if (actionStarted) {
-            record.settled = true;
-            this.#pruneReplayCache();
-          } else if (this.#replays.get(scope) === record) {
-            this.#replays.delete(scope);
-          }
-        },
-      );
-      return cloneActionResult(await execution);
-    }
-
-    return this.#performOnce(
-      request,
-      before,
-      element,
-      snapshot,
-      action,
-      principal,
-      origin,
-      audit,
-    );
+    return this.#coordinator.perform(request);
   }
 
   async performSafe(request: AgentActionRequest): Promise<AgentActionOutcome> {
-    try {
-      return await this.perform(request);
-    } catch (error) {
-      let revision = String(this.#revision);
-      try {
-        revision = this.#captureSnapshot().revision;
-      } catch {
-        // Failure normalization must still succeed when observation fails.
-      }
-      return {
-        schemaVersion: AGENT_CONTRACT_SCHEMA_VERSION,
-        surfaceId: this.#surfaceId,
-        revision,
-        status: "failed",
-        error: normalizeAgentFailure(error),
-      };
-    }
-  }
-
-  async #performOnce(
-    request: AgentActionRequest,
-    before: AgentSnapshot,
-    element: Element,
-    elementSnapshot: AgentElementSnapshot,
-    action: AgentActionSnapshot,
-    principal: AgentPrincipal | undefined,
-    origin: string,
-    audit: AgentAuditContext | undefined,
-    onActionStarted?: () => void,
-  ): Promise<AgentActionResult> {
-    const policyRequest = {
-      ...request,
-      risk: action.risk,
-      element: elementSnapshot,
-      origin,
-      ...(principal ? { principal } : {}),
-    };
-    const decision = await decideAgentAction(
-      policyRequest,
-      this.#policy,
-      this.#authorize,
-    );
-    this.#emitAudit(
-      audit,
-      "policy_decided",
-      decision.outcome,
-      before.revision,
-    );
-    if (decision.outcome === "deny") {
-      throw new AgentAuthorizationRequiredError(
-        `Action "${request.action}" requires authorization`,
-      );
-    }
-
-    if (
-      action.requiresConfirmation === true ||
-      decision.outcome === "require_confirmation"
-    ) {
-      this.#emitAudit(
-        audit,
-        "confirmation_requested",
-        "requested",
-        before.revision,
-      );
-      const confirmed = await this.#confirm?.({
-        ...policyRequest,
-        decision,
-      });
-      if (!confirmed) {
-        throw new AgentConfirmationRequiredError(request.action);
-      }
-    }
-
-    const current = this.#captureSnapshot();
-    if (current.revision !== before.revision) {
-      throw new AgentStaleRevisionError(
-        `Action revision "${request.revision}" is stale; current revision is "${current.revision}"`,
-      );
-    }
-
-    await this.#checkActionPreconditions(action, policyRequest, current);
-    const ready = this.#captureSnapshot();
-    if (ready.revision !== before.revision) {
-      throw new AgentStaleRevisionError(
-        `Action revision "${request.revision}" is stale; current revision is "${ready.revision}"`,
-      );
-    }
-
-    const customHandler =
-      this.#definitions.get(element)?.actions?.[request.action]?.handler;
-    this.#assertVerificationAvailable(action, customHandler !== undefined);
-    this.#emitAudit(
-      audit,
-      "action_started",
-      "started",
-      ready.revision,
-    );
-    onActionStarted?.();
-    let handlerOutput: unknown;
-    if (customHandler) {
-      handlerOutput = await customHandler(request.input, element);
-    } else {
-      runNativeAction(element, request.action, request.input);
-    }
-
-    let output: AgentJsonValue | undefined;
-    let outputError: unknown;
-    if (action.outputSchema) {
-      try {
-        output = validateActionOutput(action, handlerOutput);
-      } catch (error) {
-        outputError = error;
-      }
-    }
-
-    let after = this.#captureSnapshot();
-    await this.#verifyAction(
-      action,
-      policyRequest,
-      ready,
-      after,
-      customHandler !== undefined,
-      request.input,
-    );
-    if (outputError) throw outputError;
-    after = this.#captureSnapshot();
-    const node = after.nodes.find((item) => item.id === request.elementId);
-    const result: AgentActionResult = {
-      schemaVersion: AGENT_CONTRACT_SCHEMA_VERSION,
-      surfaceId: this.#surfaceId,
-      previousRevision: before.revision,
-      revision: after.revision,
-      status: "succeeded",
-      action: request.action,
-      targetId: request.elementId,
-      targetPresent: !!node,
-      ...(node ? { node } : {}),
-      ...(output !== undefined ? { output } : {}),
-    };
-    this.#emitAudit(
-      audit,
-      "action_verified",
-      "succeeded",
-      result.revision,
-    );
-    return result;
-  }
-
-  #assertIdempotencyPolicy(
-    action: AgentActionSnapshot,
-    key: string | undefined,
-  ): void {
-    const policy = action.idempotency ?? "none";
-    if (policy === "keyed") {
-      if (!key) throw new AgentIdempotencyKeyRequiredError(action.name);
-      return;
-    }
-    if (key !== undefined) throw new AgentInvalidIdempotencyKeyError();
-  }
-
-  #replayScope(request: AgentActionRequest): string {
-    return [
-      request.surfaceId,
-      request.elementId,
-      request.action,
-      request.idempotencyKey,
-    ].join("\u0000");
-  }
-
-  async #resolveReplay(
-    record: AgentReplayRecord,
-    request: AgentActionRequest,
-    principal: AgentPrincipal | undefined,
-    origin: string,
-  ): Promise<AgentActionResult> {
-    const fingerprint = await fingerprintActionRequest(
-      request,
-      principal,
-      origin,
-    );
-    if (fingerprint !== record.fingerprint) {
-      throw new AgentIdempotencyConflictError();
-    }
-    return cloneActionResult(await record.promise);
-  }
-
-  #pruneReplayCache(): void {
-    if (this.#replays.size <= this.#idempotencyCacheSize) return;
-    for (const [scope, record] of this.#replays) {
-      if (record.settled) this.#replays.delete(scope);
-      if (this.#replays.size <= this.#idempotencyCacheSize) break;
-    }
-  }
-
-  #newAuditContext(): AgentAuditContext | undefined {
-    if (!this.#onAudit || this.#emittingAudit) return undefined;
-    return {
-      correlationId: this.#newCorrelationId(),
-      sequence: 0,
-      startedAt: this.#monotonicNow(),
-    };
-  }
-
-  #newCorrelationId(): string {
-    try {
-      const candidate =
-        this.#createCorrelationId?.() ?? globalThis.crypto?.randomUUID?.();
-      if (isValidAgentAuditIdentifier(candidate)) return candidate;
-    } catch {
-      // A trusted factory cannot make observation or execution fail.
-    }
-    return `audit-${this.#nextCorrelationId++}`;
-  }
-
-  #monotonicNow(): number {
-    try {
-      const value = globalThis.performance?.now();
-      if (Number.isFinite(value)) return value;
-    } catch {
-      // Fall back to a coarse clock when the platform clock is unavailable.
-    }
-    return Date.now();
-  }
-
-  #emitAudit(
-    context: AgentAuditContext | undefined,
-    eventName: AgentAuditEventName,
-    outcome: AgentAuditOutcome,
-    revision: string,
-  ): void {
-    if (!context || !this.#onAudit || this.#emittingAudit) return;
-
-    try {
-      const elapsed = this.#monotonicNow() - context.startedAt;
-      const event: AgentAuditEvent = Object.freeze({
-        schemaVersion: AGENT_CONTRACT_SCHEMA_VERSION,
-        event: eventName,
-        correlationId: context.correlationId,
-        surfaceId: this.#surfaceId,
-        revision,
-        sequence: ++context.sequence,
-        timestamp: new Date().toISOString(),
-        durationMs: Number.isFinite(elapsed) ? Math.max(0, elapsed) : 0,
-        outcome,
-        ...(context.action ? { action: context.action } : {}),
-      });
-
-      this.#emittingAudit = true;
-      try {
-        const result = this.#onAudit(event);
-        void Promise.resolve(result).catch(() => undefined);
-      } finally {
-        this.#emittingAudit = false;
-      }
-    } catch {
-      this.#emittingAudit = false;
-    }
+    return this.#coordinator.performSafe(request);
   }
 
   #defaultSurfaceId(): string {
@@ -654,59 +388,13 @@ export class AgentSurface {
     return document.location?.href || "document";
   }
 
-  async #checkActionPreconditions(
+  #verifyNativeAction(
     action: AgentActionSnapshot,
-    request: AgentPolicyRequest,
-    snapshot: AgentSnapshot,
-  ): Promise<void> {
-    for (const precondition of action.preconditions ?? []) {
-      let satisfied = false;
-      try {
-        satisfied =
-          (await this.#checkPrecondition?.({
-            ...request,
-            precondition,
-            snapshot,
-          })) === true;
-      } catch {
-        satisfied = false;
-      }
-      if (!satisfied) {
-        throw new AgentPreconditionFailedError(action.name);
-      }
-    }
-  }
-
-  async #verifyAction(
-    action: AgentActionSnapshot,
-    request: AgentPolicyRequest,
+    request: AgentActionRequest,
     before: AgentSnapshot,
     after: AgentSnapshot,
-    custom: boolean,
     input: unknown,
-  ): Promise<void> {
-    if (action.effects?.length) {
-      for (const effect of action.effects) {
-        let verified = false;
-        try {
-          verified =
-            (await this.#verifyEffect?.({
-              ...request,
-              effect,
-              before,
-              after,
-            })) === true;
-        } catch {
-          verified = false;
-        }
-        if (!verified) throw new AgentVerificationFailedError(action.name);
-      }
-      return;
-    }
-
-    if (action.risk === "read") return;
-    if (custom) throw new AgentVerificationFailedError(action.name);
-
+  ): boolean {
     const previousNode = before.nodes.find(
       (item) => item.id === request.elementId,
     );
@@ -715,42 +403,27 @@ export class AgentSurface {
       const verified = nextNode.state.sensitive
         ? nextNode.state.valuePresent === (input.length > 0)
         : nextNode.state.value === input;
-      if (verified) return;
+      if (verified) return true;
     } else if (
       action.name === "select" &&
       typeof input === "string" &&
       nextNode
     ) {
       const target = this.#elementsById.get(request.elementId);
-      if (target instanceof HTMLSelectElement && target.value === input) return;
+      if (target instanceof HTMLSelectElement && target.value === input) return true;
     } else if (
       action.name === "toggle" &&
       previousNode?.state.checked !== undefined &&
       nextNode?.state.checked === !previousNode.state.checked
     ) {
-      return;
+      return true;
     } else if (
       (action.name === "click" || action.name === "submit") &&
       after.revision !== before.revision
     ) {
-      return;
+      return true;
     }
-
-    throw new AgentVerificationFailedError(action.name);
-  }
-
-  #assertVerificationAvailable(
-    action: AgentActionSnapshot,
-    custom: boolean,
-  ): void {
-    if (action.effects?.length) {
-      if (!this.#verifyEffect) {
-        throw new AgentVerificationFailedError(action.name);
-      }
-      return;
-    }
-    if (action.risk === "read") return;
-    if (custom) throw new AgentVerificationFailedError(action.name);
+    return false;
   }
 
   #document(): Document {
@@ -804,6 +477,33 @@ export class AgentSurface {
       this.#navigationEpoch += 1;
     }
     this.#observedUrl = url;
+  }
+
+  #captureContext(): {
+    generation: string;
+    origin: string;
+    replayGeneration: string;
+  } {
+    const url = this.#document().location?.href ?? "";
+    this.#observeNavigation(url);
+    const trackedNavigation = this.#navigationTracker.capture();
+    const historyLength = this.#document().defaultView?.history.length ?? 0;
+    return {
+      generation: [
+        trackedNavigation,
+        historyLength,
+        this.#navigationEpoch,
+        url,
+        this.#bindingGeneration,
+      ].join("\u0000"),
+      origin: this.#document().location?.origin ?? "null",
+      replayGeneration: [
+        trackedNavigation,
+        historyLength,
+        this.#navigationEpoch,
+        url,
+      ].join("\u0000"),
+    };
   }
 
   #idFor(element: Element): string {
