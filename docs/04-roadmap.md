@@ -72,7 +72,7 @@ and implementation are authorized in the
 
 ## Phase 3 — Ecosystem, reliability, and evaluation
 
-Execution status on 2026-09-20: P3.1 and P3.2 are verified and the maintainer
+Execution status on 2026-09-20: P3.1 through P3.3 are verified and the maintainer
 authorized P3.3 through P3.10 Exit Gate preparation. Recording Phase 3 approval
 and starting Phase 4 still require a separate maintainer decision.
 
@@ -103,10 +103,10 @@ reproducible without weakening the web security model.
 
 ### Planned execution order
 
-P3.2 completes before P3.3 implementation evidence is claimed. P3.3 through
-P3.10 then proceed in numeric dependency order. P3.3 is the next planned work
-item after P3.2. Work-item records define the acceptance and evidence gates;
-planning records do not claim implementation or completion.
+P3.1 through P3.3 are implemented and verified. P3.4 through P3.10 proceed in
+numeric dependency order, with P3.4 next. Work-item records define the
+acceptance and evidence gates; planning records do not claim implementation or
+completion.
 
 ### Exit gate
 

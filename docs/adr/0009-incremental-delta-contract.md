@@ -44,9 +44,11 @@ caller data, invoke accessors, pollute prototypes, or downgrade action metadata.
    duplicate removals/upserts, overlap, missing removal targets, invalid focus,
    unknown properties, unchanged-revision state collisions, and malformed
    nested actions or schemas. Revisions are compared only by exact equality.
-8. Diff validates and captures both full snapshots before comparison. A truly
-   identical same-revision pair produces no delta; different state under the
-   same revision is producer corruption and requires resynchronization.
+8. Diff validates and captures both full snapshots before comparison. A
+   same-revision pair whose only difference is the observation timestamp
+   produces no delta because ordinary snapshots refresh `generatedAt` without
+   advancing revision. Any other different state under the same revision is
+   producer corruption and requires resynchronization.
 9. Apply requires exact schema version, surface, base revision, and base digest.
    It reconstructs atomically, validates the complete snapshot and semantic
    invariants, then verifies the target digest. Every failure returns a fixed
@@ -120,4 +122,3 @@ reason. Raw validation and hashing exceptions do not cross the boundary.
   transport data cannot prove current live UI state or policy.
 - Silent deduplication, truncation, or best-effort apply: rejected because it
   hides producer corruption and gaps.
-
