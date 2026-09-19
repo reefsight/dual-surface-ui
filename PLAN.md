@@ -1,10 +1,11 @@
 # Dual Surface UI — Master Plan
 
-Status: **Phase 2 accepted; P3.1 verified; P3.2 awaiting authorization**
+Status: **Phase 3 execution authorized through Exit Gate preparation**
 
 Implementation status: Phase 2 was accepted by the repository maintainer on
-2026-09-19. P3.1 is implemented and verified; later Phase 3 work remains
-subject to the accepted AI-SDLC and explicit work-item authorization.
+2026-09-19. P3.1 is implemented and verified. The maintainer authorized all
+remaining Phase 3 work through P3.10 Exit Gate preparation; Phase 4 remains
+subject to a separate explicit approval.
 
 Dual Surface UI is a standards-first compatibility and safety framework that
 turns existing applications into reliable agent interfaces without replacing
@@ -135,5 +136,5 @@ legacy and modern `2026-07-28` integration evidence, and bounded secret-safe
 serialization. Its final gate passes 27 files / 340 tests, preserves the frozen
 32/6/5 root contract, reports zero vulnerabilities, and passes isolated
 tarball-consumer checks. Independent security and SDK reviews found no
-unresolved critical/high issue. P3.2, the Playwright fallback adapter, has not
-been authorized.
+unresolved critical/high issue. The maintainer subsequently authorized P3.2
+through P3.10 on 2026-09-19; P3.2 Playwright fallback design is next.

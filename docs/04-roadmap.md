@@ -72,6 +72,10 @@ and implementation are authorized in the
 
 ## Phase 3 — Ecosystem, reliability, and evaluation
 
+Execution status on 2026-09-19: P3.1 is verified and the maintainer authorized
+P3.2 through P3.10 Exit Gate preparation. Recording Phase 3 approval and
+starting Phase 4 still require a separate maintainer decision.
+
 ### Objective
 
 Support agents outside the page, measure real task quality, and make failures

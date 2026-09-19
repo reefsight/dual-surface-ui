@@ -23,11 +23,13 @@ evidence required by `AI_SDLC.md`.
 Phase 3 has started. P3.1 is implemented and verified under the accepted
 design in
 [P3.1 MCP exporter](work-items/P3.1-mcp-exporter.md) and
-[ADR 0007](adr/0007-mcp-exporter-boundary.md). P3.2 remains gated pending
-maintainer authorization.
+[ADR 0007](adr/0007-mcp-exporter-boundary.md). The maintainer authorized all
+remaining Phase 3 work through Exit Gate preparation in the
+[Phase 3 Execution Authorization](reviews/phase3-execution-authorization.md).
+Phase 4 remains gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
-1 and Phase 2 are accepted; the current decision is the
+1 and Phase 2 are accepted; the Phase 2 decision is the
 [Phase 2 Exit Review](reviews/phase2-exit-review.md), supported by the
 [dated native WebMCP evidence](evidence/phase2-native-webmcp-2026-09-19.md).
 
