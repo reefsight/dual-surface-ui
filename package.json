@@ -29,6 +29,10 @@
     "./domain": {
       "types": "./dist/domain/index.d.ts",
       "import": "./dist/domain/index.js"
+    },
+    "./drift": {
+      "types": "./dist/drift/index.d.ts",
+      "import": "./dist/drift/index.js"
     }
   },
   "files": [

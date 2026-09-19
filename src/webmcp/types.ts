@@ -25,6 +25,23 @@ export interface WebMcpTool {
   ) => AgentActionOutcome | Promise<AgentActionOutcome>;
 }
 
+export interface WebMcpToolDescriptor {
+  readonly name: string;
+  readonly description: string;
+  /** Runtime output is a detached recursively frozen portable schema. */
+  readonly inputSchema: Readonly<Record<string, unknown>>;
+  readonly annotations: Readonly<WebMcpToolAnnotations>;
+}
+
+export interface WebMcpToolRegistrationObservation {
+  readonly descriptor: WebMcpToolDescriptor;
+  readonly elementId: string;
+  readonly action: string;
+  readonly surfaceId: string;
+  readonly revision: string;
+  readonly generation: number;
+}
+
 export interface WebMcpModelContext {
   registerTool(
     tool: WebMcpTool,
@@ -58,6 +75,13 @@ export interface WebMcpExportHandle {
   readonly toolNames: readonly string[];
   refresh(): Promise<void>;
   dispose(): void;
+}
+
+export interface InstrumentedWebMcpExportHandle extends WebMcpExportHandle {
+  /** Exporter-side evidence for the currently active registration batch. */
+  readonly toolDescriptors: readonly WebMcpToolDescriptor[];
+  /** Exporter-side target and lifecycle evidence; not browser registry read-back. */
+  readonly toolObservations: readonly WebMcpToolRegistrationObservation[];
 }
 
 export interface WebMcpDeclarativeCapabilities {

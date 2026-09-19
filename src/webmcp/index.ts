@@ -4,14 +4,17 @@ import type {
   AgentSnapshot,
 } from "../types.js";
 import type {
-  WebMcpExportHandle,
+  InstrumentedWebMcpExportHandle,
   WebMcpExportOptions,
   WebMcpModelContext,
   WebMcpSurface,
   WebMcpTool,
   WebMcpToolBinding,
+  WebMcpToolDescriptor,
+  WebMcpToolRegistrationObservation,
 } from "./types.js";
 import { capturePortableSchema } from "../portable-schema.js";
+import { createWebMcpToolDescriptor } from "./descriptor.js";
 
 export type * from "./types.js";
 export * from "./declarative.js";
@@ -31,8 +34,11 @@ interface ResolvedBinding {
 }
 
 interface RegistrationBatch {
+  generation: number;
   controllers: AbortController[];
   toolNames: string[];
+  toolDescriptors: WebMcpToolDescriptor[];
+  toolObservations: WebMcpToolRegistrationObservation[];
 }
 
 const activeSurfaces = new WeakMap<WebMcpModelContext, WeakSet<object>>();
@@ -77,28 +83,6 @@ function validateTrustedBinding(binding: WebMcpToolBinding): void {
       `WebMCP tool "${binding.name}" requires an elementId and action`,
     );
   }
-}
-
-function envelopeSchema(action: AgentActionSnapshot): Record<string, unknown> {
-  const properties: Record<string, unknown> = {};
-  const required: string[] = [];
-  if (action.inputSchema) {
-    properties.input = capturePortableSchema(action.inputSchema);
-    required.push("input");
-  }
-  if (action.idempotency === "keyed") {
-    properties.idempotencyKey = {
-      type: "string",
-      pattern: "^[A-Za-z0-9._~-]{1,128}$",
-    };
-    required.push("idempotencyKey");
-  }
-  return {
-    type: "object",
-    additionalProperties: false,
-    properties,
-    ...(required.length > 0 ? { required } : {}),
-  };
 }
 
 function resolveBindings(
@@ -196,19 +180,11 @@ function createTool(
   surface: WebMcpSurface,
   snapshot: AgentSnapshot,
   resolved: ResolvedBinding,
+  descriptor: WebMcpToolDescriptor,
 ): WebMcpTool {
   const { binding, action } = resolved;
   return {
-    name: binding.name,
-    description: binding.description,
-    inputSchema: envelopeSchema(action),
-    annotations: {
-      readOnlyHint: action.risk === "read",
-      consequentialHint:
-        action.risk !== "read" ||
-        action.requiresConfirmation === true,
-      untrustedContentHint: true,
-    },
+    ...descriptor,
     async execute(input, context) {
       if (context?.signal?.aborted) throw abortError();
       const envelope = parseEnvelope(input, action);
@@ -243,26 +219,41 @@ async function populateBatch(
     for (const item of resolved) {
       const controller = new AbortController();
       batch.controllers.push(controller);
-      await context.registerTool(createTool(surface, snapshot, item), {
+      const descriptor = createWebMcpToolDescriptor(item.binding, item.action);
+      const tool = createTool(surface, snapshot, item, descriptor);
+      await context.registerTool(tool, {
         signal: controller.signal,
       });
       if (controller.signal.aborted) {
         throw abortError();
       }
       batch.toolNames.push(item.binding.name);
+      batch.toolDescriptors.push(descriptor);
+      batch.toolObservations.push(Object.freeze({
+        descriptor,
+        elementId: item.binding.elementId,
+        action: item.binding.action,
+        surfaceId: snapshot.surfaceId,
+        revision: snapshot.revision,
+        generation: batch.generation,
+      }));
     }
   } catch (error) {
     abortBatch(batch);
     batch.controllers.length = 0;
     batch.toolNames.length = 0;
+    batch.toolDescriptors.length = 0;
+    batch.toolObservations.length = 0;
     throw error;
   }
 }
 
-function unsupportedHandle(): WebMcpExportHandle {
+function unsupportedHandle(): InstrumentedWebMcpExportHandle {
   return {
     supported: false,
     toolNames: Object.freeze([]),
+    toolDescriptors: Object.freeze([]),
+    toolObservations: Object.freeze([]),
     async refresh() {},
     dispose() {},
   };
@@ -271,7 +262,7 @@ function unsupportedHandle(): WebMcpExportHandle {
 export async function exportAgentSurfaceToWebMcp(
   surface: WebMcpSurface,
   options: WebMcpExportOptions,
-): Promise<WebMcpExportHandle> {
+): Promise<InstrumentedWebMcpExportHandle> {
   const context = resolveModelContext(options);
   if (!context) return unsupportedHandle();
   const bindings = options.bindings.map((binding) => ({ ...binding }));
@@ -288,7 +279,13 @@ export async function exportAgentSurfaceToWebMcp(
   surfaces.add(surfaceKey);
 
   let disposed = false;
-  let batch: RegistrationBatch = { controllers: [], toolNames: [] };
+  let batch: RegistrationBatch = {
+    generation: 1,
+    controllers: [],
+    toolNames: [],
+    toolDescriptors: [],
+    toolObservations: [],
+  };
   try {
     await populateBatch(context, surface, bindings, batch);
   } catch (error) {
@@ -297,16 +294,29 @@ export async function exportAgentSurfaceToWebMcp(
   }
   let queue = Promise.resolve();
 
-  const handle: WebMcpExportHandle = {
+  const handle: InstrumentedWebMcpExportHandle = {
     supported: true,
     get toolNames() {
       return Object.freeze([...batch.toolNames]);
     },
+    get toolDescriptors() {
+      return Object.freeze([...batch.toolDescriptors]);
+    },
+    get toolObservations() {
+      return Object.freeze([...batch.toolObservations]);
+    },
     refresh() {
       const operation = queue.then(async () => {
         if (disposed) throw new TypeError("The WebMCP exporter is disposed");
+        const generation = batch.generation + 1;
         abortBatch(batch);
-        batch = { controllers: [], toolNames: [] };
+        batch = {
+          generation,
+          controllers: [],
+          toolNames: [],
+          toolDescriptors: [],
+          toolObservations: [],
+        };
         await populateBatch(context, surface, bindings, batch);
       });
       queue = operation.catch(() => {});
@@ -316,7 +326,13 @@ export async function exportAgentSurfaceToWebMcp(
       if (disposed) return;
       disposed = true;
       abortBatch(batch);
-      batch = { controllers: [], toolNames: [] };
+      batch = {
+        generation: batch.generation,
+        controllers: [],
+        toolNames: [],
+        toolDescriptors: [],
+        toolObservations: [],
+      };
       surfaces.delete(surfaceKey);
     },
   };

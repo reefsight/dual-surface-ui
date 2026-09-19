@@ -100,5 +100,14 @@ Vue 3.3.13/3.5.43 SFC production builds. P2.6 added the strict additive
 WebMCP allowlists, shared portable-schema hardening, strict compile-time schema
 preflight, adversarial tests, and packed-consumer proof. Its full gate passes
 20 files and 224 tests while preserving the frozen 32/6/5 root contract.
-P2.7 (semantic drift checker) is next; later Phase 2 deliverables remain gated
-by the roadmap.
+P2.7 is implemented and verified as the additive `dual-surface-ui/drift`
+checker: it authenticates a separately reviewed/pinned manifest, compares
+bounded same-epoch DOM, snapshot, permission, application-state, declared-tool,
+and exporter registration evidence, and fails closed for missing, stale,
+rebound, mixed-generation, nested-surface, or unrepresentable evidence. Its
+full gate passes 21 files and 252 tests, the frozen 32/6/5 root contract remains
+unchanged, audit reports zero vulnerabilities, and a packed consumer imports
+the root and drift entry points with optional framework peers omitted.
+Independent security and API/package review found no actionable blocker.
+Phase 2 examples are next; browser Inspector/manual evidence remains reserved
+for the Phase 2 exit gate.

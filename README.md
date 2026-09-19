@@ -170,6 +170,79 @@ confirmation, preconditions, output validation, effect verification, replay,
 and audit remain owned by the core surface. `verifyEffect` must read
 authoritative application state rather than trusting the handler response.
 
+### Semantic drift checking
+
+The additive `dual-surface-ui/drift` entry point compares a separately reviewed
+manifest with a bounded observation of the current surface, mapped DOM
+controls, exporter-side tool registration observations, permission decision,
+and authoritative safe application state:
+
+```ts
+import {
+  checkSemanticDrift,
+  importSemanticDriftIntegrityKey,
+} from "dual-surface-ui/drift";
+
+// Load from a trusted secret manager. Never expose this material to the model,
+// DOM, logs, fixtures, or the manifest artifact.
+const integrityKey = await importSemanticDriftIntegrityKey(hmacSecretBytes);
+
+// These are independently reviewed deployment artifacts. Do not replace the
+// pinned fingerprint with manifest.fingerprint at runtime.
+const manifest = reviewedManifest;
+const expectedFingerprint = pinnedManifestFingerprint;
+
+const report = await checkSemanticDrift({
+  root: document.body,
+  readSnapshot: () => surface.snapshot(),
+  manifest,
+  expectedFingerprint,
+  integrityKey,
+  controls: [{ element: button, elementId: "document-approval" }],
+  declaredTools: approval.webMcpBindings,
+  readActiveTools: () => webMcp.supported
+    ? { status: "observed", tools: webMcp.toolObservations }
+    : { status: "unsupported" },
+  permissionContext: {
+    principalId: currentPrincipalKey,
+    originId: currentOriginKey,
+    inputCaseId: "approve-default",
+  },
+  readPermission: ({ elementId, action }) =>
+    permissionProjection.read(elementId, action),
+  readApplicationState: () => ({ disabled: button.disabled }),
+  observationEpoch: semanticEpoch.current,
+  readEpoch: () => semanticEpoch.current,
+});
+
+if (report.status !== "consistent") console.error(report);
+```
+
+Manifest creation belongs in a trusted build/review step. Import the same
+secret in that process and call `createSemanticDriftManifest()` with the
+reviewed snapshot and explicit bindings. The epoch must be a monotonic safe
+integer that never repeats and must advance for surface, DOM/navigation,
+WebMCP lifecycle, permission, and authoritative-state mutations. Snapshot,
+active-tool, permission, and state readers must be synchronous,
+side-effect-free trusted application functions; do not return retained copies.
+
+Each exporter-side observation includes the frozen tool descriptor, bound
+element/action target, observed surface ID and revision, and registration-batch
+generation. This can detect a same-name tool rebound to a different target,
+surface, revision, schema, description, or annotation, and it rejects mixed
+generations within one observed batch. The generation is a batch-coherence
+signal, not an independently pinned expected value. This is local exporter
+lifecycle evidence, not browser-private WebMCP registry read-back or proof that
+a browser retained or exposed the registration. Unsupported
+transport, unrepresentable state, open shadow/iframe descendants, changing
+epochs, missing evidence, and resource limits produce `incomplete`, never a
+pass. Cross-origin frames and closed shadow roots require host-owned separate
+surfaces. A `consistent` result does not prove handler correctness, backend
+authorization, effect verification, human workflow success, or
+supported-browser Inspector behavior. See
+[`P2.7 — Semantic Drift Checker`](docs/work-items/P2.7-semantic-drift-checker.md)
+for the trust, key-custody, Proxy, privacy, and coverage boundaries.
+
 ### Optional WebMCP imperative adapter
 
 Supported experimental browsers can discover an explicit subset of the same
@@ -455,6 +528,7 @@ Included:
 - Redacted, correlated lifecycle events for observation and action execution
 - Updated state returned after every action
 - Optional allowlisted WebMCP imperative export with revision-bound execution
+- Optional reviewed-manifest semantic drift checking with bounded same-epoch evidence
 - Optional React 18.2/19 provider and committed-ref lifecycle bindings
 - Optional Vue 3.3–3.5 plugin and template-ref lifecycle binding
 

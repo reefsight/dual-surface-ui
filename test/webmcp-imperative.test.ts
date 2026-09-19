@@ -97,6 +97,8 @@ describe("WebMCP imperative exporter", () => {
 
     expect(handle.supported).toBe(false);
     expect(handle.toolNames).toEqual([]);
+    expect(handle.toolDescriptors).toEqual([]);
+    expect(handle.toolObservations).toEqual([]);
     await expect(handle.refresh()).resolves.toBeUndefined();
     handle.dispose();
   });
@@ -116,6 +118,24 @@ describe("WebMCP imperative exporter", () => {
     const tool = context.tools.get(binding.name)!;
 
     expect(handle.toolNames).toEqual([binding.name]);
+    expect(handle.toolDescriptors).toEqual([{
+      name: binding.name,
+      description: binding.description,
+      inputSchema: tool.inputSchema,
+      annotations: tool.annotations,
+    }]);
+    expect(Object.isFrozen(handle.toolDescriptors)).toBe(true);
+    expect(Object.isFrozen(handle.toolDescriptors[0])).toBe(true);
+    expect(handle.toolObservations).toEqual([{
+      descriptor: handle.toolDescriptors[0],
+      elementId: binding.elementId,
+      action: binding.action,
+      surfaceId: "webmcp-test",
+      revision: expect.any(String),
+      generation: 1,
+    }]);
+    expect(Object.isFrozen(handle.toolObservations)).toBe(true);
+    expect(Object.isFrozen(handle.toolObservations[0])).toBe(true);
     expect(tool.description).toBe(binding.description);
     expect(tool.description).not.toContain("Hostile DOM instructions");
     expect(tool.inputSchema).toEqual({
@@ -136,6 +156,8 @@ describe("WebMCP imperative exporter", () => {
       untrustedContentHint: true,
     });
     handle.dispose();
+    expect(handle.toolDescriptors).toEqual([]);
+    expect(handle.toolObservations).toEqual([]);
   });
 
   it.each([
@@ -342,6 +364,9 @@ describe("WebMCP imperative exporter", () => {
     await handle.refresh();
 
     expect(context.tools.size).toBe(1);
+    expect(handle.toolDescriptors).toHaveLength(1);
+    expect(handle.toolObservations).toHaveLength(1);
+    expect(handle.toolObservations[0]?.generation).toBe(2);
     expect(context.registrations).toHaveLength(2);
     expect(context.tools.get(binding.name)).not.toBe(firstTool);
     expect((await context.tools.get(binding.name)!.execute({})).status).toBe(
@@ -351,6 +376,8 @@ describe("WebMCP imperative exporter", () => {
     handle.dispose();
     handle.dispose();
     expect(context.tools.size).toBe(0);
+    expect(handle.toolDescriptors).toEqual([]);
+    expect(handle.toolObservations).toEqual([]);
 
     const remount = await exportAgentSurfaceToWebMcp(surface, {
       modelContext: context,

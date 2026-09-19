@@ -96,6 +96,7 @@ packages/
   dom/                  DOM/ARIA compiler and native HTML actions
   policy/               Default risk, consent, origin, redaction policies
   domain/               Strict trusted action authoring/compiler layer
+  drift/                Reviewed-manifest and same-epoch parity checker
   webmcp/               WebMCP exporter and compatibility layer
   mcp/                  MCP tools/resources exporter
   react/                React bindings
