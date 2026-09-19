@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Legacy registration form</title>
+  </head>
+  <body>
+    <main>
+      <h1>Register an account</h1>
+      <form id="legacy-registration" data-agent-id="legacy-registration">
+        <label>
+          Work email
+          <input
+            id="legacy-email"
+            data-agent-id="legacy-email"
+            name="email"
+            type="email"
+            maxlength="254"
+            required
+          >
+        </label>
+
+        <label>
+          Plan
+          <select id="legacy-plan" data-agent-id="legacy-plan" name="plan" required>
+            <option value="">Choose a plan</option>
+            <option value="starter">Starter</option>
+            <option value="team">Team</option>
+          </select>
+        </label>
+
+        <label>
+          Account PIN
+          <input
+            id="legacy-pin"
+            data-agent-id="legacy-pin"
+            data-agent-sensitive="true"
+            name="pin"
+            type="password"
+            minlength="4"
+            maxlength="64"
+            required
+          >
+        </label>
+
+        <label>
+          <input
+            id="legacy-terms"
+            data-agent-id="legacy-terms"
+            name="terms"
+            type="checkbox"
+            required
+          >
+          Accept the terms
+        </label>
+
+        <input name="csrf_token" type="hidden" value="LEGACY_SECRET_SENTINEL">
+        <button id="legacy-submit" type="submit">Create account</button>
+        <button data-agent-id="legacy-admin-override" type="button" hidden>
+          Administrative override
+        </button>
+      </form>
+      <output id="legacy-status" data-agent-id="legacy-status">Ready</output>
+    </main>
+  </body>
+</html>

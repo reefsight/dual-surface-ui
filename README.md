@@ -472,20 +472,37 @@ publish no actions. Selects expose enabled choices through `select`, while forms
 use native `submit`; both must pass the same policy and post-action verification
 boundary as every other mutation.
 
-## Reference workflow and Phase 1 baseline
+## Reference workflows and Phase 1 baseline
 
-The document-approval example demonstrates one human-visible state shared by a
-normal click path and an agent path with typed actions, policy, confirmation,
-preconditions, effect verification, idempotency, and redacted audit events.
+The Phase 2 examples prove that ordinary human events and actual exported
+WebMCP tool calls reach the same application-owned business state and command:
+
+- checkout keeps the saved payment credential outside the agent surface while
+  proving domain annotations, exporter lifecycle, reviewed drift evidence,
+  confirmation, replay protection, and order-state parity;
+- document approval shares reviewer/origin authorization, required-widget
+  rules, the approval command, and authoritative document record; and
+- the migrated legacy form preserves its existing native submit listener,
+  layers an imperative tool over that exact path, and demonstrates reversible
+  declarative annotations without a synthetic polyfill.
+
+Run all three deterministic examples, or one example at a time:
 
 ```bash
+npm run example:phase2
+npm run example:checkout
 npm run example:document-approval
+npm run example:legacy-form
 npm run baseline:phase1
 ```
 
-The baseline is a deterministic 25-run scripted measurement, not a model or
-vision evaluation. It records completion, interaction steps, latency, safety
-counters, and a clearly labeled provider-neutral context-token estimate. See
+The example tests use jsdom and a mock WebMCP model context. They prove package
+wiring and authoritative-state parity, not browser-private registry retention,
+Inspector visibility, model selection quality, payment processing, or
+production identity. Those remain Phase 2 exit evidence. The Phase 1 baseline
+is a deterministic 25-run scripted measurement, not a model or vision
+evaluation. It records completion, interaction steps, latency, safety counters,
+and a clearly labeled provider-neutral context-token estimate. See
 `docs/adr/0005-phase1-baseline-method.md` before comparing its numbers.
 
 ## Design principles

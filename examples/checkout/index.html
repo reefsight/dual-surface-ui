@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Checkout</title>
+  </head>
+  <body>
+    <main>
+      <h1>Checkout</h1>
+      <section aria-labelledby="cart-heading">
+        <h2 id="cart-heading">Order summary</h2>
+        <p>Noise-cancelling headphones</p>
+        <output data-agent-id="cart-total">$42.50</output>
+      </section>
+
+      <label for="payment-token">Saved payment credential</label>
+      <input
+        id="payment-token"
+        data-agent-id="payment-token"
+        data-agent-sensitive="true"
+        type="password"
+        value="PAYMENT_SECRET_SENTINEL_4242"
+      >
+
+      <section id="checkout-agent-surface" aria-label="Order placement">
+        <label for="shipping-email">Shipping email</label>
+        <input id="shipping-email" data-agent-id="shipping-email" type="email">
+
+        <label>
+          <input type="checkbox" data-agent-id="accept-checkout-terms">
+          I accept the checkout terms
+        </label>
+
+        <button id="place-order" type="button">Place order</button>
+        <output data-agent-id="checkout-status" aria-live="polite">Ready</output>
+        <output data-agent-id="order-receipt"></output>
+      </section>
+    </main>
+  </body>
+</html>

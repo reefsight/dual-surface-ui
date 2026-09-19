@@ -109,5 +109,13 @@ full gate passes 21 files and 252 tests, the frozen 32/6/5 root contract remains
 unchanged, audit reports zero vulnerabilities, and a packed consumer imports
 the root and drift entry points with optional framework peers omitted.
 Independent security and API/package review found no actionable blocker.
-Phase 2 examples are next; browser Inspector/manual evidence remains reserved
-for the Phase 2 exit gate.
+P2.8 adds runnable checkout, document-approval, and migrated legacy-form
+workflows whose human and agent paths share authoritative business commands.
+The examples invoke actual exported WebMCP tools and cover trusted policy,
+confirmation, preconditions, effect verification, stale revisions, keyed
+replay, aggregate secret exclusion, pinned semantic-drift evidence, and legacy
+submit-bypass prevention. Its full gate passes 23 files and 288 tests while
+preserving the frozen 32/6/5 root contract; package audit, inspection, and a
+fresh optional-peer-free root/domain/WebMCP/drift consumer also pass. P2.9 is
+next: browser support, Inspector/manual invocation, navigation/iframe and
+graceful-fallback evidence required by the Phase 2 exit gate.

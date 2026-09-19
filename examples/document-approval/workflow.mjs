@@ -34,10 +34,14 @@ export function installWindowGlobals(window) {
 export function createDocumentApprovalWorkflow({
   document,
   createAgentSurface,
+  defineDomainElement,
   confirmApproval = true,
   principal = { id: "reviewer-7", roles: ["reviewer"] },
   allowedOrigin = document.location.origin,
 }) {
+  if (typeof defineDomainElement !== "function") {
+    throw new TypeError("Document approval requires defineDomainElement");
+  }
   const approveButton = document.querySelector("#approve-document");
   const comment = document.querySelector("#approval-comment");
   const identity = document.querySelector('[data-agent-id="confirm-identity"]');
@@ -48,24 +52,49 @@ export function createDocumentApprovalWorkflow({
   }
 
   const auditEvents = [];
+  const documentRecord = {
+    documentId: DOCUMENT_ID,
+    status: "pending",
+    commentAccepted: false,
+  };
   let approvalCount = 0;
   let confirmationCount = 0;
   let correlationSequence = 0;
 
   const widgetsComplete = () => identity.checked && terms.checked;
+  const isAuthorized = () =>
+    principal?.roles?.includes("reviewer") &&
+    document.location.origin === allowedOrigin;
+  const evaluatePolicy = ({ activePrincipal, risk, origin }) => {
+    if (
+      !isAuthorized() ||
+      activePrincipal?.id !== principal.id ||
+      origin !== document.location.origin
+    ) {
+      return { outcome: "deny" };
+    }
+    return risk === "consequential"
+      ? { outcome: "require_confirmation" }
+      : { outcome: "allow" };
+  };
   const approveDocument = (approvalComment) => {
+    if (!isAuthorized()) throw new Error("Approval is not authorized");
     if (!widgetsComplete()) throw new Error("Required widgets are incomplete");
     approvalCount += 1;
+    documentRecord.status = "approved";
+    documentRecord.commentAccepted = approvalComment.length > 0;
     status.textContent = "Approved";
     approveButton.disabled = true;
     return {
-      documentId: DOCUMENT_ID,
-      status: "approved",
-      commentAccepted: approvalComment.length > 0,
+      ...documentRecord,
     };
   };
 
   approveButton.addEventListener("click", () => {
+    if (!isAuthorized()) {
+      status.textContent = "Approval is not authorized";
+      return;
+    }
     if (!widgetsComplete()) {
       status.textContent = "Complete all required widgets";
       return;
@@ -74,16 +103,11 @@ export function createDocumentApprovalWorkflow({
   });
 
   const surface = createAgentSurface({
-    root: document,
+    root: approveButton.closest("main") ?? document.body,
     surfaceId: "document-approval-example",
     getPrincipal: () => principal,
-    policy: ({ principal, risk, origin }) => {
-      if (!principal?.roles?.includes("reviewer")) return { outcome: "deny" };
-      if (origin !== allowedOrigin) return { outcome: "deny" };
-      return risk === "consequential"
-        ? { outcome: "require_confirmation" }
-        : { outcome: "allow" };
-    },
+    policy: ({ principal: activePrincipal, risk, origin }) =>
+      evaluatePolicy({ activePrincipal, risk, origin }),
     confirm: () => {
       confirmationCount += 1;
       return confirmApproval;
@@ -91,12 +115,12 @@ export function createDocumentApprovalWorkflow({
     checkPrecondition: ({ precondition }) =>
       precondition === "required_widgets_complete" && widgetsComplete(),
     verifyEffect: ({ effect }) =>
-      effect === "document_approved" && status.textContent === "Approved",
+      effect === "document_approved" && documentRecord.status === "approved",
     createCorrelationId: () => `approval-${++correlationSequence}`,
     onAudit: (event) => auditEvents.push(event),
   });
 
-  surface.register(approveButton, {
+  const approval = defineDomainElement({
     id: "approve-document",
     description: "Approve DOC-1042 after every required widget is complete",
     actions: {
@@ -125,10 +149,12 @@ export function createDocumentApprovalWorkflow({
         effects: ["document_approved"],
         requiresConfirmation: true,
         idempotency: "keyed",
+        webMcpName: "documents.approve",
         handler: (input) => approveDocument(input.comment),
       },
     },
   });
+  surface.register(approveButton, approval.definition);
 
   async function runAgentWorkflow() {
     const steps = [];
@@ -163,6 +189,69 @@ export function createDocumentApprovalWorkflow({
     return { initialSnapshot, result, steps };
   }
 
+  async function runWebMcpAgentWorkflow({
+    exportAgentSurfaceToWebMcp,
+    modelContext,
+  }) {
+    if (typeof exportAgentSurfaceToWebMcp !== "function") {
+      throw new TypeError("WebMCP workflow requires exportAgentSurfaceToWebMcp");
+    }
+    const activeTools = new Map();
+    const registrations = [];
+    const capturingModelContext = {
+      async registerTool(tool, options) {
+        await modelContext?.registerTool(tool, options);
+        activeTools.set(tool.name, tool);
+        registrations.push({ tool, signal: options.signal });
+        options.signal.addEventListener(
+          "abort",
+          () => activeTools.delete(tool.name),
+          { once: true },
+        );
+      },
+    };
+    const exporter = await exportAgentSurfaceToWebMcp(surface, {
+      bindings: approval.webMcpBindings,
+      modelContext: capturingModelContext,
+    });
+    try {
+      const steps = [];
+      const initialSnapshot = surface.snapshot();
+      steps.push(EXPECTED_AGENT_STEPS[0]);
+      let revision = initialSnapshot.revision;
+      for (const [elementId, step] of [
+        ["confirm-identity", EXPECTED_AGENT_STEPS[1]],
+        ["accept-terms", EXPECTED_AGENT_STEPS[2]],
+      ]) {
+        const result = await surface.perform({
+          surfaceId: initialSnapshot.surfaceId,
+          revision,
+          elementId,
+          action: "toggle",
+        });
+        revision = result.revision;
+        steps.push(step);
+      }
+      await exporter.refresh();
+      const tool = activeTools.get("documents.approve");
+      if (!tool) throw new Error("Approval WebMCP tool is unavailable");
+      const result = await tool.execute({
+        input: { comment: APPROVAL_COMMENT },
+        idempotencyKey: "DOC-1042.approve.webmcp.v1",
+      });
+      steps.push(EXPECTED_AGENT_STEPS[3]);
+      return {
+        initialSnapshot,
+        result,
+        steps,
+        registrations: registrations.length,
+        invokedTool: tool.name,
+      };
+    } finally {
+      exporter.dispose();
+    }
+  }
+
   function runHumanWorkflow() {
     const steps = [];
     identity.click();
@@ -177,6 +266,19 @@ export function createDocumentApprovalWorkflow({
     return { steps, status: status.textContent };
   }
 
+  const readPermission = ({ action }) => {
+    const semanticAction = surface.snapshot().nodes
+      .flatMap((node) => node.actions)
+      .find((item) => item.name === action);
+    if (!semanticAction) return undefined;
+    const decision = evaluatePolicy({
+      activePrincipal: principal,
+      risk: semanticAction.risk,
+      origin: document.location.origin,
+    }).outcome;
+    return decision === "require_confirmation" ? "require-confirmation" : decision;
+  };
+
   return {
     auditEvents,
     get approvalCount() {
@@ -185,9 +287,15 @@ export function createDocumentApprovalWorkflow({
     get confirmationCount() {
       return confirmationCount;
     },
+    getDocumentState() {
+      return { ...documentRecord };
+    },
+    readPermission,
     runAgentWorkflow,
     runHumanWorkflow,
+    runWebMcpAgentWorkflow,
     status,
     surface,
+    webMcpBindings: approval.webMcpBindings,
   };
 }

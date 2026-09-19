@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url";
 
 import { JSDOM } from "jsdom";
 import { createAgentSurface } from "../../dist/index.js";
+import { defineDomainElement } from "../../dist/domain/index.js";
+import { exportAgentSurfaceToWebMcp } from "../../dist/webmcp/index.js";
 
 import {
   createDocumentApprovalWorkflow,
@@ -18,8 +20,11 @@ installWindowGlobals(dom.window);
 const workflow = createDocumentApprovalWorkflow({
   document: dom.window.document,
   createAgentSurface,
+  defineDomainElement,
 });
-const outcome = await workflow.runAgentWorkflow();
+const outcome = await workflow.runWebMcpAgentWorkflow({
+  exportAgentSurfaceToWebMcp,
+});
 
 console.log(
   JSON.stringify(
@@ -29,6 +34,8 @@ console.log(
       revision: outcome.result.revision,
       steps: outcome.steps,
       confirmations: workflow.confirmationCount,
+      invokedTool: outcome.invokedTool,
+      registrations: outcome.registrations,
       auditEvents: workflow.auditEvents.map(({ event, outcome: result }) => ({
         event,
         outcome: result,

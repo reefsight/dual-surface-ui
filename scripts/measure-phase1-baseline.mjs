@@ -5,6 +5,7 @@ import { performance } from "node:perf_hooks";
 
 import { JSDOM } from "jsdom";
 import { createAgentSurface } from "../dist/index.js";
+import { defineDomainElement } from "../dist/domain/index.js";
 
 import {
   createDocumentApprovalWorkflow,
@@ -40,6 +41,7 @@ for (let iteration = 0; iteration < repetitions; iteration += 1) {
   const workflow = createDocumentApprovalWorkflow({
     document: dom.window.document,
     createAgentSurface,
+    defineDomainElement,
   });
   if (iteration === 0) fullDom = dom.serialize();
 
