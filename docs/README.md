@@ -29,6 +29,9 @@ remaining Phase 3 work through Exit Gate preparation in the
 P3.2 implementation is governed by the accepted
 [Playwright fallback work item](work-items/P3.2-playwright-fallback.md) and
 [ADR 0008](adr/0008-playwright-fallback-boundary.md).
+P3.3 implementation is governed by the accepted
+[incremental snapshot work item](work-items/P3.3-incremental-delta-snapshots.md)
+and [ADR 0009](adr/0009-incremental-delta-contract.md).
 The remaining authorized work is planned in dependency order:
 
 1. [P3.3 incremental/delta snapshots](work-items/P3.3-incremental-delta-snapshots.md)
@@ -40,9 +43,10 @@ The remaining authorized work is planned in dependency order:
 7. [P3.9 benchmarks and native feasibility](work-items/P3.9-benchmarks-native-feasibility.md)
 8. [P3.10 Phase 3 Exit Audit](work-items/P3.10-phase3-exit-audit.md)
 
-All eight records are `Planned`; P3.3 is next after P3.2. They define future
-acceptance and evidence gates and do not claim implementation or completion.
-Phase 4 remains gated.
+P3.3 design is accepted and implementation is in progress. P3.4 through P3.10
+remain planned in dependency order. These records define acceptance and
+evidence gates and do not claim implementation or completion. Phase 4 remains
+gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
 1 and Phase 2 are accepted; the Phase 2 decision is the
