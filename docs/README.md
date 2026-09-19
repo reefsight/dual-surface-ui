@@ -26,6 +26,9 @@ design in
 [ADR 0007](adr/0007-mcp-exporter-boundary.md). The maintainer authorized all
 remaining Phase 3 work through Exit Gate preparation in the
 [Phase 3 Execution Authorization](reviews/phase3-execution-authorization.md).
+P3.2 implementation is governed by the accepted
+[Playwright fallback work item](work-items/P3.2-playwright-fallback.md) and
+[ADR 0008](adr/0008-playwright-fallback-boundary.md).
 Phase 4 remains gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
