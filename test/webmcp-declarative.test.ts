@@ -61,6 +61,26 @@ describe("WebMCP declarative form compatibility", () => {
     handle.dispose();
   });
 
+  it("sets toolname only after every trusted native annotation is complete", () => {
+    const config = options();
+    const setAttribute = config.form.setAttribute.bind(config.form);
+    config.form.setAttribute = (name: string, value: string) => {
+      if (name === "toolname") {
+        expect(config.form.getAttribute("tooldescription")).toBe(config.description);
+        expect(
+          config.fields.map((field) =>
+            field.control.getAttribute("toolparamdescription"),
+          ),
+        ).toEqual(config.fields.map((field) => field.description));
+      }
+      setAttribute(name, value);
+    };
+
+    const handle = mountDeclarativeWebMcpForm(config);
+    expect(config.form.getAttribute("toolname")).toBe(config.name);
+    handle.dispose();
+  });
+
   it("keeps the ordinary human submit path intact when WebMCP is absent", () => {
     const config = options();
     const submitted = vi.fn((event: SubmitEvent) => event.preventDefault());

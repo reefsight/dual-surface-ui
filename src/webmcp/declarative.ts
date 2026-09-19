@@ -308,19 +308,22 @@ export function mountDeclarativeWebMcpForm(
   validateOptions(mounted);
 
   const snapshots = [
-    captureAttribute(mounted.form, "toolname"),
     captureAttribute(mounted.form, "tooldescription"),
     captureAttribute(mounted.form, "toolautosubmit"),
     ...mounted.fields.map((field) =>
       captureAttribute(field.control, "toolparamdescription"),
     ),
+    captureAttribute(mounted.form, "toolname"),
   ];
-  mounted.form.setAttribute("toolname", mounted.name);
+  // `toolname` activates native registration in Chrome. Install every other
+  // trusted annotation first so the browser never observes a partial tool.
+  mounted.form.removeAttribute("toolname");
   mounted.form.setAttribute("tooldescription", mounted.description);
   mounted.form.removeAttribute("toolautosubmit");
   for (const field of mounted.fields) {
     field.control.setAttribute("toolparamdescription", field.description);
   }
+  mounted.form.setAttribute("toolname", mounted.name);
   activeForms.add(mounted.form);
 
   let disposed = false;
@@ -328,6 +331,9 @@ export function mountDeclarativeWebMcpForm(
     if (disposed) return;
     disposed = true;
     observer?.disconnect();
+    // Unregister before restoring the remaining attributes. `toolname` is the
+    // native lifecycle switch and is restored last from `snapshots`.
+    mounted.form.removeAttribute("toolname");
     for (const snapshot of snapshots) restoreAttribute(snapshot);
     activeForms.delete(mounted.form);
   };
