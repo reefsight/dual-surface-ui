@@ -57,7 +57,8 @@ values are not a documented public action API.
    before the single Playwright mutation. Navigation and semantic ABA changes
    invalidate older generations even when the URL or visible state returns.
    The adapter may use fixed package-owned evaluation only for private mutation
-   generation, native-control, frame, and retained-handle identity checks.
+   generation, native-control, frame, retained-handle identity, and read-only
+   visual stability checks (animation, loaded resources, scroll, and viewport).
    Those fixed checks accept no caller code, selector, page value, or action
    authority and expose no evaluation handle or result publicly.
 9. Playwright actionability is an additional guard, not authorization.
@@ -69,15 +70,18 @@ values are not a documented public action API.
     controls expose neither value nor executable fallback action.
 11. Visual fallback is discovery assistance only. A host-provided visual
     selector may choose among current allowlisted semantic node IDs from a
-    bounded, ephemeral, masked image. It cannot return a selector, coordinate,
+    bounded, ephemeral synthetic candidate map. The map has a black background
+    and package-generated marker rectangles for current non-sensitive semantic
+    candidates; it contains no pixels captured from the page. It cannot return a selector, coordinate,
     URL, script, action, risk, confirmation, or new capability. The chosen ID
     must still uniquely resolve at the same current generation and execute
     through `performSafe()`.
-12. Images are disabled unless explicitly configured. Before a visual callback
-    receives an image, credential/sensitive controls and every excluded frame
-    are masked. Images are not returned by snapshot APIs, logged, traced,
-    packaged, or retained by the adapter. Failure to mask every required region
-    disables visual discovery for that observation.
+12. Images are disabled unless explicitly configured. Page screenshots are
+    prohibited in this slice because closed shadow roots and capture-time CSSOM
+    changes make complete pixel redaction unprovable. The synthetic map omits
+    every page, credential, sensitive, and frame pixel by construction. Images
+    are not returned by snapshot APIs, logged, traced, packaged, or retained by
+    the adapter.
 13. Unexpected navigation, origin change, frame detach, popup, download,
     dialog, page/context close, crash, or browser disconnect invalidates the
     generation and produces a fixed secret-safe failure. It never becomes an
@@ -94,9 +98,10 @@ targets and a closed operation union. The host may supply the same trusted
 policy, principal, confirmation, precondition, effect-verification, and audit
 callbacks accepted by the DOM surface.
 
-The visual callback, when enabled, receives only a masked in-memory PNG and a
-bounded list of current allowlisted candidates. Its result is an optional node
-ID. This callback is untrusted selection input and cannot execute anything.
+The visual callback, when enabled, receives only a synthetic in-memory PNG and
+a bounded list of current allowlisted candidates with package-generated color
+markers. Its result is an optional node ID. This callback is untrusted
+selection input and cannot execute anything.
 
 ## Consequences
 
@@ -107,8 +112,8 @@ ID. This callback is untrusted selection input and cannot execute anything.
   verified independently before adapter behavior is added.
 - Exact accessible names may change with localization. Hosts must version and
   review bindings; ambiguity is surfaced rather than silently resolved.
-- Visual discovery can improve selection among existing semantic candidates,
-  but cannot create a pixel-only action or weaken policy and verification.
+- Visual discovery can expose candidate layout and relative size without page
+  pixels, but cannot create a pixel-only action or weaken policy and verification.
 - Same-origin and cross-origin frame support remains unavailable until its own
   provenance tests and separate-surface design are accepted.
 

@@ -51,6 +51,26 @@ export interface PlaywrightElementBinding {
   actions: Readonly<Record<string, PlaywrightActionBinding>>;
 }
 
+export interface PlaywrightVisualCandidate {
+  readonly id: string;
+  readonly role: string;
+  readonly name: string;
+  readonly marker: string;
+}
+
+export interface PlaywrightVisualRequest {
+  readonly image: Uint8Array;
+  readonly mimeType: "image/png";
+  readonly candidates: readonly PlaywrightVisualCandidate[];
+}
+
+export interface PlaywrightVisualOptions {
+  readonly selectCandidate: (
+    request: PlaywrightVisualRequest,
+  ) => string | undefined | Promise<string | undefined>;
+  readonly sensitiveMasks: readonly PlaywrightSemanticTarget[];
+}
+
 export interface PlaywrightSurfaceOptions
   extends Pick<
     AgentSurfaceOptions,
@@ -68,11 +88,15 @@ export interface PlaywrightSurfaceOptions
   surfaceId: string;
   allowedOrigins: readonly string[];
   bindings: readonly PlaywrightElementBinding[];
+  visual?: PlaywrightVisualOptions;
 }
 
 export interface PlaywrightSurface {
   snapshot(options?: { signal?: AbortSignal }): Promise<AgentSnapshot>;
   perform(request: AgentActionRequest, options?: { signal?: AbortSignal }): Promise<AgentActionResult>;
   performSafe(request: AgentActionRequest, options?: { signal?: AbortSignal }): Promise<AgentActionOutcome>;
+  readonly selectVisualCandidate?: (
+    options?: { signal?: AbortSignal },
+  ) => Promise<string | undefined>;
   dispose(): void;
 }

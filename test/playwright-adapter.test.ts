@@ -132,6 +132,41 @@ describe("Playwright semantic adapter configuration", () => {
     surface.dispose();
   });
 
+  it("exposes visual selection only after explicit captured configuration", () => {
+    const plain = createPlaywrightSurface({
+      page: fakePage(), surfaceId: "pw-plain", allowedOrigins: ["https://fixture.example"], bindings: [clickBinding()],
+    });
+    const visual = createPlaywrightSurface({
+      page: fakePage(), surfaceId: "pw-visual", allowedOrigins: ["https://fixture.example"], bindings: [clickBinding()],
+      visual: { selectCandidate: () => undefined, sensitiveMasks: [] },
+    });
+    expect("selectVisualCandidate" in plain).toBe(false);
+    expect(typeof visual.selectVisualCandidate).toBe("function");
+    plain.dispose();
+    visual.dispose();
+  });
+
+  it("rejects unsafe visual configuration without invoking accessors", () => {
+    let accessed = false;
+    const visual = {
+      get selectCandidate() { accessed = true; return () => undefined; },
+      sensitiveMasks: [],
+    };
+    expect(() => createPlaywrightSurface({
+      page: fakePage(), surfaceId: "pw-visual", allowedOrigins: ["https://fixture.example"],
+      bindings: [clickBinding()], visual,
+    })).toThrow(TypeError);
+    expect(accessed).toBe(false);
+    expect(() => createPlaywrightSurface({
+      page: fakePage(), surfaceId: "pw-visual", allowedOrigins: ["https://fixture.example"],
+      bindings: [clickBinding()],
+      visual: {
+        selectCandidate: () => undefined,
+        sensitiveMasks: [{ role: "textbox", name: "Secret" }, { role: "textbox", name: "Secret" }],
+      },
+    })).toThrow(TypeError);
+  });
+
   it("disposes page listeners idempotently", () => {
     const page = fakePage();
     const surface = createPlaywrightSurface({

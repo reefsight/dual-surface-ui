@@ -32,7 +32,14 @@ import type {
   PlaywrightSurface as PlaywrightSurfaceContract,
   PlaywrightSurfaceOptions,
   PlaywrightAriaRole,
+  PlaywrightSemanticTarget,
+  PlaywrightVisualCandidate,
 } from "./types.js";
+import {
+  createVisualCandidateSelection,
+  MAX_VISUAL_MASKS,
+  type PlaywrightVisualCandidateBox,
+} from "./visual.js";
 
 export type * from "./types.js";
 
@@ -77,6 +84,11 @@ interface PlaywrightMutationState {
   observer: MutationObserver;
   advance: () => void;
   events: string[];
+}
+
+interface CapturedVisualOptions {
+  readonly selectCandidate: NonNullable<PlaywrightSurfaceOptions["visual"]>["selectCandidate"];
+  readonly sensitiveMasks: readonly Readonly<PlaywrightSemanticTarget>[];
 }
 
 function invalidConfiguration(message = "Invalid Playwright surface configuration"): never {
@@ -136,6 +148,42 @@ function captureOperation(value: unknown): PlaywrightOperation {
     return Object.freeze({ type, checked });
   }
   return invalidConfiguration();
+}
+
+function captureSemanticTarget(value: unknown): Readonly<PlaywrightSemanticTarget> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return invalidConfiguration();
+  assertOnlyKeys(value, ["role", "name"]);
+  const role = dataProperty(value, "role");
+  const name = dataProperty(value, "name");
+  if (
+    typeof role !== "string" || !ARIA_ROLES.has(role as PlaywrightAriaRole) ||
+    typeof name !== "string" || name.length === 0 || name.length > MAX_NAME_LENGTH ||
+    name.trim() !== name || CONTROL_CHARACTER_PATTERN.test(name)
+  ) return invalidConfiguration();
+  return Object.freeze({ role: role as PlaywrightAriaRole, name });
+}
+
+function captureVisualOptions(value: unknown): CapturedVisualOptions | undefined {
+  if (value === undefined) return undefined;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return invalidConfiguration();
+  assertOnlyKeys(value, ["selectCandidate", "sensitiveMasks"]);
+  const selectCandidate = dataProperty(value, "selectCandidate");
+  const masks = dataProperty(value, "sensitiveMasks");
+  if (typeof selectCandidate !== "function" || !Array.isArray(masks) || masks.length > MAX_VISUAL_MASKS) {
+    return invalidConfiguration("visual requires a selector and bounded sensitiveMasks");
+  }
+  const seen = new Set<string>();
+  const sensitiveMasks = masks.map((mask) => {
+    const target = captureSemanticTarget(mask);
+    const key = `${target.role}\u0000${target.name}`;
+    if (seen.has(key)) return invalidConfiguration("visual sensitiveMasks must be unique");
+    seen.add(key);
+    return target;
+  });
+  return Object.freeze({
+    selectCandidate: selectCandidate as CapturedVisualOptions["selectCandidate"],
+    sensitiveMasks: Object.freeze(sensitiveMasks),
+  });
 }
 
 function captureActionBinding(name: string, value: unknown): CapturedActionBinding {
@@ -201,16 +249,8 @@ function captureBindings(bindings: readonly PlaywrightElementBinding[]): readonl
       return invalidConfiguration("Playwright binding IDs must be unique opaque identifiers");
     }
     ids.add(id);
-    if (!target || typeof target !== "object" || Array.isArray(target)) return invalidConfiguration();
-    assertOnlyKeys(target, ["role", "name"]);
-    const role = dataProperty(target, "role");
-    const name = dataProperty(target, "name");
-    if (
-      typeof role !== "string" || !ARIA_ROLES.has(role as PlaywrightAriaRole) ||
-      typeof name !== "string" || name.length === 0 || name.length > MAX_NAME_LENGTH ||
-      name.trim() !== name ||
-      CONTROL_CHARACTER_PATTERN.test(name)
-    ) return invalidConfiguration();
+    const capturedTarget = captureSemanticTarget(target);
+    const { role, name } = capturedTarget;
     const semanticKey = `${role}\u0000${name}`;
     if (semanticTargets.has(semanticKey)) {
       return invalidConfiguration("Playwright semantic targets must be unique");
@@ -308,7 +348,11 @@ export class PlaywrightSurface implements PlaywrightSurfaceContract {
   readonly #allowedOrigins: ReadonlySet<string>;
   readonly #bindings: readonly CapturedElementBinding[];
   readonly #bindingsById: ReadonlyMap<string, CapturedElementBinding>;
+  readonly #visual: CapturedVisualOptions | undefined;
   readonly #coordinator: AgentActionLifecycleCoordinator<ResolvedPlaywrightTarget>;
+  declare readonly selectVisualCandidate?: (
+    options?: { signal?: AbortSignal },
+  ) => Promise<string | undefined>;
   readonly #removeListeners: Array<() => void> = [];
   #disposed = false;
   #lifecycleEpoch = 0;
@@ -326,6 +370,7 @@ export class PlaywrightSurface implements PlaywrightSurfaceContract {
     const surfaceId = dataProperty(options, "surfaceId");
     const allowedOrigins = dataProperty(options, "allowedOrigins") as readonly string[];
     const bindings = dataProperty(options, "bindings") as readonly PlaywrightElementBinding[];
+    const visual = captureVisualOptions(optionalDataProperty(options, "visual"));
     const idempotencyCacheSizeValue = optionalDataProperty(options, "idempotencyCacheSize");
     const authorize = optionalDataProperty(options, "authorize") as PlaywrightSurfaceOptions["authorize"];
     const checkPrecondition = optionalDataProperty(options, "checkPrecondition") as PlaywrightSurfaceOptions["checkPrecondition"];
@@ -355,6 +400,7 @@ export class PlaywrightSurface implements PlaywrightSurfaceContract {
     this.#allowedOrigins = captureOrigins(allowedOrigins);
     this.#bindings = captureBindings(bindings);
     this.#bindingsById = new Map(this.#bindings.map((binding) => [binding.id, binding]));
+    this.#visual = visual;
     this.#assertUsableOrigin();
     this.#listen();
     this.#coordinator = new AgentActionLifecycleCoordinator({
@@ -381,6 +427,21 @@ export class PlaywrightSurface implements PlaywrightSurfaceContract {
       },
       idempotencyCacheSize,
     });
+    if (visual) {
+      Object.defineProperty(this, "selectVisualCandidate", {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: (selectionOptions: { signal?: AbortSignal } = {}) => this.#enqueue(async () => {
+          try {
+            return await this.#selectVisualCandidate(selectionOptions.signal);
+          } catch {
+            this.#assertNotAborted(selectionOptions.signal);
+            return undefined;
+          }
+        }),
+      });
+    }
   }
 
   snapshot(options: { signal?: AbortSignal } = {}): Promise<AgentSnapshot> {
@@ -399,6 +460,108 @@ export class PlaywrightSurface implements PlaywrightSurfaceContract {
 
   performSafe(request: AgentActionRequest, options: { signal?: AbortSignal } = {}): Promise<AgentActionOutcome> {
     return this.#enqueue(() => this.#coordinator.performSafe(request, options));
+  }
+
+  async #selectVisualCandidate(signal?: AbortSignal): Promise<string | undefined> {
+    const visual = this.#visual;
+    if (!visual) return undefined;
+    this.#assertNotAborted(signal);
+    const snapshot = await this.#captureSnapshot(signal);
+    const expected = await this.#captureContext();
+    const candidates: PlaywrightVisualCandidate[] = snapshot.nodes
+      .filter((node) => node.state.sensitive !== true && node.state.disabled !== true && node.actions.length > 0)
+      .map((node, index) => Object.freeze({
+        id: node.id,
+        role: node.role,
+        name: node.name,
+        marker: `#${(((index + 1) * 2654435761) & 0xffffff).toString(16).padStart(6, "0")}`,
+      }));
+    // Explicit host masks must resolve, even though the synthetic map contains no page pixels.
+    for (const target of visual.sensitiveMasks) {
+      if (await this.#page.getByRole(target.role as Parameters<Page["getByRole"]>[0], {
+        name: target.name,
+        exact: true,
+      }).count() !== 1) return undefined;
+    }
+    const candidateSources = candidates.map((candidate) => this.#locator(this.#bindingsById.get(candidate.id)!));
+    const candidateBoxes: PlaywrightVisualCandidateBox[] = [];
+    for (const source of candidateSources) {
+      if (await source.count() !== 1) return undefined;
+      const box = await source.boundingBox(cancellableOptions(signal));
+      if (!box) return undefined;
+      candidateBoxes.push(box);
+    }
+    const beforeCapture = await this.#captureContext();
+    if (beforeCapture.generation !== expected.generation || beforeCapture.origin !== expected.origin) return undefined;
+    const stability = await this.#visualStability();
+    if (!stability.stable) return undefined;
+    let callbackContext: { generation: string; origin: string; replayGeneration: string } | undefined;
+    let selected: string | undefined;
+    selected = await createVisualCandidateSelection({
+        page: this.#page,
+        candidateBoxes,
+        candidates,
+        selectCandidate: visual.selectCandidate,
+        validateBeforeCallback: async () => {
+        await this.#settleEvents();
+        const current = await this.#captureContext();
+        const currentCandidateBoxes: PlaywrightVisualCandidateBox[] = [];
+        for (const source of candidateSources) {
+          if (await source.count() !== 1) return false;
+          const box = await source.boundingBox(cancellableOptions(signal));
+          if (!box) return false;
+          currentCandidateBoxes.push(box);
+        }
+        const currentStability = await this.#visualStability();
+        if (
+          current.generation !== expected.generation ||
+          current.origin !== expected.origin || this.#disposed ||
+          !currentStability.stable ||
+          JSON.stringify(currentStability) !== JSON.stringify(stability) ||
+          JSON.stringify(currentCandidateBoxes) !== JSON.stringify(candidateBoxes)
+        ) return false;
+        callbackContext = current;
+        return true;
+        },
+        ...(signal ? { signal } : {}),
+      });
+    this.#assertNotAborted(signal);
+    await this.#settleEvents();
+    const after = await this.#captureContext();
+    if (
+      !callbackContext || after.generation !== callbackContext.generation ||
+      after.origin !== callbackContext.origin || !selected
+    ) return undefined;
+    const current = await this.#captureSnapshot(signal);
+    const node = current.nodes.find((candidate) => candidate.id === selected);
+    const selectedBinding = this.#bindingsById.get(selected);
+    const finalContext = await this.#captureContext();
+    if (
+      finalContext.generation !== callbackContext.generation ||
+      finalContext.origin !== callbackContext.origin ||
+      !selectedBinding || await this.#locator(selectedBinding).count() !== 1
+    ) return undefined;
+    return node && node.state.sensitive !== true && node.state.disabled !== true && node.actions.length > 0
+      ? selected : undefined;
+  }
+
+  async #visualStability(): Promise<{
+    stable: boolean;
+    scrollX: number;
+    scrollY: number;
+    viewportWidth: number;
+    viewportHeight: number;
+  }> {
+    return this.#page.evaluate(() => ({
+      stable:
+        document.getAnimations().length === 0 &&
+        document.fonts.status === "loaded" &&
+        [...document.images].every((image) => image.complete),
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+    }));
   }
 
   dispose(): void {

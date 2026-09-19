@@ -1,6 +1,6 @@
 # Dual Surface UI
 
-> Project status: P3.1 is verified and Phase 3 execution through Exit Gate
+> Project status: P3.1 and P3.2 are verified and Phase 3 execution through Exit Gate
 > preparation is authorized. The public API is not stable, and Phase 4 remains
 > gated. Read the [master plan](PLAN.md) and
 > [documentation index](docs/README.md) before implementing or adopting it.
@@ -116,6 +116,43 @@ const outcome = await surface.performSafe({
 if (outcome.status === "succeeded") console.log(outcome.output);
 else console.error(outcome.error.code);
 ```
+
+### Policy-safe Playwright fallback
+
+Legacy pages can use the optional `dual-surface-ui/playwright` entry point with
+a caller-owned `Page` and an explicit semantic allowlist. The adapter does not
+launch browsers, navigate, accept selectors, or infer action authority:
+
+```ts
+import { createPlaywrightSurface } from "dual-surface-ui/playwright";
+
+const surface = createPlaywrightSurface({
+  page,
+  surfaceId: "legacy-approval",
+  allowedOrigins: ["https://app.example"],
+  bindings: [{
+    id: "approve",
+    target: { role: "button", name: "Approve" },
+    actions: {
+      approve: {
+        operation: { type: "click" },
+        effects: ["approval-visible"],
+        requiresConfirmation: true,
+      },
+    },
+  }],
+  policy: () => ({ outcome: "require_confirmation" }),
+  confirm: trustedConfirmation,
+  verifyEffect: verifyApproval,
+});
+```
+
+Visual discovery is an explicit option. It receives a bounded synthetic PNG:
+an opaque-black canvas with colored rectangles for current non-sensitive
+candidates and matching `marker` values in the candidate list. It never
+captures page pixels, credentials, closed shadow roots, or iframe contents.
+The callback can return only a current candidate ID and cannot execute it;
+execution still requires a fresh `performSafe()` request.
 
 ### Trusted domain-action compiler
 
@@ -584,6 +621,7 @@ Included:
 - Optional Vue 3.3–3.5 plugin and template-ref lifecycle binding
 - Managed-browser compatibility and native Chrome WebMCP evidence
 - Optional principal-bound MCP snapshot resource and typed action exporter
+- Optional policy-safe Playwright semantic fallback and page-pixel-free visual candidate map
 
 Not included yet:
 
@@ -593,14 +631,14 @@ Not included yet:
 - Mutation-stream or incremental snapshots
 - Durable audit storage, delivery retries, and retention policy
 - Persistent or distributed idempotency storage
-- Screenshot alignment and visual verification
+- Page screenshot capture or screenshot-to-coordinate execution
 - Shadow DOM, iframe, canvas, or native desktop adapters
 
 ## Suggested roadmap
 
-P3.1 is implemented and verified after the Phase 2 maintainer decision. Follow
+P3.1 and P3.2 are implemented and verified after the Phase 2 maintainer decision. Follow
 the accepted sequence in [`docs/04-roadmap.md`](docs/04-roadmap.md): explicit
-Playwright fallback, CLI tooling, delta snapshots, redacted
+delta snapshots, redacted traces and replay, CLI tooling,
 replay, multi-model evaluation, adversarial tests, and measured performance.
 Phase 3 execution is authorized through its Exit Gate preparation. Native
 adapters remain separately gated Phase 4 work after explicit exit approval.

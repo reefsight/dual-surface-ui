@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Playwright semantic fixture</title>
+    <style>
+      body { background: white; color: #111; }
+      input, select, iframe, [data-sensitive] { width: 180px; height: 36px; background: #ff3344; }
+      button { width: 120px; height: 40px; background: #33dd55; }
+    </style>
   </head>
   <body>
     <label>Name <input aria-label="Name" value="" /></label>
@@ -16,6 +21,7 @@
       </select>
     </label>
     <label>Password <input aria-label="Password" type="password" value="never-export-this" /></label>
+    <div role="note" aria-label="Private account note" data-sensitive>Private account note</div>
     <button type="button">Approve</button>
     <div role="status">pending</div>
     <iframe title="Excluded frame" srcdoc="<button>Frame action</button>"></iframe>
