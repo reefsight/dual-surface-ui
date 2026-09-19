@@ -83,16 +83,30 @@ reproducible without weakening the web security model.
 
 ### Deliverables
 
-1. MCP exporter exposing snapshot resources and typed action tools.
-2. Playwright adapter for legacy/uncooperative pages and visual fallback.
-3. CLI for inspect, validate, diff, record, replay, and evaluate.
-4. Incremental/delta snapshots with explicit revision semantics.
-5. Redacted action traces and deterministic replay fixtures.
-6. Multi-model evaluation suite separating discovery, selection, arguments,
-   policy, execution, and verification.
-7. Prompt-injection and confused-deputy adversarial suite.
-8. Performance and token benchmarks against Playwright accessibility snapshot
-   and vision baselines.
+1. P3.1 — MCP exporter exposing snapshot resources and typed action tools.
+2. P3.2 — Playwright adapter for legacy/uncooperative pages and visual
+   fallback.
+3. P3.3 — Incremental/delta snapshots with explicit revision and
+   resynchronization semantics.
+4. P3.4 — Redacted action traces and deterministic replay fixtures.
+5. P3.5 — CLI for inspect, validate, diff, record, replay, and evaluate.
+6. P3.6 — Shared conformance across MCP, WebMCP, DOM, and overlapping
+   Playwright capabilities.
+7. P3.7 — Prompt-injection and confused-deputy adversarial suite.
+8. P3.8 — Multi-model evaluation separating discovery, selection, arguments,
+   safety, execution, verification, and efficiency.
+9. P3.9 — Performance and token benchmarks against full-DOM, Playwright
+   accessibility, and vision baselines, plus web-evidence-based native
+   feasibility preparation.
+10. P3.10 — Phase 3 Exit Audit and proposed review for a separate maintainer
+    decision.
+
+### Planned execution order
+
+P3.2 completes before P3.3 implementation evidence is claimed. P3.3 through
+P3.10 then proceed in numeric dependency order. P3.3 is the next planned work
+item after P3.2. Work-item records define the acceptance and evidence gates;
+planning records do not claim implementation or completion.
 
 ### Exit gate
 

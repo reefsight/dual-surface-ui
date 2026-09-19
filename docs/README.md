@@ -29,6 +29,19 @@ remaining Phase 3 work through Exit Gate preparation in the
 P3.2 implementation is governed by the accepted
 [Playwright fallback work item](work-items/P3.2-playwright-fallback.md) and
 [ADR 0008](adr/0008-playwright-fallback-boundary.md).
+The remaining authorized work is planned in dependency order:
+
+1. [P3.3 incremental/delta snapshots](work-items/P3.3-incremental-delta-snapshots.md)
+2. [P3.4 redacted traces and replay](work-items/P3.4-redacted-traces-replay.md)
+3. [P3.5 CLI orchestration](work-items/P3.5-cli-orchestration.md)
+4. [P3.6 cross-exporter conformance](work-items/P3.6-cross-exporter-conformance.md)
+5. [P3.7 adversarial suite](work-items/P3.7-adversarial-suite.md)
+6. [P3.8 multi-model evaluation](work-items/P3.8-multi-model-evaluation.md)
+7. [P3.9 benchmarks and native feasibility](work-items/P3.9-benchmarks-native-feasibility.md)
+8. [P3.10 Phase 3 Exit Audit](work-items/P3.10-phase3-exit-audit.md)
+
+All eight records are `Planned`; P3.3 is next after P3.2. They define future
+acceptance and evidence gates and do not claim implementation or completion.
 Phase 4 remains gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
@@ -52,6 +65,8 @@ current TOON evaluation is recorded in
 
 ## Status vocabulary
 
+- Planned: authorized scope has a work-item contract but implementation and
+  evidence are not yet claimed.
 - Draft: incomplete and not binding.
 - Proposed: complete enough for review.
 - Accepted: binding for implementation.
