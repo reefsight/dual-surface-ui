@@ -21,7 +21,7 @@ export default defineConfig({
   webServer: {
     command: `npm run build && node scripts/browser-fixture-server.mjs`,
     url: `${primaryOrigin}/__health`,
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
   projects: [

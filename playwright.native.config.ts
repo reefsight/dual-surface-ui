@@ -13,7 +13,7 @@ export default defineConfig({
   workers: 1,
   webServer: {
     command: "npm run build && node scripts/browser-fixture-server.mjs",
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 120_000,
     url: `http://127.0.0.1:${port}/__health`,
   },

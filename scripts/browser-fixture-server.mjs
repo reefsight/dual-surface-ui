@@ -12,8 +12,21 @@ function healthPlugin() {
     name: "dual-surface-browser-fixture-health",
     configureServer(server) {
       server.middlewares.use((request, response, next) => {
+        const pathname = new URL(
+          request.url ?? "/",
+          "http://browser-fixture.invalid",
+        ).pathname;
+        if (/^\/\.webmcp-[^/]*-profile(?:\/|$)/.test(pathname)) {
+          response.writeHead(403, {
+            "cache-control": "no-store",
+            "content-type": "text/plain; charset=utf-8",
+          });
+          response.end("Forbidden");
+          return;
+        }
         const isolatedPaths = new Set([
           "/examples/browser-evidence/native.html",
+          "/examples/browser-evidence/native-declarative.html",
           "/examples/browser-evidence/navigation-target.html",
         ]);
         if (isolatedPaths.has(request.url?.split("?", 1)[0])) {

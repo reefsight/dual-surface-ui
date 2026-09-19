@@ -2,6 +2,42 @@ import { expect, test } from "@playwright/test";
 
 import { openScenario } from "./helpers";
 
+test("fixture server denies any workspace-local WebMCP browser profile", async ({
+  request,
+}) => {
+  const response = await request.get("/.webmcp-native-profile/Local%20State");
+  expect(response.status()).toBe(403);
+  expect(await response.text()).toBe("Forbidden");
+});
+
+test("native evidence codec preserves the Chrome 155 input transition", async ({
+  page,
+}) => {
+  await page.goto("/examples/browser-evidence/navigation-target.html");
+  const result = await page.evaluate(async () => {
+    const compat = await import(
+      "/examples/browser-evidence/native-api-compat.mjs"
+    );
+    const input = { value: "safe" };
+    return {
+      chrome153: compat.encodeNativeExecuteInput(input, "Chrome/153.0.0.0"),
+      chrome154: compat.encodeNativeExecuteInput(input, "Chrome/154.0.0.0"),
+      chrome155: compat.encodeNativeExecuteInput(input, "Chrome/155.0.0.0"),
+      objectResult: compat.parseNativeExecuteResult({ status: "ok" }),
+      stringResult: compat.parseNativeExecuteResult('{"status":"ok"}'),
+      unknown: compat.encodeNativeExecuteInput(input, "ExampleBrowser/1.0"),
+    };
+  });
+  expect(result).toEqual({
+    chrome153: '{"value":"safe"}',
+    chrome154: '{"value":"safe"}',
+    chrome155: { value: "safe" },
+    objectResult: { status: "ok" },
+    stringResult: { status: "ok" },
+    unknown: { value: "safe" },
+  });
+});
+
 test("unsupported imperative API is a DOM-preserving no-op", async ({ page }) => {
   await openScenario(page, "fallback");
   const result = await page.evaluate(() => globalThis.browserEvidence.result());

@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>Native WebMCP frame isolation evidence</title></head>
+  <body>
+    <h1>Native cross-origin frame isolation</h1>
+    <iframe id="blocked-child" title="Blocked cross-origin native WebMCP child"></iframe>
+    <iframe
+      id="delegated-child"
+      title="Delegated cross-origin native WebMCP child"
+      allow="tools"></iframe>
+    <script type="module" src="/examples/browser-evidence/native-frames.mjs"></script>
+  </body>
+</html>

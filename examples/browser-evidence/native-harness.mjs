@@ -5,6 +5,10 @@ import {
   CHECKOUT_EMAIL,
   createCheckoutWorkflow,
 } from "/examples/checkout/workflow.mjs";
+import {
+  encodeNativeExecuteInput,
+  parseNativeExecuteResult,
+} from "./native-api-compat.mjs";
 
 const status = document.querySelector("#native-status");
 const output = document.querySelector("#native-output");
@@ -41,17 +45,6 @@ function catalogRecord(tool) {
     origin: tool.origin,
     title: tool.title,
   };
-}
-
-function parseNativeResult(value) {
-  if (typeof value !== "string") {
-    throw new TypeError("Native WebMCP executeTool returned a non-string result");
-  }
-  try {
-    return JSON.parse(value);
-  } catch {
-    throw new TypeError("Native WebMCP executeTool returned invalid JSON");
-  }
 }
 
 try {
@@ -96,10 +89,10 @@ try {
       const tools = await modelContext.getTools();
       const tool = tools.find((candidate) => candidate.name === "checkout.place_order");
       if (!tool) throw new Error("native checkout.place_order tool is unavailable");
-      const result = parseNativeResult(await modelContext.executeTool(tool, {
+      const result = parseNativeExecuteResult(await modelContext.executeTool(tool, encodeNativeExecuteInput({
         input: { shippingEmail: CHECKOUT_EMAIL },
         idempotencyKey: "ORDER-1001.native-browser.v1",
-      }));
+      })));
       return {
         catalog: await catalog(),
         result,
