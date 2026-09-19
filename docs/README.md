@@ -32,21 +32,19 @@ P3.2 implementation is governed by the accepted
 P3.3 implementation is governed by the accepted
 [incremental snapshot work item](work-items/P3.3-incremental-delta-snapshots.md)
 and [ADR 0009](adr/0009-incremental-delta-contract.md).
-P3.3 is implemented and verified. The remaining authorized work is planned in
+P3.3 and P3.4 are implemented and verified. The remaining authorized work is planned in
 dependency order:
 
-1. [P3.4 redacted traces and replay](work-items/P3.4-redacted-traces-replay.md)
-2. [P3.5 CLI orchestration](work-items/P3.5-cli-orchestration.md)
-3. [P3.6 cross-exporter conformance](work-items/P3.6-cross-exporter-conformance.md)
-4. [P3.7 adversarial suite](work-items/P3.7-adversarial-suite.md)
-5. [P3.8 multi-model evaluation](work-items/P3.8-multi-model-evaluation.md)
-6. [P3.9 benchmarks and native feasibility](work-items/P3.9-benchmarks-native-feasibility.md)
-7. [P3.10 Phase 3 Exit Audit](work-items/P3.10-phase3-exit-audit.md)
+1. [P3.5 CLI orchestration](work-items/P3.5-cli-orchestration.md)
+2. [P3.6 cross-exporter conformance](work-items/P3.6-cross-exporter-conformance.md)
+3. [P3.7 adversarial suite](work-items/P3.7-adversarial-suite.md)
+4. [P3.8 multi-model evaluation](work-items/P3.8-multi-model-evaluation.md)
+5. [P3.9 benchmarks and native feasibility](work-items/P3.9-benchmarks-native-feasibility.md)
+6. [P3.10 Phase 3 Exit Audit](work-items/P3.10-phase3-exit-audit.md)
 
-P3.3 is verified. P3.4 through P3.10 remain planned in dependency order. These
-records define acceptance and evidence gates. P3.4 design is accepted under
-[ADR 0010](adr/0010-redacted-trace-replay-boundary.md) and implementation is in
-progress; no completion is claimed. Phase 4 remains gated.
+P3.4 is verified. P3.5 through P3.10 remain planned in dependency order. These
+records define acceptance and evidence gates and do not claim later completion.
+Phase 4 remains gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
 1 and Phase 2 are accepted; the Phase 2 decision is the

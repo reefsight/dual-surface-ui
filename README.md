@@ -1,6 +1,6 @@
 # Dual Surface UI
 
-> Project status: P3.1 through P3.3 are verified and Phase 3 execution through Exit Gate
+> Project status: P3.1 through P3.4 are verified and Phase 3 execution through Exit Gate
 > preparation is authorized. The public API is not stable, and Phase 4 remains
 > gated. Read the [master plan](PLAN.md) and
 > [documentation index](docs/README.md) before implementing or adopting it.
@@ -636,9 +636,9 @@ Not included yet:
 
 ## Suggested roadmap
 
-P3.1 through P3.3 are implemented and verified after the Phase 2 maintainer decision. Follow
+P3.1 through P3.4 are implemented and verified after the Phase 2 maintainer decision. Follow
 the accepted sequence in [`docs/04-roadmap.md`](docs/04-roadmap.md): explicit
-redacted traces and replay, CLI tooling,
+CLI tooling,
 replay, multi-model evaluation, adversarial tests, and measured performance.
 Phase 3 execution is authorized through its Exit Gate preparation. Native
 adapters remain separately gated Phase 4 work after explicit exit approval.
