@@ -63,8 +63,8 @@ export function createMcpOutputSchema(
   const properties: Record<string, unknown> = {
     schemaVersion: { const: "0.1" },
     surfaceRef: { const: surfaceRef },
-    previousRevision: { type: "string", minLength: 1 },
-    revision: { type: "string", minLength: 1 },
+    previousRevision: { type: "string", pattern: REVISION_PATTERN },
+    revision: { type: "string", pattern: REVISION_PATTERN },
     status: { const: "succeeded" },
     action: { const: binding.action },
     targetId: { const: binding.elementId },

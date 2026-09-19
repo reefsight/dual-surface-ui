@@ -133,6 +133,18 @@ describe("MCP exporter", () => {
         additionalProperties: false,
         required: ["revision", "input", "idempotencyKey"],
       },
+      outputSchema: {
+        properties: {
+          previousRevision: {
+            type: "string",
+            pattern: "^[^\\u0000-\\u001F\\u007F]{1,128}$",
+          },
+          revision: {
+            type: "string",
+            pattern: "^[^\\u0000-\\u001F\\u007F]{1,128}$",
+          },
+        },
+      },
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
