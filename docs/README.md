@@ -44,8 +44,9 @@ dependency order:
 7. [P3.10 Phase 3 Exit Audit](work-items/P3.10-phase3-exit-audit.md)
 
 P3.3 is verified. P3.4 through P3.10 remain planned in dependency order. These
-records define acceptance and evidence gates and do not claim implementation
-or completion. Phase 4 remains gated.
+records define acceptance and evidence gates. P3.4 design is accepted under
+[ADR 0010](adr/0010-redacted-trace-replay-boundary.md) and implementation is in
+progress; no completion is claimed. Phase 4 remains gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
 1 and Phase 2 are accepted; the Phase 2 decision is the
