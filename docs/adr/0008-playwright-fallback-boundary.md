@@ -36,7 +36,7 @@ values are not a documented public action API.
    role/name targets, action metadata, and one of the closed operations:
    `click`, `fill`, `set-checked`, or `select-option`. P3.2 exposes no CSS,
    XPath, regular-expression name, `nth`, coordinate, keyboard, mouse,
-   arbitrary locator, script evaluation, file, download, clipboard,
+   arbitrary locator, caller-supplied script evaluation, file, download, clipboard,
    permission, dialog-acceptance, popup, or navigation primitive.
 5. Resolve every target through public semantic locator APIs and require
    exactly one match. Playwright `ref` values, selectors, locators, handles,
@@ -56,6 +56,10 @@ values are not a documented public action API.
    asynchronous policy, confirmation, and precondition step and immediately
    before the single Playwright mutation. Navigation and semantic ABA changes
    invalidate older generations even when the URL or visible state returns.
+   The adapter may use fixed package-owned evaluation only for private mutation
+   generation, native-control, frame, and retained-handle identity checks.
+   Those fixed checks accept no caller code, selector, page value, or action
+   authority and expose no evaluation handle or result publicly.
 9. Playwright actionability is an additional guard, not authorization.
    `force: true` is prohibited. A resolved Playwright promise is not success;
    the shared lifecycle still requires deterministic native-state or declared

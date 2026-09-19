@@ -756,4 +756,48 @@ describe("backend-neutral action lifecycle coordinator", () => {
       outcome: code,
     });
   });
+
+  it("does not recapture the surface after a pre-execution abort", async () => {
+    const controller = new AbortController();
+    let captures = 0;
+    const execute = vi.fn();
+    const coordinator = new AgentActionLifecycleCoordinator<object>({
+      backend: {
+        captureContext: () => ({
+          generation: "generation-1",
+          origin: "https://example.test",
+        }),
+        captureSnapshot: () => {
+          captures += 1;
+          return fakeSnapshot("0", false);
+        },
+        lastKnownRevision: () => "0",
+        resolveTarget: () => ({ execute, target: {} }),
+        surfaceId: "fake-surface",
+      },
+      hooks: {
+        policy: () => {
+          controller.abort();
+          return { outcome: "allow" };
+        },
+        verifyEffect: () => true,
+      },
+      idempotencyCacheSize: 8,
+    });
+
+    const outcome = await coordinator.performSafe({
+      surfaceId: "fake-surface",
+      revision: "0",
+      elementId: "commit-button",
+      action: "commit",
+      idempotencyKey: "abort-no-recapture",
+    }, { signal: controller.signal });
+
+    expect(outcome).toMatchObject({
+      status: "failed",
+      error: { code: "internal_error" },
+    });
+    expect(captures).toBe(1);
+    expect(execute).not.toHaveBeenCalled();
+  });
 });

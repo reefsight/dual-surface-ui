@@ -59,6 +59,8 @@ interface AgentReplayRecord {
 export interface ResolvedAgentTarget<TTarget> {
   execute: (input: unknown) => MaybePromise<unknown>;
   isCurrent?: () => MaybePromise<boolean>;
+  release?: () => MaybePromise<void>;
+  verifyPostExecution?: () => MaybePromise<boolean>;
   target: TTarget;
   verifyDefault?: (context: {
     action: AgentActionSnapshot;
@@ -68,6 +70,10 @@ export interface ResolvedAgentTarget<TTarget> {
     request: AgentPolicyRequest;
     target: TTarget;
   }) => MaybePromise<boolean>;
+}
+
+export interface AgentLifecycleExecutionOptions {
+  signal?: AbortSignal;
 }
 
 type SelectedAgentAction<TTarget> = ResolvedAgentTarget<TTarget> & {
@@ -82,13 +88,14 @@ export interface AgentActionLifecycleBackend<TTarget> {
    * their own generation.
    */
   captureContext: () => MaybePromise<AgentLifecycleContext>;
-  captureSnapshot: () => MaybePromise<AgentSnapshot>;
+  captureSnapshot: (signal?: AbortSignal) => MaybePromise<AgentSnapshot>;
   lastKnownRevision: () => string;
   resolveTarget: (
     snapshot: AgentSnapshot,
     request: AgentActionRequest,
     targetSnapshot: AgentElementSnapshot,
     action: AgentActionSnapshot,
+    signal?: AbortSignal,
   ) => MaybePromise<ResolvedAgentTarget<TTarget>>;
   surfaceId: string;
   settleContext?: () => MaybePromise<void>;
@@ -138,17 +145,23 @@ export class AgentActionLifecycleCoordinator<TTarget> {
     this.#emitAudit(audit, "surface_observed", "observed", snapshot.revision);
   }
 
-  async perform(request: AgentActionRequest): Promise<AgentActionResult> {
+  async perform(
+    request: AgentActionRequest,
+    options: AgentLifecycleExecutionOptions = {},
+  ): Promise<AgentActionResult> {
     const audit = this.#newAuditContext();
     try {
-      return await this.#performRequest(request, audit);
+      this.#assertNotAborted(options.signal);
+      return await this.#performRequest(request, audit, options.signal);
     } catch (error) {
       if (audit) {
         let revision = this.#backend.lastKnownRevision();
-        try {
-          revision = (await this.#captureSnapshot()).revision;
-        } catch {
-          // Failure audit remains available when observation fails.
+        if (!options.signal?.aborted) {
+          try {
+            revision = (await this.#captureSnapshot(options.signal)).revision;
+          } catch {
+            // Failure audit remains available when observation fails.
+          }
         }
         this.#emitAudit(audit, "action_failed", normalizeAgentFailure(error).code, revision);
       }
@@ -156,15 +169,20 @@ export class AgentActionLifecycleCoordinator<TTarget> {
     }
   }
 
-  async performSafe(request: AgentActionRequest): Promise<AgentActionOutcome> {
+  async performSafe(
+    request: AgentActionRequest,
+    options: AgentLifecycleExecutionOptions = {},
+  ): Promise<AgentActionOutcome> {
     try {
-      return await this.perform(request);
+      return await this.perform(request, options);
     } catch (error) {
       let revision = this.#backend.lastKnownRevision();
-      try {
-        revision = (await this.#captureSnapshot()).revision;
-      } catch {
-        // Failure normalization remains available when observation fails.
+      if (!options.signal?.aborted) {
+        try {
+          revision = (await this.#captureSnapshot(options.signal)).revision;
+        } catch {
+          // Failure normalization remains available when observation fails.
+        }
       }
       return {
         schemaVersion: AGENT_CONTRACT_SCHEMA_VERSION,
@@ -176,7 +194,11 @@ export class AgentActionLifecycleCoordinator<TTarget> {
     }
   }
 
-  async #performRequest(request: AgentActionRequest, audit: AgentAuditContext | undefined): Promise<AgentActionResult> {
+  async #performRequest(
+    request: AgentActionRequest,
+    audit: AgentAuditContext | undefined,
+    signal: AbortSignal | undefined,
+  ): Promise<AgentActionResult> {
     if (request.surfaceId !== this.#backend.surfaceId) {
       throw new AgentSurfaceMismatchError(
         `Action surface "${request.surfaceId}" does not match "${this.#backend.surfaceId}"`,
@@ -189,7 +211,7 @@ export class AgentActionLifecycleCoordinator<TTarget> {
     const replayScope = request.idempotencyKey ? this.#replayScope(request) : undefined;
     const replay = replayScope ? this.#replays.get(replayScope) : undefined;
     if (replay) {
-      await this.#assertContext(context, request);
+      await this.#assertContext(context, request, signal);
       if (
         replay.generation !== this.#replayGeneration(context) ||
         replay.origin !== origin
@@ -204,13 +226,14 @@ export class AgentActionLifecycleCoordinator<TTarget> {
         this.#backend.lastKnownRevision(),
       );
       const principal = await this.#hooks.getPrincipal?.();
-      await this.#assertContext(context, request);
+      await this.#assertContext(context, request, signal);
       const result = await this.#resolveReplay(replay, request, principal, origin);
       this.#emitAudit(audit, "action_verified", "replayed", result.revision);
       return result;
     }
 
-    const before = await this.#captureSnapshot();
+    const before = await this.#captureSnapshot(signal);
+    this.#assertNotAborted(signal);
     this.#assertSnapshotOrigin(context.origin, before.url);
     if (request.revision !== before.revision) {
       throw new AgentStaleRevisionError(
@@ -238,28 +261,31 @@ export class AgentActionLifecycleCoordinator<TTarget> {
       request,
       targetSnapshot,
       action,
+      signal,
     );
     const resolved: SelectedAgentAction<TTarget> = {
       ...resolvedTarget,
       action,
       targetSnapshot,
     };
-    if (audit) audit.action = action.name;
-    this.#emitAudit(audit, "action_requested", "requested", before.revision);
-    preflightActionSchemas(resolved.action);
-    validateActionInput(resolved.action, request.input);
-    if (this.#backend.validateTargetInput && !(await this.#backend.validateTargetInput(resolved, action, request.input))) {
-      throw new AgentInputValidationError(resolved.action.name);
-    }
-    this.#assertIdempotencyPolicy(resolved.action, request.idempotencyKey);
-
-    const principal = await this.#hooks.getPrincipal?.();
-    if (resolved.action.idempotency === "keyed") {
+    try {
+      this.#assertNotAborted(signal);
+      if (audit) audit.action = action.name;
+      this.#emitAudit(audit, "action_requested", "requested", before.revision);
+      preflightActionSchemas(resolved.action);
+      validateActionInput(resolved.action, request.input);
+      if (this.#backend.validateTargetInput && !(await this.#backend.validateTargetInput(resolved, action, request.input))) {
+        throw new AgentInputValidationError(resolved.action.name);
+      }
+      this.#assertIdempotencyPolicy(resolved.action, request.idempotencyKey);
+      const principal = await this.#hooks.getPrincipal?.();
+      this.#assertNotAborted(signal);
+      if (resolved.action.idempotency === "keyed") {
       const fingerprint = await fingerprintActionRequest(request, principal, origin);
       const scope = replayScope!;
       let concurrent = this.#replays.get(scope);
       if (concurrent) {
-        await this.#assertReplayContext(context, request);
+        await this.#assertReplayContext(context, request, signal);
         return this.#joinConcurrent(
           concurrent,
           fingerprint,
@@ -268,7 +294,7 @@ export class AgentActionLifecycleCoordinator<TTarget> {
           audit,
         );
       }
-      await this.#assertContext(context, request);
+      await this.#assertContext(context, request, signal);
       concurrent = this.#replays.get(scope);
       if (concurrent) {
         return this.#joinConcurrent(
@@ -288,6 +314,7 @@ export class AgentActionLifecycleCoordinator<TTarget> {
         principal,
         context,
         audit,
+        signal,
         () => { actionStarted = true; },
       ).then(cloneActionResult);
       const record: AgentReplayRecord = {
@@ -306,11 +333,14 @@ export class AgentActionLifecycleCoordinator<TTarget> {
           else if (this.#replays.get(scope) === record) this.#replays.delete(scope);
         },
       );
-      return cloneActionResult(await execution);
-    }
+        return cloneActionResult(await execution);
+      }
 
-    await this.#assertContext(context, request);
-    return this.#performOnce(request, before, resolved, principal, context, audit);
+      await this.#assertContext(context, request, signal);
+      return await this.#performOnce(request, before, resolved, principal, context, audit, signal);
+    } finally {
+      try { await resolved.release?.(); } catch { /* Resource cleanup cannot change the action outcome. */ }
+    }
   }
 
   async #joinConcurrent(
@@ -341,6 +371,7 @@ export class AgentActionLifecycleCoordinator<TTarget> {
     principal: AgentPrincipal | undefined,
     context: AgentLifecycleContext,
     audit: AgentAuditContext | undefined,
+    signal?: AbortSignal,
     onActionStarted?: () => void,
   ): Promise<AgentActionResult> {
     const policyRequest: AgentPolicyRequest = {
@@ -355,16 +386,16 @@ export class AgentActionLifecycleCoordinator<TTarget> {
     if (decision.outcome === "deny") {
       throw new AgentAuthorizationRequiredError(`Action "${request.action}" requires authorization`);
     }
-    await this.#assertContext(context, request);
+    await this.#assertContext(context, request, signal);
 
     if (resolved.action.requiresConfirmation === true || decision.outcome === "require_confirmation") {
       this.#emitAudit(audit, "confirmation_requested", "requested", before.revision);
       const confirmed = await this.#hooks.confirm?.({ ...policyRequest, decision });
       if (!confirmed) throw new AgentConfirmationRequiredError(request.action);
-      await this.#assertContext(context, request);
+      await this.#assertContext(context, request, signal);
     }
 
-    const current = await this.#captureSnapshot();
+    const current = await this.#captureSnapshot(signal);
     this.#assertRevision(request, before, current);
     await this.#checkPreconditions(
       resolved.action,
@@ -373,8 +404,9 @@ export class AgentActionLifecycleCoordinator<TTarget> {
       before,
       context,
       request,
+      signal,
     );
-    const ready = await this.#captureSnapshot();
+    const ready = await this.#captureSnapshot(signal);
     this.#assertRevision(request, before, ready);
     if (resolved.action.effects?.length && !this.#hooks.verifyEffect) {
       throw new AgentVerificationFailedError(resolved.action.name);
@@ -383,11 +415,13 @@ export class AgentActionLifecycleCoordinator<TTarget> {
       throw new AgentVerificationFailedError(resolved.action.name);
     }
 
-    await this.#assertContext(context, request);
+    await this.#assertContext(context, request, signal);
     if (resolved.isCurrent && !(await resolved.isCurrent())) {
       throw await this.#staleRevision(request);
     }
-    await this.#assertContext(context, request);
+    this.#assertNotAborted(signal);
+    await this.#assertContext(context, request, signal);
+    this.#assertNotAborted(signal);
     onActionStarted?.();
     let execution: MaybePromise<unknown>;
     try {
@@ -396,6 +430,8 @@ export class AgentActionLifecycleCoordinator<TTarget> {
       this.#emitAudit(audit, "action_started", "started", ready.revision);
     }
     const rawOutput = await execution;
+    await this.#backend.settleContext?.();
+    await this.#assertPostExecution(resolved);
     let output: AgentJsonValue | undefined;
     let outputError: unknown;
     if (resolved.action.outputSchema) {
@@ -411,8 +447,12 @@ export class AgentActionLifecycleCoordinator<TTarget> {
       after,
       request.input,
     );
+    await this.#backend.settleContext?.();
+    await this.#assertPostExecution(resolved);
     if (outputError) throw outputError;
     after = await this.#captureSnapshot();
+    await this.#backend.settleContext?.();
+    await this.#assertPostExecution(resolved);
     const node = after.nodes.find((item) => item.id === request.elementId);
     const result: AgentActionResult = {
       schemaVersion: AGENT_CONTRACT_SCHEMA_VERSION,
@@ -430,6 +470,15 @@ export class AgentActionLifecycleCoordinator<TTarget> {
     return result;
   }
 
+  async #assertPostExecution(resolved: SelectedAgentAction<TTarget>): Promise<void> {
+    if (
+      resolved.verifyPostExecution &&
+      !(await resolved.verifyPostExecution())
+    ) {
+      throw new AgentVerificationFailedError(resolved.action.name);
+    }
+  }
+
   async #checkPreconditions(
     action: AgentActionSnapshot,
     request: AgentPolicyRequest,
@@ -437,6 +486,7 @@ export class AgentActionLifecycleCoordinator<TTarget> {
     expected: AgentSnapshot,
     context: AgentLifecycleContext,
     actionRequest: AgentActionRequest,
+    signal?: AbortSignal,
   ): Promise<void> {
     for (const precondition of action.preconditions ?? []) {
       let satisfied = false;
@@ -444,8 +494,8 @@ export class AgentActionLifecycleCoordinator<TTarget> {
         satisfied = (await this.#hooks.checkPrecondition?.({ ...request, precondition, snapshot })) === true;
       } catch { satisfied = false; }
       if (!satisfied) throw new AgentPreconditionFailedError(action.name);
-      await this.#assertContext(context, actionRequest);
-      const observed = await this.#captureSnapshot();
+      await this.#assertContext(context, actionRequest, signal);
+      const observed = await this.#captureSnapshot(signal);
       this.#assertRevision(actionRequest, expected, observed);
     }
   }
@@ -485,6 +535,7 @@ export class AgentActionLifecycleCoordinator<TTarget> {
   async #assertContext(
     expected: AgentLifecycleContext,
     request: AgentActionRequest,
+    signal?: AbortSignal,
   ): Promise<void> {
     await this.#backend.settleContext?.();
     const current = await this.#captureContext();
@@ -494,11 +545,20 @@ export class AgentActionLifecycleCoordinator<TTarget> {
     ) {
       throw await this.#staleRevision(request);
     }
+    this.#assertNotAborted(signal);
+  }
+
+  #assertNotAborted(signal: AbortSignal | undefined): void {
+    if (!signal?.aborted) return;
+    const error = new Error("The action was aborted before execution");
+    error.name = "AbortError";
+    throw error;
   }
 
   async #assertReplayContext(
     expected: AgentLifecycleContext,
     request: AgentActionRequest,
+    signal?: AbortSignal,
   ): Promise<void> {
     const current = await this.#captureContext();
     if (
@@ -507,6 +567,7 @@ export class AgentActionLifecycleCoordinator<TTarget> {
     ) {
       throw await this.#staleRevision(request);
     }
+    this.#assertNotAborted(signal);
   }
 
   async #captureContext(): Promise<AgentLifecycleContext> {
@@ -548,8 +609,10 @@ export class AgentActionLifecycleCoordinator<TTarget> {
     }
   }
 
-  async #captureSnapshot(): Promise<AgentSnapshot> {
-    const snapshot = await this.#backend.captureSnapshot();
+  async #captureSnapshot(signal?: AbortSignal): Promise<AgentSnapshot> {
+    this.#assertNotAborted(signal);
+    const snapshot = await this.#backend.captureSnapshot(signal);
+    this.#assertNotAborted(signal);
     if (snapshot.surfaceId !== this.#backend.surfaceId) {
       throw new AgentSurfaceMismatchError(
         `Snapshot surface "${snapshot.surfaceId}" does not match "${this.#backend.surfaceId}"`,

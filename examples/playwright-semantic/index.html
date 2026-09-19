@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playwright semantic fixture</title>
+  </head>
+  <body>
+    <label>Name <input aria-label="Name" value="" /></label>
+    <label><input aria-label="Terms" type="checkbox" /> Terms</label>
+    <label>
+      Country
+      <select aria-label="Country">
+        <option value="th">Thailand</option>
+        <option value="jp">Japan</option>
+      </select>
+    </label>
+    <label>Password <input aria-label="Password" type="password" value="never-export-this" /></label>
+    <button type="button">Approve</button>
+    <div role="status">pending</div>
+    <iframe title="Excluded frame" srcdoc="<button>Frame action</button>"></iframe>
+    <script>
+      document.querySelector("button").addEventListener("click", () => {
+        document.querySelector('[role="status"]').textContent = "approved";
+      });
+    </script>
+  </body>
+</html>
