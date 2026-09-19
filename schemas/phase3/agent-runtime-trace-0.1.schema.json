@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/agent-runtime-trace-0.1.json",
+  "title": "Dual Surface UI Redacted Runtime Trace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "sourceId",
+    "recordCount",
+    "operationCount",
+    "headDigest",
+    "records"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "agent-runtime-trace"
+    },
+    "sourceId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+    },
+    "recordCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1024
+    },
+    "operationCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 256
+    },
+    "headDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1024,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "operation",
+          "sequence",
+          "event",
+          "outcome",
+          "revisionRef",
+          "previousDigest",
+          "digest"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "operation": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 256
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "event": {
+            "enum": [
+              "surface_observed",
+              "action_requested",
+              "policy_decided",
+              "confirmation_requested",
+              "action_started",
+              "action_verified",
+              "action_failed"
+            ]
+          },
+          "outcome": {
+            "enum": [
+              "observed",
+              "requested",
+              "allow",
+              "deny",
+              "require_confirmation",
+              "started",
+              "succeeded",
+              "replayed",
+              "element_not_found",
+              "action_not_found",
+              "authorization_required",
+              "duplicate_element_id",
+              "surface_mismatch",
+              "stale_revision",
+              "invalid_input",
+              "confirmation_required",
+              "invalid_policy_decision",
+              "precondition_failed",
+              "verification_failed",
+              "invalid_output",
+              "idempotency_key_required",
+              "invalid_idempotency_key",
+              "idempotency_conflict",
+              "idempotency_unavailable",
+              "internal_error"
+            ]
+          },
+          "revisionRef": {
+            "type": "string",
+            "pattern": "^revision-[1-9][0-9]*$"
+          },
+          "previousDigest": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "actionRef": {
+            "type": "string",
+            "pattern": "^action-[1-9][0-9]*$"
+          }
+        }
+      }
+    }
+  }
+}

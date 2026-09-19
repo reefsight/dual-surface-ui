@@ -45,6 +45,14 @@
     "./delta": {
       "types": "./dist/delta/index.d.ts",
       "import": "./dist/delta/index.js"
+    },
+    "./trace": {
+      "types": "./dist/trace/index.d.ts",
+      "import": "./dist/trace/index.js"
+    },
+    "./replay": {
+      "types": "./dist/replay/index.d.ts",
+      "import": "./dist/replay/index.js"
     }
   },
   "files": [
@@ -59,6 +67,7 @@
     "build:angular": "ngc -p angular/tsconfig.json",
     "contract:check": "npm run build && node scripts/check-phase1-contract.mjs",
     "package:check:delta": "npm run build && node scripts/check-delta-package.mjs",
+    "package:check:trace-replay": "npm run build && node scripts/check-trace-replay-package.mjs",
     "package:check:playwright": "npm run build && node scripts/check-playwright-package.mjs",
     "example:checkout": "npm run build && node examples/checkout/run.mjs",
     "example:document-approval": "npm run build && node examples/document-approval/run.mjs",
