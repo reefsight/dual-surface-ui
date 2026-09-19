@@ -44,10 +44,14 @@ const activeForms = new WeakSet<HTMLFormElement>();
 function isModelContextDocument(
   document: Document,
 ): document is Document & { modelContext: { registerTool: unknown } } {
-  const candidate = document as Document & {
-    modelContext?: { registerTool?: unknown };
-  };
-  return typeof candidate.modelContext?.registerTool === "function";
+  try {
+    const candidate = document as Document & {
+      modelContext?: { registerTool?: unknown };
+    };
+    return typeof candidate.modelContext?.registerTool === "function";
+  } catch {
+    return false;
+  }
 }
 
 export function detectWebMcpDeclarativeCapabilities(
@@ -172,9 +176,12 @@ function validateField(
   if (
     control.ownerDocument !== form.ownerDocument ||
     control.form !== form ||
+    !form.contains(control) ||
     !control.isConnected
   ) {
-    throw new TypeError("Declarative WebMCP controls must belong to the mounted form");
+    throw new TypeError(
+      "Declarative WebMCP controls must belong to the mounted form as descendants",
+    );
   }
   if (!control.name) {
     throw new TypeError("Declarative WebMCP controls require a name");
@@ -265,39 +272,95 @@ function restoreAttribute(snapshot: AttributeSnapshot): void {
   }
 }
 
+function hasExactMountedAnnotations(
+  options: WebMcpDeclarativeFormOptions,
+): boolean {
+  return (
+    options.form.getAttribute("toolname") === options.name &&
+    options.form.getAttribute("tooldescription") === options.description &&
+    !options.form.hasAttribute("toolautosubmit") &&
+    options.fields.every(
+      (field) =>
+        field.control.getAttribute("toolparamdescription") === field.description,
+    )
+  );
+}
+
 export function mountDeclarativeWebMcpForm(
   options: WebMcpDeclarativeFormOptions,
 ): WebMcpDeclarativeFormHandle {
-  if (activeForms.has(options.form)) {
+  const mounted: WebMcpDeclarativeFormOptions = Object.freeze({
+    form: options.form,
+    name: options.name,
+    description: options.description,
+    fields: Object.freeze(
+      options.fields.map((field) =>
+        Object.freeze({
+          control: field.control,
+          description: field.description,
+        }),
+      ),
+    ),
+  });
+  if (activeForms.has(mounted.form)) {
     throw new TypeError("This form already has an active declarative WebMCP mount");
   }
-  validateOptions(options);
+  validateOptions(mounted);
 
   const snapshots = [
-    captureAttribute(options.form, "toolname"),
-    captureAttribute(options.form, "tooldescription"),
-    captureAttribute(options.form, "toolautosubmit"),
-    ...options.fields.map((field) =>
+    captureAttribute(mounted.form, "toolname"),
+    captureAttribute(mounted.form, "tooldescription"),
+    captureAttribute(mounted.form, "toolautosubmit"),
+    ...mounted.fields.map((field) =>
       captureAttribute(field.control, "toolparamdescription"),
     ),
   ];
-  options.form.setAttribute("toolname", options.name);
-  options.form.setAttribute("tooldescription", options.description);
-  options.form.removeAttribute("toolautosubmit");
-  for (const field of options.fields) {
+  mounted.form.setAttribute("toolname", mounted.name);
+  mounted.form.setAttribute("tooldescription", mounted.description);
+  mounted.form.removeAttribute("toolautosubmit");
+  for (const field of mounted.fields) {
     field.control.setAttribute("toolparamdescription", field.description);
   }
-  activeForms.add(options.form);
+  activeForms.add(mounted.form);
 
   let disposed = false;
+  const dispose = () => {
+    if (disposed) return;
+    disposed = true;
+    observer?.disconnect();
+    for (const snapshot of snapshots) restoreAttribute(snapshot);
+    activeForms.delete(mounted.form);
+  };
+  const MutationObserverConstructor =
+    mounted.form.ownerDocument.defaultView?.MutationObserver;
+  const observer = MutationObserverConstructor
+    ? new MutationObserverConstructor(() => {
+        if (disposed) return;
+        try {
+          validateOptions(mounted);
+          if (!hasExactMountedAnnotations(mounted)) dispose();
+        } catch {
+          dispose();
+        }
+      })
+    : undefined;
+  observer?.observe(mounted.form, {
+    attributes: true,
+    childList: true,
+    subtree: true,
+  });
+  const documentRoot = mounted.form.ownerDocument.documentElement;
+  if (documentRoot && documentRoot !== mounted.form) {
+    observer?.observe(documentRoot, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+  }
+
   return {
-    form: options.form,
-    name: options.name,
-    dispose() {
-      if (disposed) return;
-      disposed = true;
-      for (const snapshot of snapshots) restoreAttribute(snapshot);
-      activeForms.delete(options.form);
-    },
+    form: mounted.form,
+    name: mounted.name,
+    dispose,
   };
 }

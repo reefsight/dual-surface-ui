@@ -14,6 +14,7 @@ describe("AgentSurface", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     document.title = "Checkout";
+    window.history.replaceState({}, "", "/");
   });
 
   it("turns the human DOM into a compact semantic snapshot", () => {
@@ -270,6 +271,30 @@ describe("AgentSurface", () => {
     input.value = "New";
     expect(surface.snapshot().revision).toBe("1");
     expect(surface.snapshot().revision).toBe("1");
+  });
+
+  it("advances revision for replaceState, pushState, and hash navigation", async () => {
+    document.body.innerHTML = `<button data-agent-id="save">Save</button>`;
+    const authorize = vi.fn(() => true);
+    const surface = createAgentSurface({ surfaceId: "spa", authorize });
+    const observed = surface.snapshot();
+
+    window.history.replaceState({}, "", "/replaced-route");
+    expect(surface.snapshot().revision).toBe("1");
+    window.history.pushState({}, "", "/next-route");
+    expect(surface.snapshot().revision).toBe("2");
+    window.location.hash = "section";
+    const navigated = surface.snapshot();
+
+    expect(navigated.url).toBe("http://localhost:3000/next-route#section");
+    expect(navigated.revision).toBe("3");
+    await expect(surface.perform({
+      surfaceId: observed.surfaceId,
+      revision: observed.revision,
+      elementId: "save",
+      action: "click",
+    })).rejects.toBeInstanceOf(AgentStaleRevisionError);
+    expect(authorize).not.toHaveBeenCalled();
   });
 
   it("rejects wrong-surface and stale requests before authorization", async () => {

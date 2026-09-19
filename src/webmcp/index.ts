@@ -42,25 +42,69 @@ interface RegistrationBatch {
 }
 
 const activeSurfaces = new WeakMap<WebMcpModelContext, WeakSet<object>>();
+const activeToolNames = new WeakMap<WebMcpModelContext, Set<string>>();
+
+function reserveToolNames(
+  context: WebMcpModelContext,
+  bindings: readonly WebMcpToolBinding[],
+): readonly string[] {
+  const names = bindings.map((binding) => binding.name);
+  const uniqueNames = new Set(names);
+  if (uniqueNames.size !== names.length) {
+    throw new TypeError("Duplicate WebMCP tool name in exporter bindings");
+  }
+  let reserved = activeToolNames.get(context);
+  if (!reserved) {
+    reserved = new Set<string>();
+    activeToolNames.set(context, reserved);
+  }
+  const conflict = names.find((name) => reserved!.has(name));
+  if (conflict) {
+    throw new TypeError(
+      `WebMCP tool name "${conflict}" is already owned by another active surface`,
+    );
+  }
+  for (const name of names) reserved.add(name);
+  return Object.freeze([...names]);
+}
+
+function releaseToolNames(
+  context: WebMcpModelContext,
+  names: readonly string[],
+): void {
+  const reserved = activeToolNames.get(context);
+  if (!reserved) return;
+  for (const name of names) reserved.delete(name);
+  if (reserved.size === 0) activeToolNames.delete(context);
+}
 
 function resolveModelContext(
   options: WebMcpExportOptions,
 ): WebMcpModelContext | undefined {
-  if (options.modelContext) return options.modelContext;
-  const targetDocument = options.document ?? globalThis.document;
-  const context = (targetDocument as ModelContextDocument | undefined)
-    ?.modelContext;
-  return context && typeof context.registerTool === "function"
-    ? context
-    : undefined;
+  try {
+    const context =
+      options.modelContext ??
+      ((options.document ?? globalThis.document) as
+        | ModelContextDocument
+        | undefined)?.modelContext;
+    return context && typeof context.registerTool === "function"
+      ? context
+      : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function isWebMcpImperativeSupported(
   targetDocument: Document | undefined = globalThis.document,
 ): boolean {
-  const context = (targetDocument as ModelContextDocument | undefined)
-    ?.modelContext;
-  return !!context && typeof context.registerTool === "function";
+  try {
+    const context = (targetDocument as ModelContextDocument | undefined)
+      ?.modelContext;
+    return !!context && typeof context.registerTool === "function";
+  } catch {
+    return false;
+  }
 }
 
 function validateTrustedBinding(binding: WebMcpToolBinding): void {
@@ -181,11 +225,13 @@ function createTool(
   snapshot: AgentSnapshot,
   resolved: ResolvedBinding,
   descriptor: WebMcpToolDescriptor,
+  registrationSignal: AbortSignal,
 ): WebMcpTool {
   const { binding, action } = resolved;
   return {
     ...descriptor,
     async execute(input, context) {
+      if (registrationSignal.aborted) throw abortError();
       if (context?.signal?.aborted) throw abortError();
       const envelope = parseEnvelope(input, action);
       if (!envelope.valid) return invalidInput(snapshot);
@@ -212,15 +258,35 @@ async function populateBatch(
   surface: WebMcpSurface,
   bindings: readonly WebMcpToolBinding[],
   batch: RegistrationBatch,
+  expectedOrigin: string | undefined,
 ): Promise<void> {
   const snapshot = surface.snapshot();
+  if (expectedOrigin !== undefined) {
+    let snapshotOrigin: string;
+    try {
+      snapshotOrigin = new URL(snapshot.url).origin;
+    } catch {
+      throw new TypeError("WebMCP surface snapshot requires a valid URL");
+    }
+    if (snapshotOrigin !== expectedOrigin) {
+      throw new TypeError(
+        "WebMCP surface and model context must use the same origin",
+      );
+    }
+  }
   const resolved = resolveBindings(snapshot, bindings);
   try {
     for (const item of resolved) {
       const controller = new AbortController();
       batch.controllers.push(controller);
       const descriptor = createWebMcpToolDescriptor(item.binding, item.action);
-      const tool = createTool(surface, snapshot, item, descriptor);
+      const tool = createTool(
+        surface,
+        snapshot,
+        item,
+        descriptor,
+        controller.signal,
+      );
       await context.registerTool(tool, {
         signal: controller.signal,
       });
@@ -265,6 +331,8 @@ export async function exportAgentSurfaceToWebMcp(
 ): Promise<InstrumentedWebMcpExportHandle> {
   const context = resolveModelContext(options);
   if (!context) return unsupportedHandle();
+  const targetDocument = options.document ?? globalThis.document;
+  const expectedOrigin = targetDocument?.location?.origin;
   const bindings = options.bindings.map((binding) => ({ ...binding }));
 
   let surfaces = activeSurfaces.get(context);
@@ -277,6 +345,7 @@ export async function exportAgentSurfaceToWebMcp(
     throw new TypeError("This surface already has an active WebMCP exporter");
   }
   surfaces.add(surfaceKey);
+  let reservedNames: readonly string[] = [];
 
   let disposed = false;
   let batch: RegistrationBatch = {
@@ -287,8 +356,10 @@ export async function exportAgentSurfaceToWebMcp(
     toolObservations: [],
   };
   try {
-    await populateBatch(context, surface, bindings, batch);
+    reservedNames = reserveToolNames(context, bindings);
+    await populateBatch(context, surface, bindings, batch, expectedOrigin);
   } catch (error) {
+    releaseToolNames(context, reservedNames);
     surfaces.delete(surfaceKey);
     throw error;
   }
@@ -317,7 +388,7 @@ export async function exportAgentSurfaceToWebMcp(
           toolDescriptors: [],
           toolObservations: [],
         };
-        await populateBatch(context, surface, bindings, batch);
+        await populateBatch(context, surface, bindings, batch, expectedOrigin);
       });
       queue = operation.catch(() => {});
       return operation;
@@ -333,6 +404,8 @@ export async function exportAgentSurfaceToWebMcp(
         toolDescriptors: [],
         toolObservations: [],
       };
+      releaseToolNames(context, reservedNames);
+      reservedNames = [];
       surfaces.delete(surfaceKey);
     },
   };

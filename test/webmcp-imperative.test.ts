@@ -13,6 +13,7 @@ import {
 class FakeModelContext implements WebMcpModelContext {
   readonly tools = new Map<string, WebMcpTool>();
   readonly registrations: WebMcpTool[] = [];
+  readonly registrationOptions: Array<Record<string, unknown>> = [];
   failOnName?: string;
 
   registerTool(tool: WebMcpTool, options: { signal: AbortSignal }): void {
@@ -20,6 +21,7 @@ class FakeModelContext implements WebMcpModelContext {
     if (this.tools.has(tool.name)) throw new Error("duplicate active tool");
     this.tools.set(tool.name, tool);
     this.registrations.push(tool);
+    this.registrationOptions.push(options);
     options.signal.addEventListener(
       "abort",
       () => this.tools.delete(tool.name),
@@ -62,7 +64,7 @@ function surfaceWithInputSchema(
     surfaceId: "portable-schema",
     revision: "0",
     title: "",
-    url: "https://example.test/",
+    url: window.location.href,
     generatedAt: "2026-09-18T00:00:00.000Z",
     capabilities: ["snapshot", "perform"],
     nodes: [
@@ -84,6 +86,7 @@ function surfaceWithInputSchema(
 describe("WebMCP imperative exporter", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    window.history.replaceState({}, "", "/");
   });
 
   it("feature-detects unsupported documents without side effects", async () => {
@@ -101,6 +104,47 @@ describe("WebMCP imperative exporter", () => {
     expect(handle.toolObservations).toEqual([]);
     await expect(handle.refresh()).resolves.toBeUndefined();
     handle.dispose();
+  });
+
+  it("treats throwing and partial capabilities as unsupported", async () => {
+    const throwingDocument = Object.create(null) as Document;
+    Object.defineProperty(throwingDocument, "modelContext", {
+      get() {
+        throw new Error("capability access denied");
+      },
+    });
+    const surface = createAgentSurface({ surfaceId: "unsupported-capability" });
+
+    expect(isWebMcpImperativeSupported(throwingDocument)).toBe(false);
+    await expect(exportAgentSurfaceToWebMcp(surface, {
+      document: throwingDocument,
+      bindings: [],
+    })).resolves.toMatchObject({ supported: false, toolNames: [] });
+    await expect(exportAgentSurfaceToWebMcp(surface, {
+      modelContext: {} as WebMcpModelContext,
+      bindings: [],
+    })).resolves.toMatchObject({ supported: false, toolNames: [] });
+  });
+
+  it("rolls back when asynchronous registration rejects", async () => {
+    const { surface, handler } = registeredSurface({ risk: "read" });
+    const retained: WebMcpTool[] = [];
+    const context: WebMcpModelContext = {
+      async registerTool(tool) {
+        retained.push(tool);
+        throw new Error("asynchronous registration rejected");
+      },
+    };
+
+    await expect(exportAgentSurfaceToWebMcp(surface, {
+      modelContext: context,
+      bindings: [binding],
+    })).rejects.toThrow("asynchronous registration rejected");
+    expect(retained).toHaveLength(1);
+    await expect(retained[0]!.execute({})).rejects.toMatchObject({
+      name: "AbortError",
+    });
+    expect(handler).not.toHaveBeenCalled();
   });
 
   it("registers only trusted explicit bindings with exact schemas and conservative annotations", async () => {
@@ -155,6 +199,7 @@ describe("WebMCP imperative exporter", () => {
       consequentialHint: true,
       untrustedContentHint: true,
     });
+    expect(Object.keys(context.registrationOptions[0]!)).toEqual(["signal"]);
     handle.dispose();
     expect(handle.toolDescriptors).toEqual([]);
     expect(handle.toolObservations).toEqual([]);
@@ -334,6 +379,63 @@ describe("WebMCP imperative exporter", () => {
     handle.dispose();
   });
 
+  it("does not replay a keyed result after SPA navigation", async () => {
+    const { surface, handler } = registeredSurface({
+      risk: "write",
+      effects: ["submitted"],
+      idempotency: "keyed",
+      inputSchema: { type: "integer" },
+    });
+    const context = new FakeModelContext();
+    const handle = await exportAgentSurfaceToWebMcp(surface, {
+      modelContext: context,
+      bindings: [binding],
+    });
+    const retained = context.tools.get(binding.name)!;
+    const envelope = { input: 1, idempotencyKey: "route-scoped-request" };
+
+    expect((await retained.execute(envelope)).status).toBe("succeeded");
+    window.history.pushState({}, "", "/different-order");
+    const replay = await retained.execute(envelope);
+
+    expect(replay).toMatchObject({
+      status: "failed",
+      error: { code: "stale_revision" },
+    });
+    expect(handler).toHaveBeenCalledOnce();
+    handle.dispose();
+  });
+
+  it("does not replay a keyed result after an observed route round trip", async () => {
+    const { surface, handler } = registeredSurface({
+      risk: "write",
+      effects: ["submitted"],
+      idempotency: "keyed",
+      inputSchema: { type: "integer" },
+    });
+    const context = new FakeModelContext();
+    const handle = await exportAgentSurfaceToWebMcp(surface, {
+      modelContext: context,
+      bindings: [binding],
+    });
+    const retained = context.tools.get(binding.name)!;
+    const envelope = { input: 1, idempotencyKey: "route-round-trip" };
+    const originalUrl = window.location.href;
+
+    expect((await retained.execute(envelope)).status).toBe("succeeded");
+    window.history.pushState({}, "", "/temporary-route");
+    surface.snapshot();
+    window.history.replaceState({}, "", originalUrl);
+    const replay = await retained.execute(envelope);
+
+    expect(replay).toMatchObject({
+      status: "failed",
+      error: { code: "stale_revision" },
+    });
+    expect(handler).toHaveBeenCalledOnce();
+    handle.dispose();
+  });
+
   it("honors pre-aborted execution without starting core work", async () => {
     const { surface, handler } = registeredSurface({ risk: "read" });
     const context = new FakeModelContext();
@@ -369,6 +471,9 @@ describe("WebMCP imperative exporter", () => {
     expect(handle.toolObservations[0]?.generation).toBe(2);
     expect(context.registrations).toHaveLength(2);
     expect(context.tools.get(binding.name)).not.toBe(firstTool);
+    await expect(firstTool.execute({})).rejects.toMatchObject({
+      name: "AbortError",
+    });
     expect((await context.tools.get(binding.name)!.execute({})).status).toBe(
       "succeeded",
     );
@@ -378,6 +483,9 @@ describe("WebMCP imperative exporter", () => {
     expect(context.tools.size).toBe(0);
     expect(handle.toolDescriptors).toEqual([]);
     expect(handle.toolObservations).toEqual([]);
+    await expect(context.registrations.at(-1)!.execute({})).rejects.toMatchObject({
+      name: "AbortError",
+    });
 
     const remount = await exportAgentSurfaceToWebMcp(surface, {
       modelContext: context,
@@ -385,6 +493,68 @@ describe("WebMCP imperative exporter", () => {
     });
     expect(context.tools.size).toBe(1);
     remount.dispose();
+  });
+
+  it("makes a retained tool stale after SPA navigation before core policy", async () => {
+    const { surface, handler } = registeredSurface({ risk: "write" });
+    const context = new FakeModelContext();
+    const handle = await exportAgentSurfaceToWebMcp(surface, {
+      modelContext: context,
+      bindings: [binding],
+    });
+    const retained = context.tools.get(binding.name)!;
+
+    window.history.pushState({}, "", "/orders/next");
+    const outcome = await retained.execute({});
+
+    expect(outcome).toMatchObject({
+      status: "failed",
+      error: { code: "stale_revision" },
+    });
+    expect(handler).not.toHaveBeenCalled();
+    handle.dispose();
+  });
+
+  it("rejects a surface from a different origin before registration", async () => {
+    const context = new FakeModelContext();
+    const foreign = surfaceWithInputSchema({ type: "string" });
+    const snapshot = foreign.snapshot();
+    const surface: WebMcpSurface = {
+      snapshot: () => ({ ...snapshot, url: "https://foreign.example/path" }),
+      performSafe: foreign.performSafe,
+    };
+
+    await expect(exportAgentSurfaceToWebMcp(surface, {
+      document,
+      modelContext: context,
+      bindings: [binding],
+    })).rejects.toThrow("same origin");
+    expect(context.registrations).toEqual([]);
+    expect(context.tools.size).toBe(0);
+  });
+
+  it("reserves tool names across active surfaces in one model context", async () => {
+    const first = registeredSurface({ risk: "read" });
+    const context = new FakeModelContext();
+    const firstHandle = await exportAgentSurfaceToWebMcp(first.surface, {
+      modelContext: context,
+      bindings: [binding],
+    });
+    const second = registeredSurface({ risk: "read" });
+
+    await expect(exportAgentSurfaceToWebMcp(second.surface, {
+      modelContext: context,
+      bindings: [binding],
+    })).rejects.toThrow("already owned by another active surface");
+    expect(context.tools.size).toBe(1);
+
+    firstHandle.dispose();
+    const secondHandle = await exportAgentSurfaceToWebMcp(second.surface, {
+      modelContext: context,
+      bindings: [binding],
+    });
+    expect(context.tools.size).toBe(1);
+    secondHandle.dispose();
   });
 
   it("rolls back partial registration and releases the exporter lock", async () => {
@@ -417,6 +587,9 @@ describe("WebMCP imperative exporter", () => {
       }),
     ).rejects.toThrow("registration failed");
     expect(context.tools.size).toBe(0);
+    await expect(context.registrations[0]!.execute({})).rejects.toMatchObject({
+      name: "AbortError",
+    });
 
     context.failOnName = undefined;
     const remount = await exportAgentSurfaceToWebMcp(surface, {
@@ -451,6 +624,9 @@ describe("WebMCP imperative exporter", () => {
 
     await expect(refreshing).rejects.toMatchObject({ name: "AbortError" });
     expect(context.tools.size).toBe(0);
+    await expect(context.registrations.at(-1)!.execute({})).rejects.toMatchObject({
+      name: "AbortError",
+    });
   });
 
   it("rejects unsafe configuration before registering anything", async () => {

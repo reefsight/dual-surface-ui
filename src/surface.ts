@@ -65,6 +65,8 @@ interface AgentReplayRecord {
   fingerprint: string;
   promise: Promise<AgentActionResult>;
   settled: boolean;
+  navigationEpoch: number;
+  url: string;
 }
 
 interface AgentAuditContext {
@@ -98,6 +100,8 @@ export class AgentSurface {
   readonly #replays = new Map<string, AgentReplayRecord>();
   #nextId = 1;
   #nextCorrelationId = 1;
+  #navigationEpoch = 0;
+  #observedUrl: string | undefined;
   #revision = 0;
   #semanticSignature: string | undefined;
   #emittingAudit = false;
@@ -181,7 +185,9 @@ export class AgentSurface {
   #captureSnapshot(): AgentSnapshot {
     const document = this.#document();
     const nodes = this.#snapshotNodes();
-    this.#refreshRevision(nodes);
+    const url = document.location?.href ?? "";
+    this.#observeNavigation(url);
+    this.#refreshRevision(nodes, url);
     const focusedElement = document.activeElement;
     const focusedElementId =
       focusedElement instanceof Element
@@ -193,7 +199,7 @@ export class AgentSurface {
       surfaceId: this.#surfaceId,
       revision: String(this.#revision),
       title: document.title,
-      url: document.location?.href ?? "",
+      url,
       generatedAt: new Date().toISOString(),
       ...(focusedElementId ? { focusedElementId } : {}),
       capabilities: ["snapshot", "perform"],
@@ -243,6 +249,17 @@ export class AgentSurface {
       : undefined;
     const replay = replayScope ? this.#replays.get(replayScope) : undefined;
     if (replay) {
+      const currentUrl = this.#document().location?.href ?? "";
+      this.#observeNavigation(currentUrl);
+      if (
+        replay.url !== currentUrl ||
+        replay.navigationEpoch !== this.#navigationEpoch
+      ) {
+        const current = this.#captureSnapshot();
+        throw new AgentStaleRevisionError(
+          `Action revision "${request.revision}" is stale; current revision is "${current.revision}"`,
+        );
+      }
       if (audit) audit.action = replay.actionName;
       this.#emitAudit(
         audit,
@@ -339,6 +356,8 @@ export class AgentSurface {
         fingerprint,
         promise: execution,
         settled: false,
+        navigationEpoch: this.#navigationEpoch,
+        url: before.url,
       };
       this.#replays.set(scope, record);
       void execution.then(
@@ -764,9 +783,12 @@ export class AgentSurface {
     return nodes;
   }
 
-  #refreshRevision(nodes: AgentElementSnapshot[]): void {
+  #refreshRevision(nodes: AgentElementSnapshot[], url: string): void {
     const signature = JSON.stringify(
-      nodes.map(({ bounds: _bounds, ...semanticNode }) => semanticNode),
+      {
+        url,
+        nodes: nodes.map(({ bounds: _bounds, ...semanticNode }) => semanticNode),
+      },
     );
     if (
       this.#semanticSignature !== undefined &&
@@ -775,6 +797,13 @@ export class AgentSurface {
       this.#revision += 1;
     }
     this.#semanticSignature = signature;
+  }
+
+  #observeNavigation(url: string): void {
+    if (this.#observedUrl !== undefined && this.#observedUrl !== url) {
+      this.#navigationEpoch += 1;
+    }
+    this.#observedUrl = url;
   }
 
   #idFor(element: Element): string {
