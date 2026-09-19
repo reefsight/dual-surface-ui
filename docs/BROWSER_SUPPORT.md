@@ -1,6 +1,6 @@
 # Browser Support and Evidence Matrix
 
-Status: Automated real-browser evidence verified; native Chrome/Inspector evidence pending
+Status: Ready for maintainer decision; approval pending
 
 Last reviewed: 2026-09-19 (Asia/Bangkok)
 
@@ -14,7 +14,7 @@ or mobile browsers.
 
 | Tier | Meaning | What it does not prove |
 |---|---|---|
-| Native WebMCP | Actual `document.modelContext`, browser-owned discovery/invocation, and Inspector/manual evidence | Other browser versions, channels, or operating systems |
+| Native WebMCP | Actual `document.modelContext` plus browser-owned discovery/invocation and Inspector or equivalent manual evidence | Other browser versions, channels, or operating systems |
 | Browser with test shim | Built package executes in a real browser while a deterministic shim records registration and lifecycle | Native registry retention, Inspector visibility, browser agent behavior, or browser confirmation UX |
 | Unsupported/no native API | The tested configuration lacks the required API and the package preserves the human path without hidden fallback | Native WebMCP support or future behavior of that browser |
 
@@ -25,26 +25,26 @@ version number is not native WebMCP evidence.
 
 | Browser/OS | Exact version | Native capability result | Current status |
 |---|---|---|---|
-| Google Chrome on Microsoft Windows 11 Pro 64-bit | Chrome 153.0.8010.50; Windows 10.0.26200 build 26200 | Package-native fixture returned `UNSUPPORTED` at 2026-09-19 18:20:09 +07:00 because the current profile exposed no `document.modelContext`; no shim was injected and the human checkout remained usable | Pending enabled-profile native suite and Inspector/manual evidence |
+| Google Chrome on Microsoft Windows 11 Pro 64-bit | Chrome 153.0.8010.50; Windows 10.0.26200 build 26200 | Disabled profile preserved the human path as `UNSUPPORTED`; enabled dedicated profile passed native 3/3 without a shim | Native and equivalent browser-owned manual evidence verified; maintainer approval pending |
 | Microsoft Edge on Microsoft Windows 11 Pro 64-bit | Edge 153.0.4234.32; Windows 10.0.26200 build 26200 | Not probed | No WebMCP capability claim |
 
-The inventory was read on 2026-09-19. It proves only installed binary and OS
-versions. Chrome support is not inferred from major version 153. Native status
-remains pending until the run records the testing flag or origin-trial setup,
-the actual API, tool discovery and invocation, authoritative state, and
-Inspector/manual unregister/navigation behavior.
+The inventory and evidence were recorded on 2026-09-19. Support is not inferred
+from the major version: the enabled dedicated profile exercised the actual
+Chrome API, authoritative state, unregister/navigation behavior, and browser-
+owned catalog/invocation. The disabled-profile result remains separate valid
+fallback evidence.
 
 ## Deterministic compatibility matrix
 
 | Project | Human workflow | Built ESM package | Shimmed exporter lifecycle | Native WebMCP | Status |
 |---|---|---|---|---|---|
-| Playwright-managed Chromium 153.0.8010.12 | Passed | Passed | Passed | Not implied | 15/15 passed |
-| Playwright-managed Firefox 155.0 | Passed | Passed | Passed | Not implied | 15/15 passed |
-| Playwright-managed WebKit 26.6 | Passed | Passed | Passed | Not implied; not a branded Safari claim | 15/15 passed |
-| Installed Chrome 153.0.8010.50 on Windows | Human fixture loaded | Built package loaded | Separate from native run | API unavailable in current profile | Unsupported result recorded; enabled-profile native/Inspector evidence pending |
+| Playwright-managed Chromium 153.0.8010.12 | Passed | Passed | Passed | Not implied | 17/17 passed |
+| Playwright-managed Firefox 155.0 | Passed | Passed | Passed | Not implied | 17/17 passed |
+| Playwright-managed WebKit 26.6 | Passed | Passed | Passed | Not implied; not a branded Safari claim | 17/17 passed |
+| Installed Chrome 153.0.8010.50 on Windows | Visible workflows preserved | Built package loaded | Separate from native run | Imperative, declarative, lifecycle, and origin cases passed | Native 3/3 plus equivalent browser-owned manual evidence |
 
 The managed-engine run used Playwright 1.63.0 on Windows 11 build 26200 at
-2026-09-19 in Asia/Bangkok. `npm run test:browser` passed 45/45 tests: 15 each
+2026-09-19 in Asia/Bangkok. `npm run test:browser` passed 51/51 tests: 17 each
 for Chromium 153.0.8010.12, Firefox 155.0, and WebKit 26.6. Failure-only
 artifacts are written below `test-results/`, which is gitignored; the passing
 run retained no evidence artifact. Managed engine results are not relabeled as
@@ -61,17 +61,17 @@ only registration and AbortSignal lifecycle; it is not native WebMCP evidence.
 
 | Capability or condition | Required behavior | Evidence needed |
 |---|---|---|
-| Imperative API available | Explicit allowlisted tools register through the browser and invoke the core path | Native Chrome catalog, invocation, result, and authoritative state |
+| Imperative API available | Explicit allowlisted tools register through the browser and invoke the core path | Passed in native Chrome and equivalent DevTools MCP evidence |
 | Imperative API absent | `supported: false`; no registration, DOM mutation, or automatic fallback | Real-browser unsupported run plus human workflow |
-| Declarative signals positive | Explicit safe annotations remain visible and browser discovery is checked separately | Native browser and Inspector/manual evidence |
+| Declarative signals positive | Explicit safe annotations remain visible and browser discovery is checked separately | Passed: browser fill, visible human submit/`respondWith()`, disposal |
 | Declarative signals incomplete | Capability remains `unknown`; the normal visible form stays editable and manually submittable | Real-browser fallback run |
 | Registration rejected | All exporter-owned registrations roll back | Browser shim suite and, where reproducible, native run |
 | Semantic state changes | Old invocation fails with `stale_revision`; refreshed registration binds the current revision | Browser lifecycle suite and zero business mutations before refresh |
 | SPA route changes | Application disposes before remount; one current catalog remains | Active catalog before/after route change |
-| Hard navigation | Old document tools are unavailable from the new document | Native or browser-owned catalog evidence, not retained callback execution |
+| Hard navigation | Old document tools are unavailable from the new document | Passed in native and managed browser-owned catalogs |
 | Same-origin iframe | Child surface remains separately owned; adapter does not traverse or aggregate frame DOM | Two-document browser fixture |
-| Cross-origin iframe without `tools` delegation | Registration/discovery is unavailable | Native browser evidence pending; a shim cannot prove Permissions Policy enforcement |
-| Cross-origin iframe with host delegation | No implicit parent exposure because this package does not pass `exposedTo` | Signal-only registration-options assertion passed; native parent discovery remains pending |
+| Cross-origin iframe without `tools` delegation | Registration/discovery is unavailable | Native Chrome returned `NotAllowedError` |
+| Cross-origin iframe with host delegation | Child owns its tool; parent gets no implicit exposure because this package omits `exposedTo` | Native child registration and parent non-discovery passed |
 | Declarative form in any iframe | Mount fails before attribute mutation; human form remains usable | Browser frame fixture |
 | Unregister during active execution | Catalog removal is distinct from cancellation; core policy/preconditions/effect verification remain authoritative | Chrome 153-specific lifecycle record |
 
@@ -95,25 +95,25 @@ through those mechanisms must dispose and remount the declarative handle at the
 same lifecycle boundary. This limitation is not a claim of automatic CSS
 visibility monitoring.
 
-## Native Chrome evidence checklist
+## Native Chrome evidence record
 
-The first target is Chrome 153.0.8010.50 on Windows 11 Pro build 26200, dated
-2026-09-19 or the actual later execution date. The evidence record must include:
+Chrome 153.0.8010.50 on Windows 11 Pro build 26200 was tested on 2026-09-19
+with local WebMCP testing enabled in a dedicated profile. No `modelContext`
+shim was injected. The 3/3 native suite covers imperative and declarative
+catalogs, invocation, authoritative state, disposal, navigation, and both
+denied and delegated cross-origin frames.
 
-- exact Chrome and Windows versions;
-- exact invocation date, timezone, command, and launch configuration;
-- testing flag, origin-trial token, or other documented enablement state;
-- confirmation that no `modelContext` shim was injected;
-- tool catalog and trusted descriptor after package registration;
-- Model Context Tool Inspector visibility;
-- manual invocation input and structured result;
-- authoritative application state proving the expected effect;
-- tool absence after disposal and hard navigation;
-- iframe and origin behavior for the tested cases;
-- redacted trace or screenshot references with no secret sentinel; and
-- reviewer name and decision.
+Official `chrome-devtools-mcp` `list_webmcp_tools` and
+`execute_webmcp_tool` calls provide equivalent browser-owned manual evidence:
+imperative invocation first failed its authoritative precondition, succeeded
+after visible preparation, and disappeared after fixture disposal; declarative
+invocation filled visible fields, required the human submit button, returned
+through `SubmitEvent.respondWith()`, and disappeared after disposal. This is
+not a literal Model Context Tool Inspector screenshot.
 
-Until every applicable item is recorded, the row and P2.9 remain **pending**.
+The full dated record, evidence qualifications, official references, and final
+gate numbers are in
+[`evidence/phase2-native-webmcp-2026-09-19.md`](evidence/phase2-native-webmcp-2026-09-19.md).
 
 The opt-in native runner is:
 
@@ -125,8 +125,7 @@ npm run test:browser:native
 The dedicated Chrome profile must have local WebMCP testing enabled according
 to the official instructions and must not be in use by another Chrome process.
 The test deliberately fails, rather than skips, when the profile or native API
-is unavailable. The same package-native fixture is available at
-`/examples/browser-evidence/native.html` for Inspector/manual invocation.
+is unavailable. Passing evidence is version- and configuration-bound.
 
 ## Official references
 

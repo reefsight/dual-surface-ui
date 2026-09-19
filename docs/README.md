@@ -20,8 +20,10 @@ an architectural change requires an ADR.
 Active work-item records live under `work-items/` and carry the traceability and
 evidence required by `AI_SDLC.md`.
 
-Phase exit decisions and their combined evidence live under `reviews/`. The
-current candidate is [Phase 1 Exit Review](reviews/phase1-exit-review.md).
+Phase exit decisions and their combined evidence live under `reviews/`. Phase
+1 is accepted; the current approval candidate is the
+[Phase 2 Exit Review](reviews/phase2-exit-review.md), supported by the
+[dated native WebMCP evidence](evidence/phase2-native-webmcp-2026-09-19.md).
 
 Experimental architecture decisions remain non-binding until accepted. The
 current TOON evaluation is recorded in

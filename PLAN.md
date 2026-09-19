@@ -1,9 +1,10 @@
 # Dual Surface UI — Master Plan
 
-Status: **Phase 1 accepted; Phase 2 in progress**
+Status: **Phase 1 accepted; Phase 2 exit review ready for maintainer decision**
 
-Implementation status: the current code is an exploratory prototype only. It
-must not be treated as a stable API or a completed phase.
+Implementation status: Phase 2 deliverables and technical exit evidence are
+complete, but Phase 2 is not accepted and Phase 3 must not start until the
+repository maintainer records an explicit gate decision.
 
 Dual Surface UI is a standards-first compatibility and safety framework that
 turns existing applications into reliable agent interfaces without replacing
@@ -117,12 +118,13 @@ replay, aggregate secret exclusion, pinned semantic-drift evidence, and legacy
 submit-bypass prevention. Its full gate passes 23 files and 288 tests while
 preserving the frozen 32/6/5 root contract; package audit, inspection, and a
 fresh optional-peer-free root/domain/WebMCP/drift consumer also pass. P2.9 now
-has a 45/45 real-browser compatibility run across managed Chromium, Firefox,
-and WebKit, plus hardened retained-callback, SPA revision, name-ownership,
-origin, declarative-mutation, and framework/exporter lifecycle coverage. The
-package-native fixture remains unsupported in the current Chrome profile, so
-enabled native `document.modelContext` discovery/invocation and Inspector proof
-remain open and Phase 2 has not exited. The final automated P2.9 gate passes
-24 files / 322 deterministic tests, the frozen 32/6/5 contract, 45/45 managed
-browser cases, clean install/typecheck, zero-vulnerability audit, package and
-isolated-consumer checks, and independent security/compatibility review.
+has a 51/51 real-browser compatibility run across managed Chromium, Firefox,
+and WebKit, plus 3/3 no-shim native Chrome 153 cases covering imperative,
+declarative, and cross-origin behavior. Browser-owned discovery and invocation
+were also observed through the official Chrome DevTools for Agents interface;
+this is equivalent manual browser-owned evidence, not a literal Model Context
+Tool Inspector screenshot. The final automated P2.9 gate passes 24 files / 323
+deterministic tests, the frozen 32/6/5 contract, clean install/typecheck,
+zero-vulnerability audit, package checks, and independent security and
+compatibility review. Phase 2 remains unaccepted only until the maintainer
+records the decision in the exit review.

@@ -1,8 +1,9 @@
 # Dual Surface UI
 
-> Project status: documentation-first exploratory prototype. The public API is
-> not stable. Read the [master plan](PLAN.md) and [documentation index](docs/README.md)
-> before implementing or adopting it.
+> Project status: Phase 2 implementation and evidence are ready for maintainer
+> review; Phase 2 approval and all Phase 3 work remain pending. The public API
+> is not stable. Read the [master plan](PLAN.md) and
+> [documentation index](docs/README.md) before implementing or adopting it.
 
 Dual Surface UI keeps the interface humans see unchanged while exposing a
 compact, stateful, and actionable semantic representation for AI agents.
@@ -311,12 +312,15 @@ the imperative `performSafe()` path above, or the ordinary human-only form;
 the package never registers both automatically.
 
 The browser compatibility contract, exact tested engine versions, evidence
-tiers, and native Chrome checklist are recorded in
+tiers, and native Chrome record are recorded in
 [`docs/BROWSER_SUPPORT.md`](docs/BROWSER_SUPPORT.md). Run the deterministic
 managed-engine suite with `npm run test:browser`. Native WebMCP is a separate,
 opt-in, fail-not-skip check using `WEBMCP_NATIVE_PROFILE` and
 `npm run test:browser:native`; a shimmed browser pass must never be reported as
-native browser support.
+native browser support. The Phase 2 candidate passed 51/51 managed-browser and
+3/3 native Chrome cases. Equivalent browser-owned discovery/invocation was
+also recorded through official `chrome-devtools-mcp` tools; no literal DevTools
+Inspector screenshot is claimed.
 
 ### React lifecycle adapter
 
@@ -504,10 +508,11 @@ npm run example:legacy-form
 npm run baseline:phase1
 ```
 
-The example tests use jsdom and a mock WebMCP model context. They prove package
-wiring and authoritative-state parity, not browser-private registry retention,
-Inspector visibility, model selection quality, payment processing, or
-production identity. Those remain Phase 2 exit evidence. The Phase 1 baseline
+The focused example tests use jsdom and a mock WebMCP model context. Managed
+browser and native Chrome evidence are recorded separately in the
+[Phase 2 evidence bundle](docs/evidence/phase2-native-webmcp-2026-09-19.md).
+None of these tests proves model selection quality, payment processing, or
+production identity. The Phase 1 baseline
 is a deterministic 25-run scripted measurement, not a model or vision
 evaluation. It records completion, interaction steps, latency, safety counters,
 and a clearly labeled provider-neutral context-token estimate. See
@@ -553,9 +558,13 @@ Included:
 - Redacted, correlated lifecycle events for observation and action execution
 - Updated state returned after every action
 - Optional allowlisted WebMCP imperative export with revision-bound execution
+- Optional reversible WebMCP declarative form annotations and explicit fallback
+- Trusted domain-action compiler shared by core and exporters
 - Optional reviewed-manifest semantic drift checking with bounded same-epoch evidence
 - Optional React 18.2/19 provider and committed-ref lifecycle bindings
+- Optional Angular 20–22 provider/directive lifecycle bindings
 - Optional Vue 3.3–3.5 plugin and template-ref lifecycle binding
+- Managed-browser compatibility and native Chrome WebMCP evidence
 
 Not included yet:
 
@@ -570,12 +579,11 @@ Not included yet:
 
 ## Suggested roadmap
 
-1. Add a local MCP server exposing `snapshot` and `perform` tools.
-2. Add a browser extension so an agent can discover enabled pages.
-3. Add React helpers and input schemas for typed domain actions.
-4. Stream DOM mutations instead of sending a complete tree each turn.
-5. Merge semantic nodes with screenshot bounds and vision fallbacks.
-6. Define adapters for Windows UI Automation and mobile semantics trees.
+Phase 3 remains blocked until the Phase 2 maintainer decision. After approval,
+follow the accepted sequence in [`docs/04-roadmap.md`](docs/04-roadmap.md): MCP
+export, explicit Playwright fallback, CLI tooling, delta snapshots, redacted
+replay, multi-model evaluation, adversarial tests, and measured performance.
+Native adapters remain Phase 4 work after the Phase 3 exit gate.
 
 ## Development
 

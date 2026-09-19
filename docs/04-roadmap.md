@@ -66,6 +66,11 @@ integration work and prove parity with visible user workflows.
 - Tool descriptions and outputs meet documented character budgets.
 - No application business rule exists only in the agent adapter.
 
+Exit status on 2026-09-19: implementation and evidence are ready for the
+repository maintainer's decision. Phase 2 is not yet accepted, and Phase 3 must
+not begin until that approval is recorded in the
+[Phase 2 Exit Review](reviews/phase2-exit-review.md).
+
 ## Phase 3 — Ecosystem, reliability, and evaluation
 
 ### Objective
