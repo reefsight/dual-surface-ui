@@ -130,4 +130,3 @@ ID. This callback is untrusted selection input and cannot execute anything.
 - [Playwright actionability checks](https://playwright.dev/docs/actionability)
 - [Playwright browser-context isolation](https://playwright.dev/docs/browser-contexts)
 - [Playwright frame locators](https://playwright.dev/docs/api/class-framelocator)
-
