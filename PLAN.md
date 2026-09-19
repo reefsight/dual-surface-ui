@@ -116,6 +116,13 @@ confirmation, preconditions, effect verification, stale revisions, keyed
 replay, aggregate secret exclusion, pinned semantic-drift evidence, and legacy
 submit-bypass prevention. Its full gate passes 23 files and 288 tests while
 preserving the frozen 32/6/5 root contract; package audit, inspection, and a
-fresh optional-peer-free root/domain/WebMCP/drift consumer also pass. P2.9 is
-next: browser support, Inspector/manual invocation, navigation/iframe and
-graceful-fallback evidence required by the Phase 2 exit gate.
+fresh optional-peer-free root/domain/WebMCP/drift consumer also pass. P2.9 now
+has a 45/45 real-browser compatibility run across managed Chromium, Firefox,
+and WebKit, plus hardened retained-callback, SPA revision, name-ownership,
+origin, declarative-mutation, and framework/exporter lifecycle coverage. The
+package-native fixture remains unsupported in the current Chrome profile, so
+enabled native `document.modelContext` discovery/invocation and Inspector proof
+remain open and Phase 2 has not exited. The final automated P2.9 gate passes
+24 files / 322 deterministic tests, the frozen 32/6/5 contract, 45/45 managed
+browser cases, clean install/typecheck, zero-vulnerability audit, package and
+isolated-consumer checks, and independent security/compatibility review.

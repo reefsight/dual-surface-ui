@@ -310,6 +310,14 @@ Applications must explicitly choose either these inert-safe native annotations,
 the imperative `performSafe()` path above, or the ordinary human-only form;
 the package never registers both automatically.
 
+The browser compatibility contract, exact tested engine versions, evidence
+tiers, and native Chrome checklist are recorded in
+[`docs/BROWSER_SUPPORT.md`](docs/BROWSER_SUPPORT.md). Run the deterministic
+managed-engine suite with `npm run test:browser`. Native WebMCP is a separate,
+opt-in, fail-not-skip check using `WEBMCP_NATIVE_PROFILE` and
+`npm run test:browser:native`; a shimmed browser pass must never be reported as
+native browser support.
+
 ### React lifecycle adapter
 
 React 18.2 and 19 applications can keep surface creation and security policy at

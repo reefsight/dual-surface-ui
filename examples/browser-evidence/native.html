@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dual Surface UI native WebMCP evidence</title>
+  </head>
+  <body>
+    <header>
+      <h1>Native WebMCP evidence</h1>
+      <p id="native-status">Booting</p>
+      <button id="native-catalog" type="button">Read native catalog</button>
+      <button id="native-prepare" type="button">Prepare checkout</button>
+      <button id="native-invoke" type="button">Invoke native tool</button>
+      <button id="native-dispose" type="button">Dispose registration</button>
+      <pre id="native-output"></pre>
+    </header>
+    <section id="native-fixture" aria-label="Checkout fixture"></section>
+    <script type="module" src="./native-harness.mjs"></script>
+  </body>
+</html>
