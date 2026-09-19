@@ -14,6 +14,10 @@
       "types": "./dist/webmcp/index.d.ts",
       "import": "./dist/webmcp/index.js"
     },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "import": "./dist/mcp/index.js"
+    },
     "./react": {
       "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.js"
@@ -77,11 +81,15 @@
   },
   "peerDependencies": {
     "@angular/core": "^20.0.0 || ^21.0.0 || ^22.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
     "react": "^18.2.0 || ^19.0.0",
     "vue": ">=3.3.0 <3.6.0"
   },
   "peerDependenciesMeta": {
     "@angular/core": {
+      "optional": true
+    },
+    "@modelcontextprotocol/server": {
       "optional": true
     },
     "react": {
@@ -98,6 +106,8 @@
     "@angular/core": "20.3",
     "@angular/platform-browser": "20.3",
     "@angular/platform-server": "20.3",
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
     "@playwright/test": "1.63.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
