@@ -41,6 +41,10 @@
     "./playwright": {
       "types": "./dist/playwright/index.d.ts",
       "import": "./dist/playwright/index.js"
+    },
+    "./delta": {
+      "types": "./dist/delta/index.d.ts",
+      "import": "./dist/delta/index.js"
     }
   },
   "files": [
@@ -51,16 +55,17 @@
   ],
   "scripts": {
     "build": "npm run build:core && npm run build:angular",
-    "build:core": "tsc -p tsconfig.json && node scripts/generate-schema.mjs",
+    "build:core": "tsc -p tsconfig.json && node scripts/generate-schema.mjs && node scripts/generate-phase3-schema.mjs",
     "build:angular": "ngc -p angular/tsconfig.json",
     "contract:check": "npm run build && node scripts/check-phase1-contract.mjs",
+    "package:check:delta": "npm run build && node scripts/check-delta-package.mjs",
     "package:check:playwright": "npm run build && node scripts/check-playwright-package.mjs",
     "example:checkout": "npm run build && node examples/checkout/run.mjs",
     "example:document-approval": "npm run build && node examples/document-approval/run.mjs",
     "example:legacy-form": "npm run build && node examples/legacy-form/run.mjs",
     "example:phase2": "npm run build && node examples/checkout/run.mjs && node examples/document-approval/run.mjs && node examples/legacy-form/run.mjs",
     "baseline:phase1": "npm run build && node scripts/measure-phase1-baseline.mjs",
-    "schema:generate": "node scripts/generate-schema.mjs",
+    "schema:generate": "node scripts/generate-schema.mjs && node scripts/generate-phase3-schema.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit && npm run build:core && ngc -p angular/tsconfig.json --noEmit",
     "test": "vitest run",
     "test:browser": "playwright test",

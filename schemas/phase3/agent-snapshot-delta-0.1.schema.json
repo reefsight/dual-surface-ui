@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/agent-snapshot-delta-0.1.json",
+  "title": "Dual Surface UI Agent Snapshot Delta",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "surfaceId",
+    "baseRevision",
+    "revision",
+    "baseDigest",
+    "targetDigest",
+    "target",
+    "nodeUpserts",
+    "removedNodeIds"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "agent-snapshot-delta"
+    },
+    "surfaceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseRevision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "targetDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "url",
+        "generatedAt",
+        "focusedElementId",
+        "capabilities"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "focusedElementId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capabilities": {
+          "type": "array",
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "nodeUpserts": {
+      "type": "array",
+      "maxItems": 512,
+      "items": {
+        "$ref": "https://dual-surface-ui.dev/schema/agent-snapshot-0.1.json#/$defs/node"
+      }
+    },
+    "removedNodeIds": {
+      "type": "array",
+      "maxItems": 512,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}
