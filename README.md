@@ -1,7 +1,7 @@
 # Dual Surface UI
 
-> Project status: Phase 2 is accepted and P3.1 is authorized. The public API is
-> not stable, and later Phase 3 work remains gated. Read the [master plan](PLAN.md) and
+> Project status: Phase 2 is accepted and P3.1 is verified. The public API is
+> not stable, and P3.2 and later work remain gated. Read the [master plan](PLAN.md) and
 > [documentation index](docs/README.md) before implementing or adopting it.
 
 Dual Surface UI keeps the interface humans see unchanged while exposing a
@@ -273,11 +273,29 @@ await webMcp.refresh();
 webMcp.dispose();
 ```
 
-Bindings are an allowlist: names and descriptions must be trusted application
+### Optional MCP exporter
+
+Install the optional official server peer only in applications that expose an
+MCP boundary:
+
+```bash
+npm install dual-surface-ui @modelcontextprotocol/server
+```
+
+Import `createAgentSurfaceMcpServer` from `dual-surface-ui/mcp`. Create one
+exporter for one trusted `principalRef`, authorize every list/read/call request
+from host-validated transport identity, and export only explicit tool bindings.
+Output-bearing actions must provide a trusted `projectOutput` function. The
+exporter does not open an HTTP or stdio listener and does not implement OAuth.
+For modern HTTP serving, create a fresh exported server from the official SDK
+handler factory for every request; do not reuse one low-level server across
+concurrent transports.
+
+WebMCP bindings are an allowlist: names and descriptions must be trusted application
 metadata, never page or user text. The adapter never exports credential-risk
 actions, never enables cross-origin exposure, and never bypasses the core
 policy, confirmation, validation, replay, or effect-verification boundary.
-Calls use `{ input, idempotencyKey }`; `input` wraps the action's declared
+WebMCP calls use `{ input, idempotencyKey }`; `input` wraps the action's declared
 schema and `idempotencyKey` is present only for keyed actions. An unsupported
 browser takes a no-op path—there is no hidden automation fallback.
 
@@ -564,10 +582,11 @@ Included:
 - Optional Angular 20–22 provider/directive lifecycle bindings
 - Optional Vue 3.3–3.5 plugin and template-ref lifecycle binding
 - Managed-browser compatibility and native Chrome WebMCP evidence
+- Optional principal-bound MCP snapshot resource and typed action exporter
 
 Not included yet:
 
-- MCP or HTTP transport
+- MCP network transport or HTTP listener
 - WebMCP declarative autosubmit, synthetic polyfill, or cross-origin exposure
 - Svelte adapter
 - Mutation-stream or incremental snapshots
@@ -578,11 +597,12 @@ Not included yet:
 
 ## Suggested roadmap
 
-P3.1 is authorized after the Phase 2 maintainer decision. Follow the accepted
-sequence in [`docs/04-roadmap.md`](docs/04-roadmap.md): MCP
-export, explicit Playwright fallback, CLI tooling, delta snapshots, redacted
+P3.1 is implemented and verified after the Phase 2 maintainer decision. Follow
+the accepted sequence in [`docs/04-roadmap.md`](docs/04-roadmap.md): explicit
+Playwright fallback, CLI tooling, delta snapshots, redacted
 replay, multi-model evaluation, adversarial tests, and measured performance.
-Native adapters remain Phase 4 work after the Phase 3 exit gate.
+P3.2 and later work require authorization. Native adapters remain Phase 4 work
+after the Phase 3 exit gate.
 
 ## Development
 

@@ -54,6 +54,33 @@ between protocol serving and HTTP/stdio authentication.
     transports may be used as legacy-era test evidence, while modern protocol
     evidence must use the SDK's modern serving path and stay labeled separately.
 
+## Security amendment recorded during implementation review
+
+The accepted boundary above is refined by the following mandatory controls;
+they do not change its transport-neutral direction:
+
+- each exporter is bound to one opaque host-owned `principalRef`; authorization
+  sees only that binding and SDK `authInfo` already validated by the transport,
+  never MCP client assertions or the full request context;
+- output-bearing actions require a trusted `projectOutput` callback and every
+  projected success is validated against its advertised schema; failure codes
+  and messages are normalized from the package allowlist;
+- application schemas recursively reject `x-mcp-header`, preventing action
+  input from becoming transport header data;
+- mutable caller options are captured before handler registration and are not
+  consulted again;
+- keyed replay is not advertised as generally idempotent because it is bounded,
+  in-memory, and process-local; only `safe-retry` actions receive that hint;
+- revisions and identifiers are bounded to 128 characters, bindings to 128,
+  descriptions to 500 characters, snapshots to 1 MiB, tool catalogs to 256
+  KiB, and projected action results to 256 KiB;
+- sensitive node metadata/actions and all credential actions are removed from
+  the MCP snapshot projection in addition to core value redaction.
+
+For modern HTTP serving, `createMcpHandler` must receive a factory that creates
+a fresh `Server` per request. Reusing and rebinding one server instance across
+concurrent request transports is unsupported.
+
 ## Dependency boundary
 
 `@modelcontextprotocol/server` is an optional peer and a development dependency
@@ -67,6 +94,8 @@ wire-level integration tests. Consumers that never import
 - A host must map transport-authenticated identity to its authorization
   callback; MCP `clientInfo`, `_meta`, session IDs, and arguments are not
   accepted as identity.
+- A host must create a dedicated surface/exporter binding for each principal;
+  this is what keeps core policy and process-local replay identity aligned.
 - A dedicated server cannot be merged into an arbitrary existing low-level MCP
   server without an explicit composition layer. That is intentional for P3.1:
   silently replacing another handler would be unsafe.
@@ -98,4 +127,3 @@ wire-level integration tests. Consumers that never import
 - [MCP security best practices](https://modelcontextprotocol.io/docs/2025-11-25/tutorials/security/security_best_practices)
 - [Official TypeScript SDK v2 migration](https://github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/migration/upgrade-to-v2.md)
 - [Official JSON Schema adapter guidance](https://github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/advanced/schema-libraries.md)
-
