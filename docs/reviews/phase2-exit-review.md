@@ -1,6 +1,6 @@
 # Phase 2 Exit Review
 
-Status: Ready for maintainer decision; approval pending
+Status: Accepted by repository maintainer on 2026-09-19
 
 Verified implementation commits:
 
@@ -14,9 +14,8 @@ Decision owner: Repository maintainer
 ## Recommendation
 
 The implementation and evidence satisfy the documented Phase 2 deliverables
-and exit conditions. The candidate is ready for the repository maintainer's
-decision. This recommendation is not approval: Phase 2 remains open and Phase 3
-must not begin until the maintainer records an explicit decision below.
+and exit conditions. The repository maintainer approved the Phase 2 exit gate
+and authorized planning and implementation of P3.1 on 2026-09-19.
 
 Package publication, version changes, tags, deployments, and support promises
 remain separate decisions.
@@ -143,10 +142,10 @@ with no unresolved critical or high finding.
 
 ## Maintainer decision
 
-- [ ] Approve the Phase 2 exit gate.
-- [ ] Authorize planning and implementation of the first Phase 3 work item.
+- [x] Approve the Phase 2 exit gate — approved 2026-09-19.
+- [x] Authorize planning and implementation of P3.1 — authorized 2026-09-19.
 - [ ] Keep package publication, versioning, tagging, and deployment as separate
   decisions.
 
-Until the maintainer checks and records these decisions, Phase 2 remains open
-and Phase 3 remains blocked by the roadmap gate.
+Phase 2 is accepted. P3.1 may begin; later Phase 3 work items and the Phase 3
+exit gate remain governed by their own reviewed evidence and decisions.

@@ -1,10 +1,10 @@
 # Dual Surface UI — Master Plan
 
-Status: **Phase 1 accepted; Phase 2 exit review ready for maintainer decision**
+Status: **Phase 2 accepted; P3.1 authorized**
 
-Implementation status: Phase 2 deliverables and technical exit evidence are
-complete, but Phase 2 is not accepted and Phase 3 must not start until the
-repository maintainer records an explicit gate decision.
+Implementation status: Phase 2 was accepted by the repository maintainer on
+2026-09-19. Planning and implementation of P3.1 are authorized; later Phase 3
+work remains subject to the accepted AI-SDLC and phase gates.
 
 Dual Surface UI is a standards-first compatibility and safety framework that
 turns existing applications into reliable agent interfaces without replacing
@@ -126,5 +126,5 @@ this is equivalent manual browser-owned evidence, not a literal Model Context
 Tool Inspector screenshot. The final automated P2.9 gate passes 24 files / 323
 deterministic tests, the frozen 32/6/5 contract, clean install/typecheck,
 zero-vulnerability audit, package checks, and independent security and
-compatibility review. Phase 2 remains unaccepted only until the maintainer
-records the decision in the exit review.
+compatibility review. The maintainer accepted the Phase 2 exit gate and
+authorized P3.1 on 2026-09-19.

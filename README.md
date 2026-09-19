@@ -1,8 +1,7 @@
 # Dual Surface UI
 
-> Project status: Phase 2 implementation and evidence are ready for maintainer
-> review; Phase 2 approval and all Phase 3 work remain pending. The public API
-> is not stable. Read the [master plan](PLAN.md) and
+> Project status: Phase 2 is accepted and P3.1 is authorized. The public API is
+> not stable, and later Phase 3 work remains gated. Read the [master plan](PLAN.md) and
 > [documentation index](docs/README.md) before implementing or adopting it.
 
 Dual Surface UI keeps the interface humans see unchanged while exposing a
@@ -579,8 +578,8 @@ Not included yet:
 
 ## Suggested roadmap
 
-Phase 3 remains blocked until the Phase 2 maintainer decision. After approval,
-follow the accepted sequence in [`docs/04-roadmap.md`](docs/04-roadmap.md): MCP
+P3.1 is authorized after the Phase 2 maintainer decision. Follow the accepted
+sequence in [`docs/04-roadmap.md`](docs/04-roadmap.md): MCP
 export, explicit Playwright fallback, CLI tooling, delta snapshots, redacted
 replay, multi-model evaluation, adversarial tests, and measured performance.
 Native adapters remain Phase 4 work after the Phase 3 exit gate.

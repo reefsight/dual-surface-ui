@@ -1,6 +1,6 @@
 # Phase 2 Native WebMCP Evidence — 2026-09-19
 
-Status: Verified evidence; Phase 2 maintainer approval pending
+Status: Verified evidence; Phase 2 accepted on 2026-09-19
 
 Evidence date: 2026-09-19 (Asia/Bangkok)
 
@@ -142,6 +142,6 @@ The candidate passed:
 - independent browser/API/package compatibility review: **Pass**, no unresolved
   critical/high finding.
 
-These results make the Phase 2 candidate ready for a maintainer decision. They
-do not themselves approve the phase, publish a package, create a release tag,
-or authorize Phase 3.
+The maintainer accepted these results for the Phase 2 exit gate and authorized
+P3.1 on 2026-09-19. This evidence does not publish a package, create a release
+tag, or authorize later Phase 3 work items.

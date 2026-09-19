@@ -21,7 +21,7 @@ Active work-item records live under `work-items/` and carry the traceability and
 evidence required by `AI_SDLC.md`.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
-1 is accepted; the current approval candidate is the
+1 and Phase 2 are accepted; the current decision is the
 [Phase 2 Exit Review](reviews/phase2-exit-review.md), supported by the
 [dated native WebMCP evidence](evidence/phase2-native-webmcp-2026-09-19.md).
 

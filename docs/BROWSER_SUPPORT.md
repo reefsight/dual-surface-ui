@@ -1,6 +1,6 @@
 # Browser Support and Evidence Matrix
 
-Status: Ready for maintainer decision; approval pending
+Status: Phase 2 evidence accepted on 2026-09-19
 
 Last reviewed: 2026-09-19 (Asia/Bangkok)
 
@@ -25,7 +25,7 @@ version number is not native WebMCP evidence.
 
 | Browser/OS | Exact version | Native capability result | Current status |
 |---|---|---|---|
-| Google Chrome on Microsoft Windows 11 Pro 64-bit | Chrome 153.0.8010.50; Windows 10.0.26200 build 26200 | Disabled profile preserved the human path as `UNSUPPORTED`; enabled dedicated profile passed native 3/3 without a shim | Native and equivalent browser-owned manual evidence verified; maintainer approval pending |
+| Google Chrome on Microsoft Windows 11 Pro 64-bit | Chrome 153.0.8010.50; Windows 10.0.26200 build 26200 | Disabled profile preserved the human path as `UNSUPPORTED`; enabled dedicated profile passed native 3/3 without a shim | Native and equivalent browser-owned manual evidence accepted for Phase 2 |
 | Microsoft Edge on Microsoft Windows 11 Pro 64-bit | Edge 153.0.4234.32; Windows 10.0.26200 build 26200 | Not probed | No WebMCP capability claim |
 
 The inventory and evidence were recorded on 2026-09-19. Support is not inferred
