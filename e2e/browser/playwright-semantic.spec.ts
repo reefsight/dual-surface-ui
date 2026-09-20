@@ -190,6 +190,34 @@ test("fails verification when an action triggers a prohibited popup", async ({ p
   surface.dispose();
 });
 
+test("reports stale revision when disposal races post-mutation observation", async ({ page }) => {
+  const origin = new URL(page.url()).origin;
+  let surface!: ReturnType<typeof createPlaywrightSurface>;
+  surface = createPlaywrightSurface({
+    page,
+    surfaceId: "playwright-disposal-boundary",
+    allowedOrigins: [origin],
+    bindings: [bindings[0]!],
+    policy: () => ({ outcome: "allow" }),
+    verifyEffect: () => true,
+    onAudit(event) {
+      if (event.event === "action_started") surface.dispose();
+    },
+  });
+  const snapshot = await surface.snapshot();
+  const outcome = await surface.performSafe({
+    surfaceId: snapshot.surfaceId,
+    revision: snapshot.revision,
+    elementId: "approve",
+    action: "approve",
+  });
+  expect(outcome).toMatchObject({
+    status: "failed",
+    error: { code: "stale_revision" },
+  });
+  await expect(page.getByRole("status")).toHaveText("approved");
+});
+
 for (const prohibitedEvent of ["dialog", "navigation", "frame"] as const) {
   test(`fails verification for post-start ${prohibitedEvent}`, async ({ page }) => {
     await page.getByRole("button", { name: "Approve" }).evaluate((button, eventName) => {

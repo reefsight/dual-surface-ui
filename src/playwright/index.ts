@@ -917,9 +917,15 @@ export class PlaywrightSurface implements PlaywrightSurfaceContract {
         target,
         isCurrent: () => this.#isCurrentTarget(target),
         release: () => handle.dispose(),
-        verifyPostExecution: () =>
-          target.startedProhibitedEventEpoch !== undefined &&
-          target.startedProhibitedEventEpoch === this.#prohibitedEventEpoch,
+        verifyPostExecution: () => {
+          if (this.#disposed) {
+            throw new AgentStaleRevisionError(
+              "The Playwright surface was disposed during execution",
+            );
+          }
+          return target.startedProhibitedEventEpoch !== undefined &&
+            target.startedProhibitedEventEpoch === this.#prohibitedEventEpoch;
+        },
         execute: (input: unknown) => this.#execute(target, input),
         verifyDefault: ({ after, before, input }: { after: AgentSnapshot; before: AgentSnapshot; input: unknown }) =>
           this.#verifyDefault(target, before, after, input),
