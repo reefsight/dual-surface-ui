@@ -71,19 +71,25 @@ const fail = (reason: AgentReplayRejectReason): never => {
 const byteLength = (value: unknown): number =>
   encoder.encode(JSON.stringify(value)).byteLength;
 
-const scanSecrets = (value: unknown): void => {
+const scanSecrets = (value: unknown, depth = 0): void => {
   if (typeof value === "string") {
     if (containsSecretSentinel(value)) fail("secret_detected");
     return;
   }
   if (Array.isArray(value)) {
-    for (const item of value) scanSecrets(item);
+    for (const item of value) scanSecrets(item, depth + 1);
     return;
   }
   if (typeof value !== "object" || value === null) return;
   for (const [key, item] of Object.entries(value)) {
     if (isSensitiveKey(key)) fail("secret_detected");
-    scanSecrets(item);
+    if (
+      depth === 0 &&
+      key === "fixtureDigest" &&
+      typeof item === "string" &&
+      /^sha256:[a-f0-9]{64}$/.test(item)
+    ) continue;
+    scanSecrets(item, depth + 1);
   }
 };
 

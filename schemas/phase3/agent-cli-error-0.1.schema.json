@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/agent-cli-error-0.1.json",
+  "title": "Dual Surface UI CLI Error",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-error"
+        },
+        "command": {
+          "enum": [
+            "inspect",
+            "validate",
+            "diff",
+            "record",
+            "replay",
+            "evaluate"
+          ]
+        },
+        "code": {
+          "const": "usage"
+        },
+        "message": {
+          "const": "Invalid command line."
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-error"
+        },
+        "command": {
+          "enum": [
+            "inspect",
+            "validate",
+            "diff",
+            "record",
+            "replay",
+            "evaluate"
+          ]
+        },
+        "code": {
+          "const": "input_io"
+        },
+        "message": {
+          "const": "Unable to read input."
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-error"
+        },
+        "command": {
+          "enum": [
+            "inspect",
+            "validate",
+            "diff",
+            "record",
+            "replay",
+            "evaluate"
+          ]
+        },
+        "code": {
+          "const": "output_io"
+        },
+        "message": {
+          "const": "Unable to write output."
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-error"
+        },
+        "command": {
+          "enum": [
+            "inspect",
+            "validate",
+            "diff",
+            "record",
+            "replay",
+            "evaluate"
+          ]
+        },
+        "code": {
+          "const": "driver_error"
+        },
+        "message": {
+          "const": "Trusted driver failed."
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-error"
+        },
+        "command": {
+          "enum": [
+            "inspect",
+            "validate",
+            "diff",
+            "record",
+            "replay",
+            "evaluate"
+          ]
+        },
+        "code": {
+          "const": "cancelled"
+        },
+        "message": {
+          "const": "Operation cancelled."
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-error"
+        },
+        "command": {
+          "enum": [
+            "inspect",
+            "validate",
+            "diff",
+            "record",
+            "replay",
+            "evaluate"
+          ]
+        },
+        "code": {
+          "const": "internal_error"
+        },
+        "message": {
+          "const": "Internal error."
+        }
+      }
+    }
+  ]
+}

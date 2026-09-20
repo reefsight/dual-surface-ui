@@ -1,0 +1,1536 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/agent-cli-result-0.1.json",
+  "title": "Dual Surface UI CLI Result",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "inspect"
+        },
+        "status": {
+          "const": "completed"
+        },
+        "data": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "artifactType",
+                "schemaVersion",
+                "digest",
+                "counts"
+              ],
+              "properties": {
+                "artifactType": {
+                  "const": "snapshot"
+                },
+                "schemaVersion": {
+                  "const": "0.1"
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                },
+                "counts": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "nodes",
+                    "actions",
+                    "capabilities"
+                  ],
+                  "properties": {
+                    "nodes": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "actions": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "capabilities": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "artifactType",
+                "schemaVersion",
+                "digest",
+                "counts"
+              ],
+              "properties": {
+                "artifactType": {
+                  "const": "delta"
+                },
+                "schemaVersion": {
+                  "const": "0.1"
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                },
+                "counts": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "nodeUpserts",
+                    "removedNodeIds"
+                  ],
+                  "properties": {
+                    "nodeUpserts": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "removedNodeIds": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "artifactType",
+                "schemaVersion",
+                "digest",
+                "counts"
+              ],
+              "properties": {
+                "artifactType": {
+                  "const": "trace"
+                },
+                "schemaVersion": {
+                  "const": "0.1"
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                },
+                "counts": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "records",
+                    "operations"
+                  ],
+                  "properties": {
+                    "records": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "operations": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "artifactType",
+                "schemaVersion",
+                "digest",
+                "counts"
+              ],
+              "properties": {
+                "artifactType": {
+                  "const": "replay-fixture"
+                },
+                "schemaVersion": {
+                  "const": "0.1"
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                },
+                "counts": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "steps"
+                  ],
+                  "properties": {
+                    "steps": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "artifactType",
+                "schemaVersion",
+                "digest",
+                "counts"
+              ],
+              "properties": {
+                "artifactType": {
+                  "const": "evaluation-definition"
+                },
+                "schemaVersion": {
+                  "const": "0.1"
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                },
+                "counts": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "cases",
+                    "dimensions"
+                  ],
+                  "properties": {
+                    "cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "dimensions": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "artifactType",
+                "schemaVersion",
+                "digest",
+                "counts"
+              ],
+              "properties": {
+                "artifactType": {
+                  "const": "evaluation-result"
+                },
+                "schemaVersion": {
+                  "const": "0.1"
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                },
+                "counts": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "cases",
+                    "dimensions",
+                    "environmentErrors"
+                  ],
+                  "properties": {
+                    "cases": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "dimensions": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "environmentErrors": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "inspect"
+        },
+        "status": {
+          "const": "invalid"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reason"
+          ],
+          "properties": {
+            "artifactType": {
+              "enum": [
+                "snapshot",
+                "delta",
+                "trace",
+                "replay-fixture",
+                "evaluation-definition",
+                "evaluation-result"
+              ]
+            },
+            "reason": {
+              "enum": [
+                "invalid_artifact",
+                "digest_mismatch",
+                "budget_exceeded",
+                "secret_detected"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "validate"
+        },
+        "status": {
+          "const": "valid"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "artifactType",
+            "valid",
+            "digest"
+          ],
+          "properties": {
+            "artifactType": {
+              "enum": [
+                "snapshot",
+                "delta",
+                "trace",
+                "replay-fixture",
+                "evaluation-definition",
+                "evaluation-result"
+              ]
+            },
+            "valid": {
+              "const": true
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "validate"
+        },
+        "status": {
+          "const": "invalid"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "valid",
+            "reason"
+          ],
+          "properties": {
+            "artifactType": {
+              "enum": [
+                "snapshot",
+                "delta",
+                "trace",
+                "replay-fixture",
+                "evaluation-definition",
+                "evaluation-result"
+              ]
+            },
+            "valid": {
+              "const": false
+            },
+            "reason": {
+              "enum": [
+                "invalid_artifact",
+                "digest_mismatch",
+                "budget_exceeded",
+                "secret_detected"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "diff"
+        },
+        "status": {
+          "const": "delta"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "delta"
+          ],
+          "properties": {
+            "delta": {
+              "$ref": "https://dual-surface-ui.dev/schema/agent-snapshot-delta-0.1.json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "diff"
+        },
+        "status": {
+          "const": "no_change"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {}
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "diff"
+        },
+        "status": {
+          "const": "resync_required"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reason"
+          ],
+          "properties": {
+            "reason": {
+              "enum": [
+                "invalid_base",
+                "invalid_target",
+                "invalid_delta",
+                "surface_mismatch",
+                "base_revision_mismatch",
+                "base_digest_mismatch",
+                "target_digest_mismatch",
+                "revision_collision",
+                "budget_exceeded"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "record"
+        },
+        "status": {
+          "const": "complete"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "artifactType",
+            "digest",
+            "recordCount",
+            "operationCount",
+            "outputWritten"
+          ],
+          "properties": {
+            "artifactType": {
+              "const": "trace"
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "recordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "operationCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "outputWritten": {
+              "const": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "replay"
+        },
+        "status": {
+          "const": "matched"
+        },
+        "data": {
+          "allOf": [
+            {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "fixtureId",
+                    "outcomes",
+                    "lifecycle",
+                    "finalSnapshotDigest"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "matched"
+                    },
+                    "fixtureId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+                    },
+                    "outcomes": {
+                      "type": "array",
+                      "maxItems": 128,
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "operation",
+                              "status",
+                              "revisionRef"
+                            ],
+                            "properties": {
+                              "operation": {
+                                "type": "integer",
+                                "minimum": 1
+                              },
+                              "status": {
+                                "const": "succeeded"
+                              },
+                              "revisionRef": {
+                                "type": "string",
+                                "pattern": "^revision-[1-9][0-9]*$"
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "operation",
+                              "status",
+                              "code"
+                            ],
+                            "properties": {
+                              "operation": {
+                                "type": "integer",
+                                "minimum": 1
+                              },
+                              "status": {
+                                "const": "failed"
+                              },
+                              "code": {
+                                "enum": [
+                                  "element_not_found",
+                                  "action_not_found",
+                                  "authorization_required",
+                                  "duplicate_element_id",
+                                  "surface_mismatch",
+                                  "stale_revision",
+                                  "invalid_input",
+                                  "confirmation_required",
+                                  "invalid_policy_decision",
+                                  "precondition_failed",
+                                  "verification_failed",
+                                  "invalid_output",
+                                  "idempotency_key_required",
+                                  "invalid_idempotency_key",
+                                  "idempotency_conflict",
+                                  "idempotency_unavailable",
+                                  "internal_error"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "lifecycle": {
+                      "type": "array",
+                      "maxItems": 4096,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "event",
+                          "outcome",
+                          "sequence",
+                          "revisionRef",
+                          "operation"
+                        ],
+                        "properties": {
+                          "event": {
+                            "enum": [
+                              "surface_observed",
+                              "action_requested",
+                              "policy_decided",
+                              "confirmation_requested",
+                              "action_started",
+                              "action_verified",
+                              "action_failed"
+                            ]
+                          },
+                          "outcome": {
+                            "enum": [
+                              "observed",
+                              "requested",
+                              "allow",
+                              "deny",
+                              "require_confirmation",
+                              "started",
+                              "succeeded",
+                              "replayed",
+                              "element_not_found",
+                              "action_not_found",
+                              "authorization_required",
+                              "duplicate_element_id",
+                              "surface_mismatch",
+                              "stale_revision",
+                              "invalid_input",
+                              "confirmation_required",
+                              "invalid_policy_decision",
+                              "precondition_failed",
+                              "verification_failed",
+                              "invalid_output",
+                              "idempotency_key_required",
+                              "invalid_idempotency_key",
+                              "idempotency_conflict",
+                              "idempotency_unavailable",
+                              "internal_error"
+                            ]
+                          },
+                          "sequence": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "revisionRef": {
+                            "type": "string",
+                            "pattern": "^revision-[1-9][0-9]*$"
+                          },
+                          "actionRef": {
+                            "type": "string",
+                            "pattern": "^action-[1-9][0-9]*$"
+                          },
+                          "operation": {
+                            "type": "integer",
+                            "minimum": 1
+                          }
+                        }
+                      }
+                    },
+                    "finalSnapshotDigest": {
+                      "type": "string",
+                      "pattern": "^sha256:[a-f0-9]{64}$"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "fixtureId",
+                    "differences"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "mismatch"
+                    },
+                    "fixtureId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+                    },
+                    "differences": {
+                      "type": "array",
+                      "maxItems": 256,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "path"
+                        ],
+                        "properties": {
+                          "path": {
+                            "enum": [
+                              "outcome",
+                              "lifecycle",
+                              "final_snapshot"
+                            ]
+                          },
+                          "operation": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "index": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "reason"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "rejected"
+                    },
+                    "reason": {
+                      "enum": [
+                        "invalid_fixture",
+                        "fixture_digest_mismatch",
+                        "surface_mismatch",
+                        "budget_exceeded",
+                        "secret_detected"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "matched"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "replay"
+        },
+        "status": {
+          "const": "mismatch"
+        },
+        "data": {
+          "allOf": [
+            {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "fixtureId",
+                    "outcomes",
+                    "lifecycle",
+                    "finalSnapshotDigest"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "matched"
+                    },
+                    "fixtureId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+                    },
+                    "outcomes": {
+                      "type": "array",
+                      "maxItems": 128,
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "operation",
+                              "status",
+                              "revisionRef"
+                            ],
+                            "properties": {
+                              "operation": {
+                                "type": "integer",
+                                "minimum": 1
+                              },
+                              "status": {
+                                "const": "succeeded"
+                              },
+                              "revisionRef": {
+                                "type": "string",
+                                "pattern": "^revision-[1-9][0-9]*$"
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "operation",
+                              "status",
+                              "code"
+                            ],
+                            "properties": {
+                              "operation": {
+                                "type": "integer",
+                                "minimum": 1
+                              },
+                              "status": {
+                                "const": "failed"
+                              },
+                              "code": {
+                                "enum": [
+                                  "element_not_found",
+                                  "action_not_found",
+                                  "authorization_required",
+                                  "duplicate_element_id",
+                                  "surface_mismatch",
+                                  "stale_revision",
+                                  "invalid_input",
+                                  "confirmation_required",
+                                  "invalid_policy_decision",
+                                  "precondition_failed",
+                                  "verification_failed",
+                                  "invalid_output",
+                                  "idempotency_key_required",
+                                  "invalid_idempotency_key",
+                                  "idempotency_conflict",
+                                  "idempotency_unavailable",
+                                  "internal_error"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "lifecycle": {
+                      "type": "array",
+                      "maxItems": 4096,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "event",
+                          "outcome",
+                          "sequence",
+                          "revisionRef",
+                          "operation"
+                        ],
+                        "properties": {
+                          "event": {
+                            "enum": [
+                              "surface_observed",
+                              "action_requested",
+                              "policy_decided",
+                              "confirmation_requested",
+                              "action_started",
+                              "action_verified",
+                              "action_failed"
+                            ]
+                          },
+                          "outcome": {
+                            "enum": [
+                              "observed",
+                              "requested",
+                              "allow",
+                              "deny",
+                              "require_confirmation",
+                              "started",
+                              "succeeded",
+                              "replayed",
+                              "element_not_found",
+                              "action_not_found",
+                              "authorization_required",
+                              "duplicate_element_id",
+                              "surface_mismatch",
+                              "stale_revision",
+                              "invalid_input",
+                              "confirmation_required",
+                              "invalid_policy_decision",
+                              "precondition_failed",
+                              "verification_failed",
+                              "invalid_output",
+                              "idempotency_key_required",
+                              "invalid_idempotency_key",
+                              "idempotency_conflict",
+                              "idempotency_unavailable",
+                              "internal_error"
+                            ]
+                          },
+                          "sequence": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "revisionRef": {
+                            "type": "string",
+                            "pattern": "^revision-[1-9][0-9]*$"
+                          },
+                          "actionRef": {
+                            "type": "string",
+                            "pattern": "^action-[1-9][0-9]*$"
+                          },
+                          "operation": {
+                            "type": "integer",
+                            "minimum": 1
+                          }
+                        }
+                      }
+                    },
+                    "finalSnapshotDigest": {
+                      "type": "string",
+                      "pattern": "^sha256:[a-f0-9]{64}$"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "fixtureId",
+                    "differences"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "mismatch"
+                    },
+                    "fixtureId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+                    },
+                    "differences": {
+                      "type": "array",
+                      "maxItems": 256,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "path"
+                        ],
+                        "properties": {
+                          "path": {
+                            "enum": [
+                              "outcome",
+                              "lifecycle",
+                              "final_snapshot"
+                            ]
+                          },
+                          "operation": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "index": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "reason"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "rejected"
+                    },
+                    "reason": {
+                      "enum": [
+                        "invalid_fixture",
+                        "fixture_digest_mismatch",
+                        "surface_mismatch",
+                        "budget_exceeded",
+                        "secret_detected"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "mismatch"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "replay"
+        },
+        "status": {
+          "const": "rejected"
+        },
+        "data": {
+          "allOf": [
+            {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "fixtureId",
+                    "outcomes",
+                    "lifecycle",
+                    "finalSnapshotDigest"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "matched"
+                    },
+                    "fixtureId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+                    },
+                    "outcomes": {
+                      "type": "array",
+                      "maxItems": 128,
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "operation",
+                              "status",
+                              "revisionRef"
+                            ],
+                            "properties": {
+                              "operation": {
+                                "type": "integer",
+                                "minimum": 1
+                              },
+                              "status": {
+                                "const": "succeeded"
+                              },
+                              "revisionRef": {
+                                "type": "string",
+                                "pattern": "^revision-[1-9][0-9]*$"
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "operation",
+                              "status",
+                              "code"
+                            ],
+                            "properties": {
+                              "operation": {
+                                "type": "integer",
+                                "minimum": 1
+                              },
+                              "status": {
+                                "const": "failed"
+                              },
+                              "code": {
+                                "enum": [
+                                  "element_not_found",
+                                  "action_not_found",
+                                  "authorization_required",
+                                  "duplicate_element_id",
+                                  "surface_mismatch",
+                                  "stale_revision",
+                                  "invalid_input",
+                                  "confirmation_required",
+                                  "invalid_policy_decision",
+                                  "precondition_failed",
+                                  "verification_failed",
+                                  "invalid_output",
+                                  "idempotency_key_required",
+                                  "invalid_idempotency_key",
+                                  "idempotency_conflict",
+                                  "idempotency_unavailable",
+                                  "internal_error"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "lifecycle": {
+                      "type": "array",
+                      "maxItems": 4096,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "event",
+                          "outcome",
+                          "sequence",
+                          "revisionRef",
+                          "operation"
+                        ],
+                        "properties": {
+                          "event": {
+                            "enum": [
+                              "surface_observed",
+                              "action_requested",
+                              "policy_decided",
+                              "confirmation_requested",
+                              "action_started",
+                              "action_verified",
+                              "action_failed"
+                            ]
+                          },
+                          "outcome": {
+                            "enum": [
+                              "observed",
+                              "requested",
+                              "allow",
+                              "deny",
+                              "require_confirmation",
+                              "started",
+                              "succeeded",
+                              "replayed",
+                              "element_not_found",
+                              "action_not_found",
+                              "authorization_required",
+                              "duplicate_element_id",
+                              "surface_mismatch",
+                              "stale_revision",
+                              "invalid_input",
+                              "confirmation_required",
+                              "invalid_policy_decision",
+                              "precondition_failed",
+                              "verification_failed",
+                              "invalid_output",
+                              "idempotency_key_required",
+                              "invalid_idempotency_key",
+                              "idempotency_conflict",
+                              "idempotency_unavailable",
+                              "internal_error"
+                            ]
+                          },
+                          "sequence": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "revisionRef": {
+                            "type": "string",
+                            "pattern": "^revision-[1-9][0-9]*$"
+                          },
+                          "actionRef": {
+                            "type": "string",
+                            "pattern": "^action-[1-9][0-9]*$"
+                          },
+                          "operation": {
+                            "type": "integer",
+                            "minimum": 1
+                          }
+                        }
+                      }
+                    },
+                    "finalSnapshotDigest": {
+                      "type": "string",
+                      "pattern": "^sha256:[a-f0-9]{64}$"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "fixtureId",
+                    "differences"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "mismatch"
+                    },
+                    "fixtureId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+                    },
+                    "differences": {
+                      "type": "array",
+                      "maxItems": 256,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "path"
+                        ],
+                        "properties": {
+                          "path": {
+                            "enum": [
+                              "outcome",
+                              "lifecycle",
+                              "final_snapshot"
+                            ]
+                          },
+                          "operation": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "index": {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "reason"
+                  ],
+                  "properties": {
+                    "status": {
+                      "const": "rejected"
+                    },
+                    "reason": {
+                      "enum": [
+                        "invalid_fixture",
+                        "fixture_digest_mismatch",
+                        "surface_mismatch",
+                        "budget_exceeded",
+                        "secret_detected"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "rejected"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "evaluate"
+        },
+        "status": {
+          "const": "complete"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result"
+          ],
+          "properties": {
+            "result": {
+              "allOf": [
+                {
+                  "$ref": "https://dual-surface-ui.dev/schema/agent-evaluation-result-0.1.json"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "complete"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "evaluate"
+        },
+        "status": {
+          "const": "incomplete"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "result"
+          ],
+          "properties": {
+            "result": {
+              "allOf": [
+                {
+                  "$ref": "https://dual-surface-ui.dev/schema/agent-evaluation-result-0.1.json"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "const": "incomplete"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}
