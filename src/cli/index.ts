@@ -10,6 +10,11 @@ export type {
   AgentCliDigest,
   AgentCliExitCode,
   AgentCliJson,
+  AgentCliHost,
+  AgentCliHostErrorReason,
+  AgentCliInputSource,
+  AgentCliTrustedExecutionRequest,
+  AgentCliTrustedExecutionResult,
   AgentCliTrustedDriver,
   AgentEvaluationCaseDefinition,
   AgentEvaluationCaseObservation,
@@ -21,6 +26,12 @@ export type {
   AgentEvaluationScore,
   CreateDualSurfaceCliDriver,
 } from "./types.js";
+export { AgentCliHostError } from "./types.js";
+export {
+  AGENT_CLI_HELP,
+  AGENT_CLI_VERSION,
+  runAgentCli,
+} from "./runner.js";
 export {
   AgentEvaluationValidationError,
   captureAndValidateAgentEvaluationDefinition,
@@ -73,5 +84,6 @@ export {
   type AgentCliNonEvaluationResult,
   type AgentCliResultEnvelope,
   type AgentCliResultEvent,
+  type AgentCliSingleResult,
   type AgentCliSerializableOutput,
 } from "./output.js";

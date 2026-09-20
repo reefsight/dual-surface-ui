@@ -53,7 +53,14 @@
     "./replay": {
       "types": "./dist/replay/index.d.ts",
       "import": "./dist/replay/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli/index.d.ts",
+      "import": "./dist/cli/index.js"
     }
+  },
+  "bin": {
+    "dual-surface-ui": "./dist/cli/bin.js"
   },
   "files": [
     "dist",
@@ -69,6 +76,7 @@
     "package:check:delta": "npm run build && node scripts/check-delta-package.mjs",
     "package:check:trace-replay": "npm run build && node scripts/check-trace-replay-package.mjs",
     "package:check:playwright": "npm run build && node scripts/check-playwright-package.mjs",
+    "package:check:cli": "npm run build && node scripts/check-cli-package.mjs",
     "example:checkout": "npm run build && node examples/checkout/run.mjs",
     "example:document-approval": "npm run build && node examples/document-approval/run.mjs",
     "example:legacy-form": "npm run build && node examples/legacy-form/run.mjs",
@@ -133,6 +141,7 @@
     "@modelcontextprotocol/client": "^2.0.0",
     "@modelcontextprotocol/server": "^2.0.0",
     "@playwright/test": "1.63.0",
+    "@types/node": "^22.20.4",
     "@types/pngjs": "^6.0.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

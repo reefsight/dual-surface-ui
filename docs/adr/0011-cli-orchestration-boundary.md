@@ -51,8 +51,10 @@ dependencies. Its machine output must remain stable enough for CI consumers.
    `{schemaVersion:"0.1",kind:"agent-cli-result",command,status,data}`.
    NDJSON uses
    `{schemaVersion:"0.1",kind:"agent-cli-event",command,sequence,type,data}`.
-   Non-evaluation commands emit one `result` event. Evaluation emits ordered
-   `case` events followed by exactly one `summary` event.
+   Non-evaluation commands emit one `result` event. A rejected evaluation
+   definition also emits one `result` event. A valid evaluation emits ordered
+   `case` events followed by exactly one `summary` event; the complete NDJSON
+   sequence is buffered and passed to the stdout sink in one write.
 5. Canonical output sorts object keys by UTF-16 code-unit order and adds no
    CLI-generated timestamp, duration, absolute path, terminal styling, progress,
    locale data, stack, or raw error. Validated artifact timestamps may appear
@@ -373,14 +375,19 @@ dependencies. Its machine output must remain stable enough for CI consumers.
      | { command: "replay"; status: "rejected"; data: AgentReplayResult & {
          status: "rejected" } }
      | { command: "evaluate"; status: "complete" | "incomplete";
-         data: { result: AgentEvaluationResult } };
+         data: { result: AgentEvaluationResult } }
+     | { command: "evaluate"; status: "invalid"; data: {
+         artifactType?: AgentCliArtifactType;
+         reason: AgentCliInvalidReason } };
    type AgentCliResultEnvelope = AgentCliCommandResult & {
      schemaVersion: "0.1"; kind: "agent-cli-result";
    };
    type AgentCliNonEvaluationResult = Exclude<
      AgentCliCommandResult, { command: "evaluate" }
    >;
-   type AgentCliResultEvent<R> = R extends AgentCliNonEvaluationResult ? {
+   type AgentCliSingleResult = Exclude<AgentCliCommandResult,
+     { command: "evaluate"; status: "complete" | "incomplete" }>;
+   type AgentCliResultEvent<R> = R extends AgentCliSingleResult ? {
      readonly schemaVersion: "0.1";
      readonly kind: "agent-cli-event";
      readonly command: R["command"];
@@ -388,7 +395,7 @@ dependencies. Its machine output must remain stable enough for CI consumers.
      readonly type: "result";
      readonly data: { readonly status: R["status"]; readonly data: R["data"] };
    } : never;
-   type AgentCliEvent = AgentCliResultEvent<AgentCliNonEvaluationResult> |
+   type AgentCliEvent = AgentCliResultEvent<AgentCliSingleResult> |
      { readonly schemaVersion: "0.1"; readonly kind: "agent-cli-event";
        readonly command: "evaluate"; readonly sequence: number;
        readonly type: "case";
@@ -411,10 +418,11 @@ dependencies. Its machine output must remain stable enough for CI consumers.
 
    Each JSON result adds only `schemaVersion: "0.1"` and
    `kind: "agent-cli-result"` to its corresponding union member. Each NDJSON
-   line replaces that kind with `agent-cli-event`. A non-evaluation line has
-   sequence zero and carries its exact `{status,data}` pair. Evaluation uses
-   zero-based contiguous sequences with ordered `"case"` lines plus one final
-   `"summary"`. Evaluation case-line data is exactly one
+   line replaces that kind with `agent-cli-event`. A single-result line,
+   including an invalid evaluation definition, has sequence zero and carries
+   its exact `{status,data}` pair. A valid evaluation uses zero-based contiguous
+   sequences with ordered `"case"` lines plus one final `"summary"`, buffered
+   into one stdout sink write. Evaluation case-line data is exactly one
    corresponding result case; summary-line data is the result with `cases`
    omitted. No other properties are allowed. Public JSON Schemas generated
    from these shapes are the package authority.

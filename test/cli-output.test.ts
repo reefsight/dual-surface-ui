@@ -46,6 +46,36 @@ describe("CLI canonical machine output", () => {
     expect(JSON.parse(serializeAgentCliOutput(event))).toEqual(event);
   });
 
+  it("serializes evaluation-definition rejection as JSON and one NDJSON result event", () => {
+    const result: AgentCliResultEnvelope = {
+      schemaVersion: "0.1",
+      kind: "agent-cli-result",
+      command: "evaluate",
+      status: "invalid",
+      data: {
+        artifactType: "evaluation-definition",
+        reason: "secret_detected",
+      },
+    };
+    expect(JSON.parse(serializeAgentCliOutput(result))).toEqual(result);
+
+    const event: AgentCliEvent = {
+      schemaVersion: "0.1",
+      kind: "agent-cli-event",
+      command: "evaluate",
+      sequence: 0,
+      type: "result",
+      data: {
+        status: "invalid",
+        data: {
+          artifactType: "evaluation-definition",
+          reason: "digest_mismatch",
+        },
+      },
+    };
+    expect(JSON.parse(serializeAgentCliOutput(event))).toEqual(event);
+  });
+
   it("constructs the fixed one-to-one redacted error contract", () => {
     expect(createAgentCliError("driver_error", "record")).toEqual({
       schemaVersion: "0.1",

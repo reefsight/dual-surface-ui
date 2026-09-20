@@ -124,6 +124,11 @@ try {
     "schemas/phase3/agent-replay-fixture-0.1.schema.json",
     "schemas/phase3/agent-runtime-trace-0.1.schema.json",
     "schemas/phase3/agent-snapshot-delta-0.1.schema.json",
+    "schemas/phase3/agent-evaluation-definition-0.1.schema.json",
+    "schemas/phase3/agent-evaluation-result-0.1.schema.json",
+    "schemas/phase3/agent-cli-result-0.1.schema.json",
+    "schemas/phase3/agent-cli-event-0.1.schema.json",
+    "schemas/phase3/agent-cli-error-0.1.schema.json",
   ]);
   const allowedPackageFile = (path) =>
     path === "license" ||

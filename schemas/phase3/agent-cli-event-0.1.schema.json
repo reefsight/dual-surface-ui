@@ -1643,6 +1643,75 @@
           "const": "evaluate"
         },
         "sequence": {
+          "const": 0
+        },
+        "type": {
+          "const": "result"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "data"
+          ],
+          "properties": {
+            "status": {
+              "const": "invalid"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "reason"
+              ],
+              "properties": {
+                "artifactType": {
+                  "enum": [
+                    "snapshot",
+                    "delta",
+                    "trace",
+                    "replay-fixture",
+                    "evaluation-definition",
+                    "evaluation-result"
+                  ]
+                },
+                "reason": {
+                  "enum": [
+                    "invalid_artifact",
+                    "digest_mismatch",
+                    "budget_exceeded",
+                    "secret_detected"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "sequence",
+        "type",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-event"
+        },
+        "command": {
+          "const": "evaluate"
+        },
+        "sequence": {
           "type": "integer",
           "minimum": 0
         },

@@ -191,6 +191,14 @@ export type AgentCliCommandResult =
       readonly command: "evaluate";
       readonly status: "complete" | "incomplete";
       readonly data: { readonly result: AgentEvaluationResult };
+    }
+  | {
+      readonly command: "evaluate";
+      readonly status: "invalid";
+      readonly data: {
+        readonly artifactType?: AgentCliArtifactType;
+        readonly reason: AgentCliInvalidReason;
+      };
     };
 
 export type AgentCliResultEnvelope = AgentCliCommandResult & {
@@ -203,9 +211,14 @@ export type AgentCliNonEvaluationResult = Exclude<
   { command: "evaluate" }
 >;
 
+export type AgentCliSingleResult = Exclude<
+  AgentCliCommandResult,
+  { command: "evaluate"; status: "complete" | "incomplete" }
+>;
+
 export type AgentCliResultEvent<
-  Result extends AgentCliNonEvaluationResult = AgentCliNonEvaluationResult,
-> = Result extends AgentCliNonEvaluationResult
+  Result extends AgentCliSingleResult = AgentCliSingleResult,
+> = Result extends AgentCliSingleResult
   ? {
       readonly schemaVersion: "0.1";
       readonly kind: "agent-cli-event";
@@ -220,7 +233,7 @@ export type AgentCliResultEvent<
   : never;
 
 export type AgentCliEvent =
-  | AgentCliResultEvent
+  | AgentCliResultEvent<AgentCliSingleResult>
   | {
       readonly schemaVersion: "0.1";
       readonly kind: "agent-cli-event";
@@ -275,6 +288,10 @@ const VALIDATED_DIGEST_PATHS = new Set([
   "data.data.finalSnapshotDigest",
   "data.definitionDigest",
 ]);
+const VALIDATED_SECRET_REASON_PATHS = new Set([
+  "data.reason",
+  "data.data.reason",
+]);
 
 const scanSecrets = (value: CanonicalJson, path: readonly string[] = []): void => {
   if (typeof value === "string") {
@@ -284,6 +301,12 @@ const scanSecrets = (value: CanonicalJson, path: readonly string[] = []): void =
     if (
       VALIDATED_DIGEST_PATHS.has(path.join(".")) &&
       /^sha256:[a-f0-9]{64}$/.test(value)
+    ) return;
+    // The schema-validated fixed reason is a classification label, not secret
+    // material. Only its two exact result/event locations are exempted.
+    if (
+      value === "secret_detected" &&
+      VALIDATED_SECRET_REASON_PATHS.has(path.join("."))
     ) return;
     if (containsSecretSentinel(value)) throw new TypeError("Invalid CLI output");
     return;
@@ -314,7 +337,8 @@ const validateCapturedOutput = (value: CanonicalJson): void => {
   if (!valid) throw new TypeError("Invalid CLI output");
   if (
     kind === "agent-cli-result" &&
-    (value as Readonly<Record<string, CanonicalJson>>).command === "evaluate"
+    (value as Readonly<Record<string, CanonicalJson>>).command === "evaluate" &&
+    (value as Readonly<Record<string, CanonicalJson>>).status !== "invalid"
   ) {
     const data = (value as Readonly<Record<string, CanonicalJson>>).data;
     if (data === null || typeof data !== "object" || Array.isArray(data)) {

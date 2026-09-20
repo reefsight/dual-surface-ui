@@ -242,6 +242,7 @@ const commandResultBranches = [
       },
     }),
   })),
+  { command: "evaluate", status: "invalid", data: invalidData },
 ] as const;
 
 const resultBranch = (
@@ -261,8 +262,8 @@ export const AGENT_CLI_RESULT_SCHEMA = {
   oneOf: commandResultBranches.map(resultBranch),
 } as const;
 
-const nonEvaluationBranches = commandResultBranches.filter(
-  (branch) => branch.command !== "evaluate",
+const singleResultBranches = commandResultBranches.filter(
+  (branch) => branch.command !== "evaluate" || branch.status === "invalid",
 );
 
 const evaluationCase = {
@@ -300,7 +301,7 @@ export const AGENT_CLI_EVENT_SCHEMA = {
   $id: "https://dual-surface-ui.dev/schema/agent-cli-event-0.1.json",
   title: "Dual Surface UI CLI NDJSON Event",
   oneOf: [
-    ...nonEvaluationBranches.map((branch) =>
+    ...singleResultBranches.map((branch) =>
       strictObject(
         ["schemaVersion", "kind", "command", "sequence", "type", "data"],
         {

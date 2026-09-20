@@ -94,3 +94,78 @@ export interface AgentCliTrustedDriver {
 export type CreateDualSurfaceCliDriver = () =>
   | AgentCliTrustedDriver
   | Promise<AgentCliTrustedDriver>;
+
+export type AgentCliInputSource =
+  | { readonly kind: "stdin" }
+  | { readonly kind: "file"; readonly path: string };
+
+export type AgentCliTrustedExecutionRequest =
+  | Readonly<{ mode: "record"; driver: string; timeoutMs: number }>
+  | Readonly<{
+      mode: "evaluate";
+      driver: string;
+      timeoutMs: number;
+      caseId: string;
+      input: AgentCliJson;
+    }>;
+
+export type AgentCliTrustedExecutionResult =
+  | {
+      readonly mode: "record";
+      readonly driverId: string;
+      readonly auditEvents: readonly AgentAuditEvent[];
+    }
+  | {
+      readonly mode: "evaluate";
+      readonly driverId: string;
+      readonly result: AgentEvaluationDriverCaseResult;
+    };
+
+export type AgentCliHostErrorReason =
+  | "input_io"
+  | "output_io"
+  | "driver_error"
+  | "cancelled";
+
+const HOST_ERROR_MESSAGES: Readonly<Record<AgentCliHostErrorReason, string>> =
+  Object.freeze({
+    input_io: "CLI host input failed",
+    output_io: "CLI host output failed",
+    driver_error: "CLI host trusted driver failed",
+    cancelled: "CLI host operation cancelled",
+  });
+
+/** A fixed, non-reflective failure signal from an AgentCliHost method. */
+export class AgentCliHostError extends Error {
+  readonly reason: AgentCliHostErrorReason;
+
+  constructor(reason: AgentCliHostErrorReason) {
+    if (!Object.hasOwn(HOST_ERROR_MESSAGES, reason)) {
+      throw new TypeError("Invalid CLI host error reason");
+    }
+    super(HOST_ERROR_MESSAGES[reason]);
+    this.name = "AgentCliHostError";
+    this.reason = reason;
+    Object.freeze(this);
+  }
+}
+
+export interface AgentCliHost {
+  readonly cwd: string;
+  readonly signal: AbortSignal;
+  readonly readInput: (request: Readonly<{
+    source: AgentCliInputSource;
+    maxBytes: number;
+  }>) => Promise<Uint8Array>;
+  readonly writeAtomic: (request: Readonly<{
+    path: string;
+    bytes: Uint8Array;
+    force: boolean;
+    signal: AbortSignal;
+  }>) => Promise<void>;
+  readonly executeTrustedDriver: (
+    request: AgentCliTrustedExecutionRequest,
+  ) => Promise<AgentCliTrustedExecutionResult>;
+  readonly writeStdout: (canonicalLine: string) => Promise<void>;
+  readonly writeStderr: (canonicalLine: string) => Promise<void>;
+}

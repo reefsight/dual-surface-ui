@@ -1531,6 +1531,58 @@
           }
         }
       }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "command",
+        "status",
+        "data"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "agent-cli-result"
+        },
+        "command": {
+          "const": "evaluate"
+        },
+        "status": {
+          "const": "invalid"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reason"
+          ],
+          "properties": {
+            "artifactType": {
+              "enum": [
+                "snapshot",
+                "delta",
+                "trace",
+                "replay-fixture",
+                "evaluation-definition",
+                "evaluation-result"
+              ]
+            },
+            "reason": {
+              "enum": [
+                "invalid_artifact",
+                "digest_mismatch",
+                "budget_exceeded",
+                "secret_detected"
+              ]
+            }
+          }
+        }
+      }
     }
   ]
 }
