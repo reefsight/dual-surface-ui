@@ -72,9 +72,11 @@ and implementation are authorized in the
 
 ## Phase 3 — Ecosystem, reliability, and evaluation
 
-Execution status on 2026-09-20: P3.1 through P3.4 are verified and the maintainer
-authorized P3.3 through P3.10 Exit Gate preparation. Recording Phase 3 approval
-and starting Phase 4 still require a separate maintainer decision.
+Execution status on 2026-09-20: P3.1 through P3.5 are verified, P3.6 has an
+accepted implementation design, and the maintainer authorized P3.3 through
+P3.10 Exit Gate preparation. P3.6 has no implementation evidence yet.
+Recording Phase 3 approval and starting Phase 4 still require a separate
+maintainer decision.
 
 ### Objective
 
@@ -103,10 +105,11 @@ reproducible without weakening the web security model.
 
 ### Planned execution order
 
-P3.1 through P3.4 are implemented and verified. P3.5 through P3.10 proceed in
-numeric dependency order, with P3.5 next. Work-item records define the
-acceptance and evidence gates; planning records do not claim implementation or
-completion.
+P3.1 through P3.5 are implemented and verified. P3.6 through P3.10 proceed in
+numeric dependency order, with P3.6 next. The P3.6 private conformance design
+is accepted in ADR 0012, but implementation and evidence remain pending.
+Work-item records define the acceptance and evidence gates; design records do
+not claim implementation or completion.
 
 ### Exit gate
 
