@@ -72,12 +72,11 @@ and implementation are authorized in the
 
 ## Phase 3 — Ecosystem, reliability, and evaluation
 
-Execution status on 2026-09-21: P3.1 through P3.6 are implemented and verified,
-and the maintainer authorized P3.3 through P3.10 Exit Gate preparation. P3.6
-release evidence is recorded in
-[the dated aggregate report](evidence/p3.6-conformance-report-2026-09-21.json).
-Recording Phase 3 approval and starting Phase 4 still require a separate
-maintainer decision.
+Execution status on 2026-09-21: P3.1 through P3.9 are implemented and verified,
+and the clean P3.10 audit passed all 22 commands. The proposed
+[Phase 3 Exit Review](reviews/phase3-exit-review.md) awaits a separate
+maintainer decision. Phase 4 remains blocked until that decision explicitly
+approves the gate and authorizes P4.1.
 
 ### Objective
 
@@ -104,20 +103,17 @@ reproducible without weakening the web security model.
 10. P3.10 — Phase 3 Exit Audit and proposed review for a separate maintainer
     decision.
 
-### Planned execution order
+### Execution status
 
-P3.1 through P3.6 are implemented and verified. P3.7 through P3.10 proceed in
-numeric dependency order, with P3.7 next. The P3.6 private conformance design
-and implementation are governed by accepted ADR 0012 and the dated aggregate
-evidence report. P3.7 implementation and evidence are complete in
-[`docs/evidence/p3.7-adversarial-report-2026-09-21.json`](evidence/p3.7-adversarial-report-2026-09-21.json);
-the exit gate remains open pending independent security review and maintainer
-approval.
-P3.8 now has a frozen 12-case deterministic golden-task suite; actual model
-evaluation remains authorization-gated.
-P3.9's method and structural measurement are recorded, with a conditional
-recommendation limited to P4.1 language-neutral protocol design. Actual
-model/token thresholds and real-OS proof remain open.
+P3.1 through P3.9 are implemented and verified, and P3.10 has completed the
+technical exit audit. The P3.6 private conformance design and implementation
+are governed by accepted ADR 0012 and the dated aggregate evidence report.
+P3.7 implementation, automated evidence, and independent review are complete;
+the gate remains open only for the separate maintainer decision.
+P3.8 has passing supported Luna medium/high evidence on the frozen 12-case
+suite. P3.9 has passing exact-provider token and quality evidence across four
+baselines, with a conditional recommendation limited to P4.1 language-neutral
+protocol design. Real-OS native proof remains open for Phase 4.
 Work-item records define the acceptance and evidence gates; design records do
 not claim implementation or completion.
 
