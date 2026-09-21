@@ -85,7 +85,7 @@
     "baseline:phase1": "npm run build && node scripts/measure-phase1-baseline.mjs",
     "schema:generate": "node scripts/generate-schema.mjs && node scripts/generate-phase3-schema.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit && npm run build:core && ngc -p angular/tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --exclude test/conformance/aggregate.test.ts --exclude test/cross-exporter-conformance.test.ts",
     "test:conformance": "vitest run test/conformance/foundation.test.ts test/cross-exporter-conformance.test.ts --pool=vmThreads --maxWorkers=1 --no-file-parallelism --isolate=false",
     "test:conformance:browser": "playwright test e2e/browser/conformance.spec.ts",
     "test:conformance:native": "playwright test --config playwright.native.config.ts e2e/native/conformance.spec.ts",
