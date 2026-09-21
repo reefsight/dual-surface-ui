@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "phase3-readiness-preflight",
+  "status": "not_ready",
+  "sourceCommit": "be0beb4572bc794fa5496f44e763fc5a4e047fa6",
+  "sourceDirty": false,
+  "readyForP310": false,
+  "checks": [
+    {
+      "id": "p3.6.conformance",
+      "status": "ready",
+      "evidence": "docs/evidence/p3.6-conformance-report-2026-09-21.json",
+      "detail": "cross-exporter report must be clean, digest-bound, and failure-free"
+    },
+    {
+      "id": "p3.7.automated",
+      "status": "ready",
+      "evidence": "docs/evidence/p3.7-adversarial-report-2026-09-21.json",
+      "detail": "automated adversarial controls must have zero failures, unauthorized mutations, unresolved critical/high findings, and leaks"
+    },
+    {
+      "id": "p3.8.fixture",
+      "status": "ready",
+      "evidence": "docs/evidence/p3.8-golden-task-suite-2026-09-21.json",
+      "detail": "golden suite must remain frozen and digest-bound"
+    },
+    {
+      "id": "p3.9.structural",
+      "status": "ready",
+      "evidence": "docs/evidence/p3.9-structural-benchmark-2026-09-21.json",
+      "detail": "structural evidence must be clean and preserve unavailable model claims"
+    },
+    {
+      "id": "p3.7.independent_security",
+      "status": "missing",
+      "evidence": "docs/reviews/p3.7-independent-security-review.json",
+      "detail": "authority-bound evidence is absent"
+    },
+    {
+      "id": "p3.8.actual_models",
+      "status": "missing",
+      "evidence": "docs/evidence/p3.8-multi-model-report.json",
+      "detail": "authority-bound evidence is absent"
+    },
+    {
+      "id": "p3.9.model_benchmark",
+      "status": "missing",
+      "evidence": "docs/evidence/p3.9-model-benchmark-report.json",
+      "detail": "authority-bound evidence is absent"
+    }
+  ],
+  "summary": {
+    "ready": 4,
+    "missing": 3,
+    "failed": 0
+  },
+  "reportDigest": "sha256:206e3a5e710518f10e177e3dbc642ed5fa02deeb5f84764ef76774b1402df01f"
+}

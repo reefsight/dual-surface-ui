@@ -8,6 +8,11 @@ P3.10 requires reviewed completion evidence for P3.1 through P3.9. The current
 repository is not yet eligible for the clean-checkout exit audit because the
 following authority-bound evidence is missing.
 
+The source-bound machine-readable preflight is
+[`docs/evidence/phase3-readiness-preflight-2026-09-21.json`](../evidence/phase3-readiness-preflight-2026-09-21.json).
+At commit `be0beb4572bc794fa5496f44e763fc5a4e047fa6` it records four ready
+local checks, three missing authority-bound checks, and zero failed checks.
+
 | Gate | Current evidence | Missing authority/evidence | Effect |
 |---|---|---|---|
 | P3.7 AC-10 | 23 adversarial cases pass; zero unauthorized mutations, unresolved critical/high automated findings, or sentinel matches | Independent security reviewer identity, reviewed commit, findings, and disposition | P3.7 cannot complete |
