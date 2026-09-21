@@ -1,9 +1,9 @@
 {
   "schemaVersion": "0.1",
   "kind": "phase3-openai-model-benchmark-plan",
-  "authorization": { "status": "approved", "approvalId": "user-approved-close-gate3-p39-2026-09-21", "maxCostUsd": 0.5 },
+  "authorization": { "status": "approved", "approvalId": "user-approved-close-gate3-p39-v2-2026-09-21", "maxCostUsd": 0.5 },
   "model": "gpt-5.6-luna",
-  "reasoningEffort": "medium",
+  "reasoningEffort": "high",
   "taskSuite": "fixtures/evaluation/golden-tasks-0.5.json",
   "taskCount": 12,
   "baselines": ["dual-surface-semantic", "full-page-dom", "playwright-accessibility", "vision-screenshot"],
