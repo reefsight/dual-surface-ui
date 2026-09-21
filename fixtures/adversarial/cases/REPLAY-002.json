@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-adversarial-case",
+  "caseId": "REPLAY-002",
+  "family": "replay_scope",
+  "severity": "critical",
+  "seed": "p37-replay-002",
+  "attackerField": "idempotencyKey",
+  "payload": {
+    "value": "same-key-different-input"
+  },
+  "control": {
+    "id": "idempotency_conflict",
+    "description": "Deterministic idempotency_conflict control"
+  },
+  "expected": {
+    "status": "prevented",
+    "unauthorizedMutations": 0,
+    "disposition": "first_observation"
+  },
+  "repetitions": 3,
+  "caseDigest": "sha256:cc4e4ff3e931238f4087075ba3a3d7ecaf652e572ae302abfe23461addf62819"
+}

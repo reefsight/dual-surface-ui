@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/private/agent-adversarial-report-0.1.json",
+  "title": "Dual Surface UI Private Adversarial Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "corpusId",
+    "matrixDigest",
+    "cases",
+    "scan",
+    "summary",
+    "reportDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "agent-adversarial-report"
+    },
+    "corpusId": {
+      "const": "phase3-adversarial"
+    },
+    "matrixDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 23,
+      "maxItems": 23,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "caseId",
+          "severity",
+          "status",
+          "control",
+          "unauthorizedMutations",
+          "disposition",
+          "repetitions"
+        ],
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "pattern": "^[A-Z]+-[0-9]{3}$"
+          },
+          "severity": {
+            "enum": [
+              "critical",
+              "high",
+              "medium"
+            ]
+          },
+          "status": {
+            "enum": [
+              "prevented",
+              "failed"
+            ]
+          },
+          "control": {
+            "type": "string",
+            "minLength": 1
+          },
+          "unauthorizedMutations": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "disposition": {
+            "const": "first_observation"
+          },
+          "repetitions": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          }
+        }
+      }
+    },
+    "scan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channels",
+        "sentinelMatches"
+      ],
+      "properties": {
+        "channels": {
+          "type": "array",
+          "const": [
+            "snapshot",
+            "trace",
+            "model_context",
+            "output",
+            "report",
+            "stdout",
+            "stderr",
+            "package"
+          ]
+        },
+        "sentinelMatches": {
+          "const": 0
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prevented",
+        "failed",
+        "unauthorizedMutations",
+        "unresolvedCriticalHigh"
+      ],
+      "properties": {
+        "prevented": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unauthorizedMutations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unresolvedCriticalHigh": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "reportDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

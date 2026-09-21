@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/private/agent-adversarial-case-0.1.json",
+  "title": "Dual Surface UI Private Adversarial Case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "caseId",
+    "family",
+    "severity",
+    "seed",
+    "attackerField",
+    "payload",
+    "control",
+    "expected",
+    "repetitions",
+    "caseDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "agent-adversarial-case"
+    },
+    "caseId": {
+      "type": "string",
+      "pattern": "^[A-Z]+-[0-9]{3}$"
+    },
+    "family": {
+      "enum": [
+        "page_injection",
+        "confirmation_policy_forgery",
+        "tool_protocol_injection",
+        "scope_confusion",
+        "target_aba",
+        "replay_scope",
+        "visual_fallback",
+        "artifact_injection"
+      ]
+    },
+    "severity": {
+      "enum": [
+        "critical",
+        "high",
+        "medium"
+      ]
+    },
+    "seed": {
+      "type": "string",
+      "pattern": "^p37-[a-z0-9-]+$"
+    },
+    "attackerField": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 512
+      }
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "description"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "unauthorizedMutations",
+        "disposition"
+      ],
+      "properties": {
+        "status": {
+          "const": "prevented"
+        },
+        "unauthorizedMutations": {
+          "const": 0
+        },
+        "disposition": {
+          "const": "first_observation"
+        }
+      }
+    },
+    "repetitions": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3
+    },
+    "caseDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

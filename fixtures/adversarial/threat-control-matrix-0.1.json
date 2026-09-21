@@ -1,0 +1,169 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-adversarial-matrix",
+  "matrixId": "phase3-adversarial",
+  "cases": [
+    {
+      "caseId": "PAGE-001",
+      "family": "page_injection",
+      "severity": "medium",
+      "control": "explicit_catalog_only",
+      "caseDigest": "sha256:7e4816159fdb0ba2902cb0d353b96a51e5597a6ad2803db64ed018c1abf9ef12"
+    },
+    {
+      "caseId": "PAGE-002",
+      "family": "page_injection",
+      "severity": "high",
+      "control": "trusted_confirmation_only",
+      "caseDigest": "sha256:c7d8ac4079626c7048bfc25a1745d96b8e4be414172638bc646754f8ad30cc9c"
+    },
+    {
+      "caseId": "PAGE-003",
+      "family": "page_injection",
+      "severity": "medium",
+      "control": "declared_target_only",
+      "caseDigest": "sha256:5ed865ce64a295c6352c94230569173f1e4ca61ecb43ceef784cbcaac80001ff"
+    },
+    {
+      "caseId": "AUTH-001",
+      "family": "confirmation_policy_forgery",
+      "severity": "critical",
+      "control": "trusted_policy_callback",
+      "caseDigest": "sha256:88062d83e686527f97d3e327f4f067cbf17da3be5ef43b2562ced267ef979977"
+    },
+    {
+      "caseId": "AUTH-002",
+      "family": "confirmation_policy_forgery",
+      "severity": "critical",
+      "control": "trusted_confirmation_callback",
+      "caseDigest": "sha256:84fed3663eda55309c094477b983eb50b43f0596f41fa2706c1ce685dda2ee3e"
+    },
+    {
+      "caseId": "AUTH-003",
+      "family": "confirmation_policy_forgery",
+      "severity": "high",
+      "control": "model_output_is_data",
+      "caseDigest": "sha256:e2f28eb67599198de19f7d21a9ed54babe39231d6467a1fb80baf110a018abc5"
+    },
+    {
+      "caseId": "TOOL-001",
+      "family": "tool_protocol_injection",
+      "severity": "high",
+      "control": "output_is_data",
+      "caseDigest": "sha256:eb50840486625299e1e2ddf5e8335cc0b36d7bf784323ba3fe352a6becdd997e"
+    },
+    {
+      "caseId": "TOOL-002",
+      "family": "tool_protocol_injection",
+      "severity": "high",
+      "control": "trusted_metadata_only",
+      "caseDigest": "sha256:33c9d32646521a20698b9cb7c4029bde863af81f0012826bb147d48f689ccb28"
+    },
+    {
+      "caseId": "TOOL-003",
+      "family": "tool_protocol_injection",
+      "severity": "critical",
+      "control": "single_declared_dispatch",
+      "caseDigest": "sha256:32535f3ed460897ec4fb246e2f0d17bec162fb5c4a7733013855b589fc8639b5"
+    },
+    {
+      "caseId": "SCOPE-001",
+      "family": "scope_confusion",
+      "severity": "critical",
+      "control": "origin_bound",
+      "caseDigest": "sha256:383d86288804cf9b5eb2a60c804fdc39e51cab1d756dfaeee9f36252ebef157f"
+    },
+    {
+      "caseId": "SCOPE-002",
+      "family": "scope_confusion",
+      "severity": "critical",
+      "control": "principal_bound",
+      "caseDigest": "sha256:8feab0af72d6a8ce85e8f258b7b9b0d6c9010ab5ff60b96dbcbcbeccaec02001"
+    },
+    {
+      "caseId": "SCOPE-003",
+      "family": "scope_confusion",
+      "severity": "critical",
+      "control": "surface_bound",
+      "caseDigest": "sha256:73df8ab1726511b65a2bdfccb03bec7db719c284240d28ae5c0c9b7dc94ca07b"
+    },
+    {
+      "caseId": "SCOPE-004",
+      "family": "scope_confusion",
+      "severity": "critical",
+      "control": "revision_bound",
+      "caseDigest": "sha256:d83ddc68d597a72f89a96d9b50995e9fe067300fb00b08073ac8a86c7134c225"
+    },
+    {
+      "caseId": "SCOPE-005",
+      "family": "scope_confusion",
+      "severity": "high",
+      "control": "action_allowlist",
+      "caseDigest": "sha256:ca0ed486f9cd1c0a13b590d05edbc60d2eaba189e3d331ea383cddd38ef03205"
+    },
+    {
+      "caseId": "TARGET-001",
+      "family": "target_aba",
+      "severity": "critical",
+      "control": "target_identity_and_revision",
+      "caseDigest": "sha256:c18d9b51c3343cc9a3b9c5da41854424e767f076b22d805015d89f0f7e3f7a1c"
+    },
+    {
+      "caseId": "TARGET-002",
+      "family": "target_aba",
+      "severity": "critical",
+      "control": "mutation_epoch",
+      "caseDigest": "sha256:9eced3fb1cde7f97d37350b03701297dd9d465b4cb8dc02ca46bef662a20a616"
+    },
+    {
+      "caseId": "REPLAY-001",
+      "family": "replay_scope",
+      "severity": "high",
+      "control": "keyed_replay_same_request",
+      "caseDigest": "sha256:919ad40fb10dad606c39c8e23f49b88ae26f13a2e6657836b2bda16e951d4bf7"
+    },
+    {
+      "caseId": "REPLAY-002",
+      "family": "replay_scope",
+      "severity": "critical",
+      "control": "idempotency_conflict",
+      "caseDigest": "sha256:cc4e4ff3e931238f4087075ba3a3d7ecaf652e572ae302abfe23461addf62819"
+    },
+    {
+      "caseId": "VISUAL-001",
+      "family": "visual_fallback",
+      "severity": "high",
+      "control": "semantic_id_allowlist",
+      "caseDigest": "sha256:ced434557431f24266445460322aa943d78ab4145763a3988a5e67df238bb486"
+    },
+    {
+      "caseId": "VISUAL-002",
+      "family": "visual_fallback",
+      "severity": "critical",
+      "control": "sensitive_nodes_excluded",
+      "caseDigest": "sha256:ed681cafd507edd120a8d760a1903adcbfbed695fc5a5a8415db2949116ed6bd"
+    },
+    {
+      "caseId": "ARTIFACT-001",
+      "family": "artifact_injection",
+      "severity": "high",
+      "control": "artifact_is_data",
+      "caseDigest": "sha256:183fc78ced0f24987ed0920dbd3d74e8f13ee08917862691f82db3dcc6b8954e"
+    },
+    {
+      "caseId": "ARTIFACT-002",
+      "family": "artifact_injection",
+      "severity": "high",
+      "control": "cli_output_is_data",
+      "caseDigest": "sha256:884b054442d6d4fecf7d263b18befda7579327832f5f1d08719699a037c0300c"
+    },
+    {
+      "caseId": "ARTIFACT-003",
+      "family": "artifact_injection",
+      "severity": "critical",
+      "control": "redact_before_egress",
+      "caseDigest": "sha256:91cc185d2b650ee5691a21b738eeba4cc0a7cd35d1df08f8d61d054f86319d45"
+    }
+  ],
+  "matrixDigest": "sha256:93363450c4d281c05241664dc672400168281870eea76202c7d64f98a1e3eda9"
+}

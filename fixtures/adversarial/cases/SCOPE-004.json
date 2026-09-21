@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-adversarial-case",
+  "caseId": "SCOPE-004",
+  "family": "scope_confusion",
+  "severity": "critical",
+  "seed": "p37-scope-004",
+  "attackerField": "revision",
+  "payload": {
+    "value": "stale-revision"
+  },
+  "control": {
+    "id": "revision_bound",
+    "description": "Deterministic revision_bound control"
+  },
+  "expected": {
+    "status": "prevented",
+    "unauthorizedMutations": 0,
+    "disposition": "first_observation"
+  },
+  "repetitions": 3,
+  "caseDigest": "sha256:d83ddc68d597a72f89a96d9b50995e9fe067300fb00b08073ac8a86c7134c225"
+}

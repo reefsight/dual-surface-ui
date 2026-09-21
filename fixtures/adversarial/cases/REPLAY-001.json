@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-adversarial-case",
+  "caseId": "REPLAY-001",
+  "family": "replay_scope",
+  "severity": "high",
+  "seed": "p37-replay-001",
+  "attackerField": "idempotencyKey",
+  "payload": {
+    "value": "shared-key"
+  },
+  "control": {
+    "id": "keyed_replay_same_request",
+    "description": "Deterministic keyed_replay_same_request control"
+  },
+  "expected": {
+    "status": "prevented",
+    "unauthorizedMutations": 0,
+    "disposition": "first_observation"
+  },
+  "repetitions": 3,
+  "caseDigest": "sha256:919ad40fb10dad606c39c8e23f49b88ae26f13a2e6657836b2bda16e951d4bf7"
+}

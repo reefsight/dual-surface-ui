@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-adversarial-case",
+  "caseId": "TARGET-001",
+  "family": "target_aba",
+  "severity": "critical",
+  "seed": "p37-target-001",
+  "attackerField": "target",
+  "payload": {
+    "value": "replace-and-reinsert"
+  },
+  "control": {
+    "id": "target_identity_and_revision",
+    "description": "Deterministic target_identity_and_revision control"
+  },
+  "expected": {
+    "status": "prevented",
+    "unauthorizedMutations": 0,
+    "disposition": "first_observation"
+  },
+  "repetitions": 3,
+  "caseDigest": "sha256:c18d9b51c3343cc9a3b9c5da41854424e767f076b22d805015d89f0f7e3f7a1c"
+}

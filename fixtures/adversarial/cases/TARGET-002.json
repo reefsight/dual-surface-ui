@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-adversarial-case",
+  "caseId": "TARGET-002",
+  "family": "target_aba",
+  "severity": "critical",
+  "seed": "p37-target-002",
+  "attackerField": "target",
+  "payload": {
+    "value": "same-id-new-node"
+  },
+  "control": {
+    "id": "mutation_epoch",
+    "description": "Deterministic mutation_epoch control"
+  },
+  "expected": {
+    "status": "prevented",
+    "unauthorizedMutations": 0,
+    "disposition": "first_observation"
+  },
+  "repetitions": 3,
+  "caseDigest": "sha256:9eced3fb1cde7f97d37350b03701297dd9d465b4cb8dc02ca46bef662a20a616"
+}

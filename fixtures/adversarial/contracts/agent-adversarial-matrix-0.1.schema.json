@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/private/agent-adversarial-matrix-0.1.json",
+  "title": "Dual Surface UI Private Adversarial Threat Matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "matrixId",
+    "cases",
+    "matrixDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "agent-adversarial-matrix"
+    },
+    "matrixId": {
+      "const": "phase3-adversarial"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 23,
+      "maxItems": 23,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "caseId",
+          "family",
+          "severity",
+          "control",
+          "caseDigest"
+        ],
+        "properties": {
+          "caseId": {
+            "type": "string"
+          },
+          "family": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "control": {
+            "type": "string"
+          },
+          "caseDigest": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "matrixDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}
