@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "p3.7-independent-security-review",
+  "status": "approved",
+  "reviewedCommit": "f27241880d97384bd48ad748e8b31ef5e446e50e",
+  "corpusDigest": "sha256:02126e29fcf35a2a116e50c11233132c32044df6455a9c479352f79651ca6217",
+  "matrixDigest": "sha256:93363450c4d281c05241664dc672400168281870eea76202c7d64f98a1e3eda9",
+  "reportDigest": "sha256:da70545596a25e32263440e84bef08e0305570ab2b47405cbccce1d09cc9e09a",
+  "reviewer": {
+    "id": "Pitchayut586",
+    "independent": true
+  },
+  "findings": [],
+  "unresolvedCriticalHigh": 0,
+  "disposition": "no_unresolved_critical_high"
+}
