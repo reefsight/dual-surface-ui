@@ -34,6 +34,17 @@ Before any provider request, the maintainer must record all of:
    concurrency;
 6. approval to retain only redacted dimension scores and bounded failure data.
 
+Accepted evidence must use the strict private contracts under
+`fixtures/phase3-exit/contracts/` and the exact paths checked by the preflight:
+
+- `docs/reviews/p3.7-independent-security-review.json`;
+- `docs/evidence/p3.8-multi-model-report.json`; and
+- `docs/evidence/p3.9-model-benchmark-report.json`.
+
+File presence alone is insufficient. `phase3:preflight` validates the contract
+and then applies the frozen completion, wrong-action, safety, step, token,
+vision-comparability, and independence gates.
+
 ## Independent security review record
 
 The security reviewer must be independent of the P3.7 implementation and
