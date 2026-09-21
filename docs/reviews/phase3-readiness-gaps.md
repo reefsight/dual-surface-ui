@@ -10,7 +10,7 @@ following authority-bound evidence is missing.
 
 The source-bound machine-readable preflight is
 [`docs/evidence/phase3-readiness-preflight-2026-09-21.json`](../evidence/phase3-readiness-preflight-2026-09-21.json).
-At commit `127335bb0caa74c1a9b61576e9520a9cb3e7d222` it records four ready
+At commit `4732e71c06afdba8b629f7f4b212c5c939cded14` it records four ready
 local checks, three missing authority-bound checks, and zero failed checks.
 
 | Gate | Current evidence | Missing authority/evidence | Effect |
