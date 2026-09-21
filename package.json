@@ -98,6 +98,8 @@
     "benchmark:p3.9:structural": "node scripts/run-p3.9-structural-benchmark.mjs",
     "probe:p3:openrouter": "node --env-file=.env scripts/run-phase3-openrouter-probe.mjs",
     "probe:p3:openrouter:dry": "node scripts/run-phase3-openrouter-probe.mjs --dry-run",
+    "evaluate:p3.8:dry": "node scripts/run-p3.8-openrouter-evaluation.mjs --dry-run",
+    "evaluate:p3.8": "node --env-file=.env scripts/run-p3.8-openrouter-evaluation.mjs",
     "phase3:preflight": "node scripts/check-phase3-readiness.mjs",
     "phase3:gate": "node scripts/check-phase3-readiness.mjs --require-ready",
     "phase3:contracts": "node scripts/generate-phase3-gate-contracts.mjs",

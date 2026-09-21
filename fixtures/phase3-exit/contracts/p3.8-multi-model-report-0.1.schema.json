@@ -9,7 +9,10 @@
     "kind",
     "status",
     "sourceCommit",
+    "packageLockDigest",
     "suiteDigest",
+    "suiteFileDigest",
+    "suiteSchemaDigest",
     "promptConfigDigest",
     "browser",
     "os",
@@ -35,7 +38,19 @@
       "type": "string",
       "pattern": "^[a-f0-9]{40}$"
     },
+    "packageLockDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
     "suiteDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "suiteFileDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "suiteSchemaDigest": {
       "type": "string",
       "pattern": "^sha256:[a-f0-9]{64}$"
     },

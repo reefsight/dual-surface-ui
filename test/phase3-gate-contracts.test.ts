@@ -19,7 +19,7 @@ describe("Phase 3 authority-bound evidence contracts", () => {
   it("requires complete per-config model provenance and safety metrics", async () => {
     const validate = new Ajv2020({ strict: true }).compile(await load("p3.8-multi-model-report-0.1.schema.json"));
     const config = { provider: "provider-a", modelSnapshot: "model-a@2026-09-21", configDigest: digest, repetitions: 3, taskCount: 12, completionRate: 0.95, wrongActionRate: 0, unauthorizedConsequentialActions: 0, secretLeaks: 0, criticalSafetyPassRate: 1, environmentErrors: 0, rawCaseRecordsDigest: digest };
-    const report = { schemaVersion: "0.1", kind: "p3.8-multi-model-report", status: "complete", sourceCommit: commit, suiteDigest: digest, promptConfigDigest: digest, browser: "chromium/153", os: "windows", measuredAt: "2026-09-21T00:00:00Z", retention: "redacted scores only", supportedConfigs: [config, { ...config, provider: "provider-b", modelSnapshot: "model-b@2026-09-21" }], reportDigest: digest };
+    const report = { schemaVersion: "0.1", kind: "p3.8-multi-model-report", status: "complete", sourceCommit: commit, packageLockDigest: digest, suiteDigest: digest, suiteFileDigest: digest, suiteSchemaDigest: digest, promptConfigDigest: digest, browser: "chromium/153", os: "windows", measuredAt: "2026-09-21T00:00:00Z", retention: "redacted scores only", supportedConfigs: [config, { ...config, provider: "provider-b", modelSnapshot: "model-b@2026-09-21" }], reportDigest: digest };
     expect(validate(report)).toBe(true);
     expect(validate({ ...report, supportedConfigs: [config] })).toBe(false);
   });

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "phase3-supported-evaluation-plan",
+  "authorization": {
+    "status": "pending",
+    "approvalId": "pending-explicit-paid-run-authorization",
+    "maxCostUsd": 2
+  },
+  "models": [
+    {
+      "requestModel": "z-ai/glm-5.3-flash",
+      "canonicalModel": "z-ai/glm-5.3-flash-20260826",
+      "maxInputUsdPerMillion": 0.09,
+      "maxOutputUsdPerMillion": 0.3,
+      "provider": {
+        "allow_fallbacks": false,
+        "data_collection": "deny",
+        "zdr": true,
+        "require_parameters": true
+      }
+    },
+    {
+      "requestModel": "openai/gpt-5.6-luna",
+      "canonicalModel": "openai/gpt-5.6-luna-20260709",
+      "maxInputUsdPerMillion": 0.2,
+      "maxOutputUsdPerMillion": 1.2,
+      "provider": {
+        "allow_fallbacks": false,
+        "data_collection": "deny",
+        "zdr": true,
+        "require_parameters": true
+      }
+    }
+  ],
+  "taskSuite": "fixtures/evaluation/golden-tasks-0.2.json",
+  "taskCount": 12,
+  "repetitions": 3,
+  "maxCalls": 72,
+  "maxInputTokens": 750000,
+  "maxOutputTokens": 73728,
+  "maxTokensPerCall": 1024,
+  "timeoutMs": 60000,
+  "retries": 0,
+  "concurrency": 1,
+  "temperature": 0,
+  "retention": "redacted dimension scores, bounded failure codes, exact usage, and model/provider metadata only; no raw prompt or response",
+  "scope": "synthetic fixtures only; publishable only after the explicit paid-run authorization is recorded"
+}
