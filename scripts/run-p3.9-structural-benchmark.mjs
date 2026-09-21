@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { arch, cpus, platform, release, totalmem } from "node:os";
-import { resolve } from "node:path";
+import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 
 const root = process.cwd();
@@ -65,4 +65,12 @@ const reportBase = {
 const report = { ...reportBase, reportDigest: sha(`dual-surface-ui:p3.9-structural-report:0.1\0${JSON.stringify(canonical(reportBase))}`) };
 await mkdir(resolve(root, ".benchmark-evidence"), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(report)}\n`, "utf8");
+const trackedEvidencePath = process.env.DSUI_P39_EVIDENCE_PATH;
+if (trackedEvidencePath) {
+  if (!isAbsolute(trackedEvidencePath)) throw new Error("DSUI_P39_EVIDENCE_PATH must be absolute");
+  const relativeEvidencePath = relative(root, trackedEvidencePath).replaceAll("\\", "/");
+  if (relativeEvidencePath.startsWith("../") || !relativeEvidencePath.startsWith("docs/evidence/")) throw new Error("tracked evidence path must stay under docs/evidence");
+  await mkdir(dirname(trackedEvidencePath), { recursive: true });
+  await writeFile(trackedEvidencePath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+}
 console.log(JSON.stringify({ outputPath, reportDigest: report.reportDigest, sourceCommit, sourceDirty, taskCount: fixture.cases.length, baselines: summaries.map(({ baseline }) => baseline) }));
