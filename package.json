@@ -98,6 +98,7 @@
     "phase3:preflight": "node scripts/check-phase3-readiness.mjs",
     "phase3:gate": "node scripts/check-phase3-readiness.mjs --require-ready",
     "phase3:contracts": "node scripts/generate-phase3-gate-contracts.mjs",
+    "phase3:evidence:validate": "node scripts/validate-phase3-evidence.mjs",
     "test:browser": "playwright test",
     "test:browser:chromium": "playwright test --project=chromium",
     "test:browser:native": "playwright test --config playwright.native.config.ts",
