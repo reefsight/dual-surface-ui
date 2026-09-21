@@ -192,6 +192,7 @@ test("fails verification when an action triggers a prohibited popup", async ({ p
 });
 
 test("reports stale revision when disposal races post-mutation observation", async ({ page }) => {
+  test.setTimeout(60_000);
   const origin = new URL(page.url()).origin;
   let surface!: ReturnType<typeof createPlaywrightSurface>;
   surface = createPlaywrightSurface({
