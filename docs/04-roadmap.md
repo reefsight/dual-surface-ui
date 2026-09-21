@@ -113,6 +113,8 @@ evidence report. P3.7 implementation and evidence are complete in
 [`docs/evidence/p3.7-adversarial-report-2026-09-21.json`](evidence/p3.7-adversarial-report-2026-09-21.json);
 the exit gate remains open pending independent security review and maintainer
 approval.
+P3.8 now has a frozen 12-case deterministic golden-task suite; actual model
+evaluation remains authorization-gated.
 Work-item records define the acceptance and evidence gates; design records do
 not claim implementation or completion.
 

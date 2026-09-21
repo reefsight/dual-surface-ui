@@ -52,6 +52,9 @@ Execution evidence is tracked in
 [the P3.7 report](evidence/p3.7-adversarial-report-2026-09-21.json); an
 independent security review and maintainer approval remain required before the
 Phase 3 exit gate can close.
+P3.8's deterministic golden-task suite is frozen in
+[the P3.8 evidence record](evidence/p3.8-golden-task-suite-2026-09-21.json);
+actual provider model runs remain unauthorized.
 Phase 4 remains gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
