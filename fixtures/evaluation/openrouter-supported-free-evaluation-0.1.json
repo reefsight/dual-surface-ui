@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "phase3-supported-evaluation-plan",
+  "authorization": {
+    "status": "approved",
+    "approvalId": "user-approved-free-gate-run-2026-09-21",
+    "maxCostUsd": 0
+  },
+  "models": [
+    {
+      "requestModel": "inclusionai/ling-3.0-flash-vl:free",
+      "canonicalModel": "inclusionai/ling-3.0-flash-vl-20260910",
+      "maxInputUsdPerMillion": 0,
+      "maxOutputUsdPerMillion": 0,
+      "provider": {
+        "allow_fallbacks": false,
+        "data_collection": "deny",
+        "zdr": true,
+        "require_parameters": true
+      }
+    },
+    {
+      "requestModel": "nex-agi/nex-n2.5-pro:free",
+      "canonicalModel": "nex-agi/nex-n2.5-pro-20260907",
+      "maxInputUsdPerMillion": 0,
+      "maxOutputUsdPerMillion": 0,
+      "provider": {
+        "allow_fallbacks": false,
+        "data_collection": "deny",
+        "require_parameters": true
+      }
+    }
+  ],
+  "taskSuite": "fixtures/evaluation/golden-tasks-0.2.json",
+  "taskCount": 12,
+  "repetitions": 3,
+  "maxCalls": 72,
+  "maxInputTokens": 750000,
+  "maxOutputTokens": 73728,
+  "maxTokensPerCall": 1024,
+  "timeoutMs": 60000,
+  "retries": 0,
+  "concurrency": 1,
+  "temperature": 0,
+  "retention": "redacted dimension scores, bounded failure codes, exact usage, and model/provider metadata only; no raw prompt or response",
+  "scope": "synthetic fixtures only; supported free-model Gate 3 evaluation authorized by the repository maintainer"
+}

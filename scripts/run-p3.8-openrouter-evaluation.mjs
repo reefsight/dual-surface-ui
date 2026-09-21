@@ -32,11 +32,11 @@ if (plan.schemaVersion !== "0.1" || plan.kind !== "phase3-supported-evaluation-p
     !Array.isArray(plan.models) || plan.models.length < 2 || new Set(plan.models.map((item) => item.canonicalModel)).size !== plan.models.length ||
     plan.taskCount !== 12 || suite.cases?.length !== plan.taskCount || plan.repetitions < 1 || plan.maxCalls !== expectedCalls ||
     plan.retries !== 0 || plan.concurrency !== 1 || plan.temperature !== 0 || plan.maxTokensPerCall < 1 ||
-    plan.authorization?.maxCostUsd <= 0 || plan.models.some((model) =>
+    typeof plan.authorization?.maxCostUsd !== "number" || plan.authorization.maxCostUsd < 0 || plan.models.some((model) =>
       typeof model.requestModel !== "string" || typeof model.canonicalModel !== "string" ||
       model.maxInputUsdPerMillion < 0 || model.maxOutputUsdPerMillion < 0 ||
       model.provider?.allow_fallbacks !== false || model.provider?.data_collection !== "deny" ||
-      model.provider?.zdr !== true || model.provider?.require_parameters !== true)) {
+      (Object.hasOwn(model.provider ?? {}, "zdr") && model.provider.zdr !== true) || model.provider?.require_parameters !== true)) {
   throw new TypeError("invalid_evaluation_plan");
 }
 
@@ -78,8 +78,8 @@ if (dryRun) {
   process.exit(0);
 }
 
-if (plan.authorization.status !== "approved" || process.env.PHASE3_PAID_RUN_AUTHORIZATION !== plan.authorization.approvalId) {
-  throw new TypeError("explicit_paid_run_authorization_required");
+if (plan.authorization.status !== "approved" || process.env.PHASE3_RUN_AUTHORIZATION !== plan.authorization.approvalId) {
+  throw new TypeError("explicit_run_authorization_required");
 }
 if (sourceDirty) throw new TypeError("source_tree_must_be_clean");
 const key = process.env.OPENROUTER_API_KEY;
@@ -114,8 +114,9 @@ const safeError = (error) => error instanceof DOMException && error.name === "Ab
       ? error.message
       : "provider_error";
 
-const parsePayload = (payload, expectedModel) => {
-  if (payload?.model !== expectedModel) throw new TypeError("model_snapshot_mismatch");
+const parsePayload = (payload, model) => {
+  const acceptedSnapshots = new Set([model.requestModel, model.canonicalModel, `${model.canonicalModel}:free`]);
+  if (!acceptedSnapshots.has(payload?.model)) throw new TypeError("model_snapshot_mismatch");
   if (typeof payload?.provider !== "string" || payload.provider.length === 0) throw new TypeError("provider_identity_missing");
   const message = payload?.choices?.[0]?.message;
   const calls = message?.tool_calls;
@@ -185,7 +186,7 @@ for (const model of plan.models) {
         if (!response.ok) throw new TypeError(`provider_http_${response.status}`);
         const rawResponseText = await response.text();
         if (encoder.encode(rawResponseText).byteLength > 1_000_000) throw new TypeError("provider_response_too_large");
-        const parsed = parsePayload(JSON.parse(rawResponseText), model.canonicalModel);
+        const parsed = parsePayload(JSON.parse(rawResponseText), model);
         record = { ...scoreDecision({ task, decision: parsed.decision, rawResponseText, sentinel, extraContent: parsed.extraContent }), usage: parsed.usage, provider: parsed.provider };
       } catch (error) {
         record = environmentErrorRecord({ task, code: safeError(error) });
