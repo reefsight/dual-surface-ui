@@ -45,6 +45,18 @@ File presence alone is insufficient. `phase3:preflight` validates the contract
 and then applies the frozen completion, wrong-action, safety, step, token,
 vision-comparability, and independence gates.
 
+Drafts can be checked without placing them at the canonical evidence path:
+
+```text
+npm run phase3:evidence:validate -- security <repo-relative-json-path>
+npm run phase3:evidence:validate -- models <repo-relative-json-path>
+npm run phase3:evidence:validate -- benchmark <repo-relative-json-path>
+```
+
+Exit `0` means contract-valid and gate-ready, `2` means contract-invalid, and
+`3` means the contract is valid but its frozen gate is not satisfied. The
+validator emits only bounded status metadata and never echoes evidence content.
+
 ## Independent security review record
 
 The security reviewer must be independent of the P3.7 implementation and
