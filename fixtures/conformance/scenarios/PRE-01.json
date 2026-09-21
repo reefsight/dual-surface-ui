@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-conformance-scenario",
+  "scenarioId": "PRE-01",
+  "capability": "pre",
+  "actions": [
+    {
+      "ref": "action-1",
+      "elementId": "approval",
+      "action": "approve",
+      "disposition": "permitted"
+    }
+  ],
+  "initialState": {
+    "decision": "pending",
+    "mutations": 0
+  },
+  "requests": [
+    {
+      "operation": 1,
+      "elementId": "approval",
+      "action": "approve",
+      "input": {
+        "decision": "approve"
+      },
+      "controls": {
+        "policy": "allow",
+        "precondition": true
+      }
+    }
+  ],
+  "sentinelInjections": [],
+  "expected": {
+    "discovery": [
+      {
+        "actionRef": "action-1",
+        "risk": "consequential",
+        "requiresConfirmation": false,
+        "idempotency": "none",
+        "inputSchemaDigest": "sha256:85e7354eafd103d9d5364af22ae9ae2951db964b69c83502a17a8e18f00a6f2c"
+      }
+    ],
+    "outcomes": [
+      {
+        "operation": 1,
+        "status": "succeeded",
+        "previousRevisionRef": "revision-1",
+        "revisionRef": "revision-2",
+        "actionRef": "action-1",
+        "targetPresent": true
+      }
+    ],
+    "lifecycle": [
+      {
+        "operation": 1,
+        "event": "action_requested",
+        "outcome": "requested",
+        "sequence": 1,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "policy_decided",
+        "outcome": "allow",
+        "sequence": 2,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "action_started",
+        "outcome": "started",
+        "sequence": 3,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "action_verified",
+        "outcome": "succeeded",
+        "sequence": 4,
+        "revisionRef": "revision-2",
+        "actionRef": "action-1"
+      }
+    ],
+    "finalState": {
+      "decision": "approved",
+      "mutations": 1
+    }
+  },
+  "scenarioDigest": "sha256:0a85af4db056cd643fb0b94019c63bff3bf871d28a2c734d534059cfcfdf7e2f"
+}

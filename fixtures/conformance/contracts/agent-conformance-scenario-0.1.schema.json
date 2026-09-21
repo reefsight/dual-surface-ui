@@ -1,0 +1,636 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/private/agent-conformance-scenario-0.1.json",
+  "title": "Dual Surface UI Private Conformance Scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "scenarioId",
+    "capability",
+    "actions",
+    "initialState",
+    "requests",
+    "sentinelInjections",
+    "expected",
+    "scenarioDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "agent-conformance-scenario"
+    },
+    "scenarioId": {
+      "enum": [
+        "DISC-01",
+        "DISC-02",
+        "SUCCESS-01",
+        "SUCCESS-02",
+        "INVALID-01",
+        "STALE-01",
+        "REPLACED-01",
+        "DENY-01",
+        "CONFIRM-01",
+        "CONFIRM-02",
+        "PRE-01",
+        "PRE-02",
+        "VERIFY-01",
+        "VERIFY-02",
+        "REPLAY-01",
+        "CONFLICT-01",
+        "ORIGIN-01",
+        "PRINCIPAL-01",
+        "SURFACE-01",
+        "CANCEL-01",
+        "CANCEL-02",
+        "DISP-01",
+        "DISP-02",
+        "REDACT-01",
+        "REDACT-02",
+        "REDACT-03"
+      ]
+    },
+    "capability": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ref",
+          "elementId",
+          "action",
+          "disposition"
+        ],
+        "properties": {
+          "ref": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "elementId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "action": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "disposition": {
+            "enum": [
+              "permitted",
+              "forbidden"
+            ]
+          }
+        }
+      }
+    },
+    "initialState": {
+      "$ref": "#/$defs/jsonValue"
+    },
+    "requests": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "elementId",
+          "action",
+          "controls"
+        ],
+        "properties": {
+          "operation": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 64
+          },
+          "elementId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "action": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "input": {
+            "$ref": "#/$defs/jsonValue"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "controls": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "policy"
+            ],
+            "properties": {
+              "policy": {
+                "enum": [
+                  "allow",
+                  "deny",
+                  "require_confirmation"
+                ]
+              },
+              "confirmation": {
+                "type": "boolean"
+              },
+              "precondition": {
+                "type": "boolean"
+              },
+              "effect": {
+                "type": "boolean"
+              },
+              "cancelTiming": {
+                "enum": [
+                  "none",
+                  "before_start",
+                  "after_start"
+                ]
+              },
+              "disposeTiming": {
+                "enum": [
+                  "none",
+                  "before_start",
+                  "after_start"
+                ]
+              },
+              "originRef": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              },
+              "principalRef": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "sentinelInjections": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "channel",
+          "sentinelId",
+          "sentinelDigest",
+          "count"
+        ],
+        "properties": {
+          "channel": {
+            "enum": [
+              "fixture_host_input",
+              "authoritative_state"
+            ]
+          },
+          "sentinelId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "sentinelDigest": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16
+          }
+        }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "discovery",
+        "outcomes",
+        "lifecycle",
+        "finalState"
+      ],
+      "properties": {
+        "discovery": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "actionRef",
+              "risk",
+              "requiresConfirmation",
+              "idempotency"
+            ],
+            "properties": {
+              "actionRef": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              },
+              "risk": {
+                "enum": [
+                  "read",
+                  "write",
+                  "consequential",
+                  "destructive"
+                ]
+              },
+              "requiresConfirmation": {
+                "type": "boolean"
+              },
+              "idempotency": {
+                "enum": [
+                  "none",
+                  "keyed",
+                  "safe-retry"
+                ]
+              },
+              "inputSchemaDigest": {
+                "type": "string",
+                "pattern": "^sha256:[a-f0-9]{64}$"
+              },
+              "outputSchemaDigest": {
+                "type": "string",
+                "pattern": "^sha256:[a-f0-9]{64}$"
+              }
+            }
+          }
+        },
+        "outcomes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation",
+                  "status",
+                  "previousRevisionRef",
+                  "revisionRef",
+                  "actionRef",
+                  "targetPresent"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 64
+                  },
+                  "status": {
+                    "const": "succeeded"
+                  },
+                  "previousRevisionRef": {
+                    "type": "string",
+                    "pattern": "^revision-[1-9][0-9]*$"
+                  },
+                  "revisionRef": {
+                    "type": "string",
+                    "pattern": "^revision-[1-9][0-9]*$"
+                  },
+                  "actionRef": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+                  },
+                  "targetPresent": {
+                    "type": "boolean"
+                  },
+                  "outputDigest": {
+                    "type": "string",
+                    "pattern": "^sha256:[a-f0-9]{64}$"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operation",
+                  "status",
+                  "revisionRef",
+                  "code"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 64
+                  },
+                  "status": {
+                    "const": "failed"
+                  },
+                  "revisionRef": {
+                    "type": "string",
+                    "pattern": "^revision-[1-9][0-9]*$"
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "lifecycle": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operation",
+              "event",
+              "outcome",
+              "sequence",
+              "revisionRef"
+            ],
+            "properties": {
+              "operation": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 64
+              },
+              "event": {
+                "enum": [
+                  "action_requested",
+                  "policy_decided",
+                  "confirmation_requested",
+                  "action_started",
+                  "action_verified",
+                  "action_failed"
+                ]
+              },
+              "outcome": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              },
+              "sequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 64
+              },
+              "revisionRef": {
+                "type": "string",
+                "pattern": "^revision-[1-9][0-9]*$"
+              },
+              "actionRef": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              }
+            }
+          }
+        },
+        "finalState": {
+          "$ref": "#/$defs/jsonValue"
+        },
+        "perTargetOverrides": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "playwright-managed"
+          ],
+          "properties": {
+            "playwright-managed": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "outcomes",
+                "lifecycle"
+              ],
+              "properties": {
+                "outcomes": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 64,
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "operation",
+                          "status",
+                          "previousRevisionRef",
+                          "revisionRef",
+                          "actionRef",
+                          "targetPresent"
+                        ],
+                        "properties": {
+                          "operation": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 64
+                          },
+                          "status": {
+                            "const": "succeeded"
+                          },
+                          "previousRevisionRef": {
+                            "type": "string",
+                            "pattern": "^revision-[1-9][0-9]*$"
+                          },
+                          "revisionRef": {
+                            "type": "string",
+                            "pattern": "^revision-[1-9][0-9]*$"
+                          },
+                          "actionRef": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+                          },
+                          "targetPresent": {
+                            "type": "boolean"
+                          },
+                          "outputDigest": {
+                            "type": "string",
+                            "pattern": "^sha256:[a-f0-9]{64}$"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "operation",
+                          "status",
+                          "revisionRef",
+                          "code"
+                        ],
+                        "properties": {
+                          "operation": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 64
+                          },
+                          "status": {
+                            "const": "failed"
+                          },
+                          "revisionRef": {
+                            "type": "string",
+                            "pattern": "^revision-[1-9][0-9]*$"
+                          },
+                          "code": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "lifecycle": {
+                  "type": "array",
+                  "maxItems": 512,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "operation",
+                      "event",
+                      "outcome",
+                      "sequence",
+                      "revisionRef"
+                    ],
+                    "properties": {
+                      "operation": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 64
+                      },
+                      "event": {
+                        "enum": [
+                          "action_requested",
+                          "policy_decided",
+                          "confirmation_requested",
+                          "action_started",
+                          "action_verified",
+                          "action_failed"
+                        ]
+                      },
+                      "outcome": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 64
+                      },
+                      "revisionRef": {
+                        "type": "string",
+                        "pattern": "^revision-[1-9][0-9]*$"
+                      },
+                      "actionRef": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "scenarioDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "scenarioId": {
+            "const": "DISP-02"
+          }
+        },
+        "required": [
+          "scenarioId"
+        ]
+      },
+      "then": {
+        "properties": {
+          "expected": {
+            "type": "object",
+            "properties": {
+              "perTargetOverrides": {}
+            },
+            "required": [
+              "perTargetOverrides"
+            ]
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "expected": {
+            "type": "object",
+            "properties": {
+              "perTargetOverrides": {}
+            },
+            "not": {
+              "type": "object",
+              "properties": {
+                "perTargetOverrides": {}
+              },
+              "required": [
+                "perTargetOverrides"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "jsonValue": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "maxLength": 32768
+        },
+        {
+          "type": "array",
+          "maxItems": 1024,
+          "items": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        },
+        {
+          "type": "object",
+          "maxProperties": 1024,
+          "additionalProperties": {
+            "$ref": "#/$defs/jsonValue"
+          }
+        }
+      ]
+    }
+  }
+}

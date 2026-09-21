@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-conformance-scenario",
+  "scenarioId": "VERIFY-02",
+  "capability": "verify",
+  "actions": [
+    {
+      "ref": "action-1",
+      "elementId": "approval",
+      "action": "approve",
+      "disposition": "permitted"
+    }
+  ],
+  "initialState": {
+    "decision": "pending",
+    "mutations": 0
+  },
+  "requests": [
+    {
+      "operation": 1,
+      "elementId": "approval",
+      "action": "approve",
+      "input": {
+        "decision": "approve"
+      },
+      "controls": {
+        "policy": "allow",
+        "effect": false
+      }
+    }
+  ],
+  "sentinelInjections": [],
+  "expected": {
+    "discovery": [
+      {
+        "actionRef": "action-1",
+        "risk": "consequential",
+        "requiresConfirmation": false,
+        "idempotency": "none",
+        "inputSchemaDigest": "sha256:85e7354eafd103d9d5364af22ae9ae2951db964b69c83502a17a8e18f00a6f2c"
+      }
+    ],
+    "outcomes": [
+      {
+        "operation": 1,
+        "status": "failed",
+        "revisionRef": "revision-1",
+        "code": "verification_failed"
+      }
+    ],
+    "lifecycle": [
+      {
+        "operation": 1,
+        "event": "action_requested",
+        "outcome": "requested",
+        "sequence": 1,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "policy_decided",
+        "outcome": "allow",
+        "sequence": 2,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "action_started",
+        "outcome": "started",
+        "sequence": 3,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "action_failed",
+        "outcome": "verification_failed",
+        "sequence": 4,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      }
+    ],
+    "finalState": {
+      "decision": "pending",
+      "mutations": 0
+    }
+  },
+  "scenarioDigest": "sha256:725b2032bafa74a505ad7c49840ce4cd1510a0d96c5d9df799f11d24be603666"
+}

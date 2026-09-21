@@ -1,0 +1,715 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-conformance-capability-matrix",
+  "matrixId": "phase3-cross-exporter",
+  "targets": [
+    {
+      "targetId": "dom-jsdom",
+      "family": "dom",
+      "tier": "in-process"
+    },
+    {
+      "targetId": "webmcp-compat",
+      "family": "webmcp",
+      "tier": "compatibility"
+    },
+    {
+      "targetId": "webmcp-native",
+      "family": "webmcp",
+      "tier": "native-webmcp"
+    },
+    {
+      "targetId": "mcp-sdk",
+      "family": "mcp",
+      "tier": "protocol"
+    },
+    {
+      "targetId": "playwright-managed",
+      "family": "playwright",
+      "tier": "managed-engine"
+    }
+  ],
+  "cases": [
+    {
+      "caseId": "DISC-01",
+      "capability": "disc",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "DISC-02",
+      "capability": "disc",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "SUCCESS-01",
+      "capability": "success",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "SUCCESS-02",
+      "capability": "success",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "INVALID-01",
+      "capability": "invalid",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "STALE-01",
+      "capability": "stale",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "REPLACED-01",
+      "capability": "replaced",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "DENY-01",
+      "capability": "deny",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "CONFIRM-01",
+      "capability": "confirm",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "CONFIRM-02",
+      "capability": "confirm",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "PRE-01",
+      "capability": "pre",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "PRE-02",
+      "capability": "pre",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "VERIFY-01",
+      "capability": "verify",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "VERIFY-02",
+      "capability": "verify",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "REPLAY-01",
+      "capability": "replay",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "CONFLICT-01",
+      "capability": "conflict",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "ORIGIN-01",
+      "capability": "origin",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "PRINCIPAL-01",
+      "capability": "principal",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "SURFACE-01",
+      "capability": "surface",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "CANCEL-01",
+      "capability": "cancel",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "unsupported",
+          "reason": "dom_no_abort_signal"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "CANCEL-02",
+      "capability": "cancel",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "unsupported",
+          "reason": "dom_no_abort_signal"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "DISP-01",
+      "capability": "disp",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "unsupported",
+          "reason": "dom_no_disposal_boundary"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "DISP-02",
+      "capability": "disp",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "unsupported",
+          "reason": "dom_no_disposal_boundary"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "REDACT-01",
+      "capability": "redact",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "REDACT-02",
+      "capability": "redact",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    },
+    {
+      "caseId": "REDACT-03",
+      "capability": "redact",
+      "targets": [
+        {
+          "targetId": "dom-jsdom",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-compat",
+          "status": "supported"
+        },
+        {
+          "targetId": "webmcp-native",
+          "status": "supported"
+        },
+        {
+          "targetId": "mcp-sdk",
+          "status": "supported"
+        },
+        {
+          "targetId": "playwright-managed",
+          "status": "supported"
+        }
+      ]
+    }
+  ],
+  "matrixDigest": "sha256:1dd68dba836fe6221de113765cb4b656de95a6f691b9a20fc8c49e1cf6f1c94c"
+}

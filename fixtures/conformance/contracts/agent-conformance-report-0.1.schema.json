@@ -1,0 +1,1175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/private/agent-conformance-report-0.1.json",
+  "title": "Dual Surface UI Private Conformance Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "suiteId",
+    "suiteDigest",
+    "matrixDigest",
+    "sentinelSetDigest",
+    "source",
+    "package",
+    "scan",
+    "runs",
+    "summary",
+    "reportDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "agent-conformance-report"
+    },
+    "suiteId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "suiteDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "matrixDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "sentinelSetDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commit",
+        "treeDigest",
+        "dirty"
+      ],
+      "properties": {
+        "commit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "treeDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "dirty": {
+          "const": false
+        }
+      }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "tarballDigest",
+        "installedManifestDigest"
+      ],
+      "properties": {
+        "name": {
+          "const": "dual-surface-ui"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "tarballDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "installedManifestDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      }
+    },
+    "scan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sentinelSetDigest",
+        "channels",
+        "bytesScanned"
+      ],
+      "properties": {
+        "sentinelSetDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "channels": {
+          "type": "array",
+          "minItems": 13,
+          "maxItems": 13,
+          "prefixItems": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "matches"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "scenario_artifacts"
+                },
+                "kind": {
+                  "const": "egress_artifact"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matches": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "matches"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "capability_matrix"
+                },
+                "kind": {
+                  "const": "egress_artifact"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matches": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "matches"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "suite_manifest"
+                },
+                "kind": {
+                  "const": "egress_artifact"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matches": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "expected",
+                "observed"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "fixture_host_input"
+                },
+                "kind": {
+                  "const": "trusted_injection"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "expected": {
+                  "type": "array",
+                  "maxItems": 104,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "sentinelId",
+                      "sentinelDigest",
+                      "count"
+                    ],
+                    "properties": {
+                      "sentinelId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+                      },
+                      "sentinelDigest": {
+                        "type": "string",
+                        "pattern": "^sha256:[a-f0-9]{64}$"
+                      },
+                      "count": {
+                        "type": "integer",
+                        "minimum": 1
+                      }
+                    }
+                  }
+                },
+                "observed": {
+                  "type": "array",
+                  "maxItems": 104,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "sentinelId",
+                      "sentinelDigest",
+                      "count"
+                    ],
+                    "properties": {
+                      "sentinelId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+                      },
+                      "sentinelDigest": {
+                        "type": "string",
+                        "pattern": "^sha256:[a-f0-9]{64}$"
+                      },
+                      "count": {
+                        "type": "integer",
+                        "minimum": 1
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "expected",
+                "observed"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "authoritative_state"
+                },
+                "kind": {
+                  "const": "trusted_injection"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "expected": {
+                  "type": "array",
+                  "maxItems": 104,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "sentinelId",
+                      "sentinelDigest",
+                      "count"
+                    ],
+                    "properties": {
+                      "sentinelId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+                      },
+                      "sentinelDigest": {
+                        "type": "string",
+                        "pattern": "^sha256:[a-f0-9]{64}$"
+                      },
+                      "count": {
+                        "type": "integer",
+                        "minimum": 1
+                      }
+                    }
+                  }
+                },
+                "observed": {
+                  "type": "array",
+                  "maxItems": 104,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "sentinelId",
+                      "sentinelDigest",
+                      "count"
+                    ],
+                    "properties": {
+                      "sentinelId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+                      },
+                      "sentinelDigest": {
+                        "type": "string",
+                        "pattern": "^sha256:[a-f0-9]{64}$"
+                      },
+                      "count": {
+                        "type": "integer",
+                        "minimum": 1
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "matches"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "driver_result"
+                },
+                "kind": {
+                  "const": "egress_artifact"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matches": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "matches"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "normalized_observation"
+                },
+                "kind": {
+                  "const": "egress_artifact"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matches": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "matches"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "mismatches"
+                },
+                "kind": {
+                  "const": "egress_artifact"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matches": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "matches"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "report_payload"
+                },
+                "kind": {
+                  "const": "egress_artifact"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matches": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "matches"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "stdout"
+                },
+                "kind": {
+                  "const": "egress_artifact"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matches": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "matches"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "stderr"
+                },
+                "kind": {
+                  "const": "egress_artifact"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matches": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "matches"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "packed_tarball_files"
+                },
+                "kind": {
+                  "const": "egress_artifact"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matches": {
+                  "const": 0
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "channel",
+                "kind",
+                "bytesScanned",
+                "matches"
+              ],
+              "properties": {
+                "channel": {
+                  "const": "installed_package_files"
+                },
+                "kind": {
+                  "const": "egress_artifact"
+                },
+                "bytesScanned": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matches": {
+                  "const": 0
+                }
+              }
+            }
+          ],
+          "items": false
+        },
+        "bytesScanned": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "runs": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "targetId",
+              "family",
+              "tier",
+              "runStatus",
+              "environment",
+              "cases",
+              "summary"
+            ],
+            "properties": {
+              "targetId": {
+                "enum": [
+                  "dom-jsdom",
+                  "webmcp-compat",
+                  "webmcp-native",
+                  "mcp-sdk",
+                  "playwright-managed"
+                ]
+              },
+              "family": {
+                "enum": [
+                  "dom",
+                  "webmcp",
+                  "mcp",
+                  "playwright"
+                ]
+              },
+              "tier": {
+                "enum": [
+                  "in-process",
+                  "compatibility",
+                  "native-webmcp",
+                  "protocol",
+                  "managed-engine"
+                ]
+              },
+              "runStatus": {
+                "const": "completed"
+              },
+              "environment": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "runtime": {
+                    "type": "string",
+                    "maxLength": 128
+                  },
+                  "browser": {
+                    "type": "string",
+                    "maxLength": 128
+                  },
+                  "protocol": {
+                    "type": "string",
+                    "maxLength": 128
+                  }
+                }
+              },
+              "cases": {
+                "type": "array",
+                "minItems": 22,
+                "maxItems": 26,
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "caseId",
+                        "scenarioDigest",
+                        "status"
+                      ],
+                      "properties": {
+                        "caseId": {
+                          "enum": [
+                            "DISC-01",
+                            "DISC-02",
+                            "SUCCESS-01",
+                            "SUCCESS-02",
+                            "INVALID-01",
+                            "STALE-01",
+                            "REPLACED-01",
+                            "DENY-01",
+                            "CONFIRM-01",
+                            "CONFIRM-02",
+                            "PRE-01",
+                            "PRE-02",
+                            "VERIFY-01",
+                            "VERIFY-02",
+                            "REPLAY-01",
+                            "CONFLICT-01",
+                            "ORIGIN-01",
+                            "PRINCIPAL-01",
+                            "SURFACE-01",
+                            "CANCEL-01",
+                            "CANCEL-02",
+                            "DISP-01",
+                            "DISP-02",
+                            "REDACT-01",
+                            "REDACT-02",
+                            "REDACT-03"
+                          ]
+                        },
+                        "scenarioDigest": {
+                          "type": "string",
+                          "pattern": "^sha256:[a-f0-9]{64}$"
+                        },
+                        "status": {
+                          "const": "passed"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "caseId",
+                        "scenarioDigest",
+                        "status",
+                        "failureClass",
+                        "differences"
+                      ],
+                      "properties": {
+                        "caseId": {
+                          "enum": [
+                            "DISC-01",
+                            "DISC-02",
+                            "SUCCESS-01",
+                            "SUCCESS-02",
+                            "INVALID-01",
+                            "STALE-01",
+                            "REPLACED-01",
+                            "DENY-01",
+                            "CONFIRM-01",
+                            "CONFIRM-02",
+                            "PRE-01",
+                            "PRE-02",
+                            "VERIFY-01",
+                            "VERIFY-02",
+                            "REPLAY-01",
+                            "CONFLICT-01",
+                            "ORIGIN-01",
+                            "PRINCIPAL-01",
+                            "SURFACE-01",
+                            "CANCEL-01",
+                            "CANCEL-02",
+                            "DISP-01",
+                            "DISP-02",
+                            "REDACT-01",
+                            "REDACT-02",
+                            "REDACT-03"
+                          ]
+                        },
+                        "scenarioDigest": {
+                          "type": "string",
+                          "pattern": "^sha256:[a-f0-9]{64}$"
+                        },
+                        "status": {
+                          "const": "failed"
+                        },
+                        "failureClass": {
+                          "enum": [
+                            "discovery_mismatch",
+                            "outcome_mismatch",
+                            "lifecycle_mismatch",
+                            "final_state_mismatch",
+                            "secret_scan_failed",
+                            "driver_result_invalid"
+                          ]
+                        },
+                        "differences": {
+                          "type": "array",
+                          "maxItems": 256,
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "path"
+                            ],
+                            "properties": {
+                              "path": {
+                                "enum": [
+                                  "discovery",
+                                  "outcome",
+                                  "lifecycle",
+                                  "final_state",
+                                  "secret_channel"
+                                ]
+                              },
+                              "operation": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 64
+                              },
+                              "index": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 511
+                              },
+                              "actionRef": {
+                                "type": "string",
+                                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "caseId",
+                        "scenarioDigest",
+                        "status",
+                        "reason"
+                      ],
+                      "properties": {
+                        "caseId": {
+                          "enum": [
+                            "DISC-01",
+                            "DISC-02",
+                            "SUCCESS-01",
+                            "SUCCESS-02",
+                            "INVALID-01",
+                            "STALE-01",
+                            "REPLACED-01",
+                            "DENY-01",
+                            "CONFIRM-01",
+                            "CONFIRM-02",
+                            "PRE-01",
+                            "PRE-02",
+                            "VERIFY-01",
+                            "VERIFY-02",
+                            "REPLAY-01",
+                            "CONFLICT-01",
+                            "ORIGIN-01",
+                            "PRINCIPAL-01",
+                            "SURFACE-01",
+                            "CANCEL-01",
+                            "CANCEL-02",
+                            "DISP-01",
+                            "DISP-02",
+                            "REDACT-01",
+                            "REDACT-02",
+                            "REDACT-03"
+                          ]
+                        },
+                        "scenarioDigest": {
+                          "type": "string",
+                          "pattern": "^sha256:[a-f0-9]{64}$"
+                        },
+                        "status": {
+                          "const": "unsupported"
+                        },
+                        "reason": {
+                          "enum": [
+                            "dom_no_abort_signal",
+                            "dom_no_disposal_boundary"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "summary": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "passed",
+                  "failed",
+                  "unsupported"
+                ],
+                "properties": {
+                  "passed": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "failed": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "unsupported": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "targetId": {
+                        "const": "dom-jsdom"
+                      },
+                      "family": {
+                        "const": "dom"
+                      },
+                      "tier": {
+                        "const": "in-process"
+                      }
+                    },
+                    "required": [
+                      "targetId",
+                      "family",
+                      "tier"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "targetId": {
+                        "const": "webmcp-compat"
+                      },
+                      "family": {
+                        "const": "webmcp"
+                      },
+                      "tier": {
+                        "const": "compatibility"
+                      }
+                    },
+                    "required": [
+                      "targetId",
+                      "family",
+                      "tier"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "targetId": {
+                        "const": "webmcp-native"
+                      },
+                      "family": {
+                        "const": "webmcp"
+                      },
+                      "tier": {
+                        "const": "native-webmcp"
+                      }
+                    },
+                    "required": [
+                      "targetId",
+                      "family",
+                      "tier"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "targetId": {
+                        "const": "mcp-sdk"
+                      },
+                      "family": {
+                        "const": "mcp"
+                      },
+                      "tier": {
+                        "const": "protocol"
+                      }
+                    },
+                    "required": [
+                      "targetId",
+                      "family",
+                      "tier"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "targetId": {
+                        "const": "playwright-managed"
+                      },
+                      "family": {
+                        "const": "playwright"
+                      },
+                      "tier": {
+                        "const": "managed-engine"
+                      }
+                    },
+                    "required": [
+                      "targetId",
+                      "family",
+                      "tier"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "targetId",
+              "family",
+              "tier",
+              "runStatus",
+              "environment",
+              "reason",
+              "cases",
+              "summary"
+            ],
+            "properties": {
+              "targetId": {
+                "enum": [
+                  "dom-jsdom",
+                  "webmcp-compat",
+                  "webmcp-native",
+                  "mcp-sdk",
+                  "playwright-managed"
+                ]
+              },
+              "family": {
+                "enum": [
+                  "dom",
+                  "webmcp",
+                  "mcp",
+                  "playwright"
+                ]
+              },
+              "tier": {
+                "enum": [
+                  "in-process",
+                  "compatibility",
+                  "native-webmcp",
+                  "protocol",
+                  "managed-engine"
+                ]
+              },
+              "runStatus": {
+                "const": "environment_failed"
+              },
+              "environment": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "runtime": {
+                    "type": "string",
+                    "maxLength": 128
+                  },
+                  "browser": {
+                    "type": "string",
+                    "maxLength": 128
+                  },
+                  "protocol": {
+                    "type": "string",
+                    "maxLength": 128
+                  }
+                }
+              },
+              "reason": {
+                "enum": [
+                  "native_api_unavailable",
+                  "browser_launch_failed",
+                  "protocol_environment_failed"
+                ]
+              },
+              "cases": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "summary": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "passed",
+                  "failed",
+                  "unsupported"
+                ],
+                "properties": {
+                  "passed": {
+                    "const": 0
+                  },
+                  "failed": {
+                    "const": 0
+                  },
+                  "unsupported": {
+                    "const": 0
+                  }
+                }
+              }
+            },
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "targetId": {
+                        "const": "dom-jsdom"
+                      },
+                      "family": {
+                        "const": "dom"
+                      },
+                      "tier": {
+                        "const": "in-process"
+                      }
+                    },
+                    "required": [
+                      "targetId",
+                      "family",
+                      "tier"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "targetId": {
+                        "const": "webmcp-compat"
+                      },
+                      "family": {
+                        "const": "webmcp"
+                      },
+                      "tier": {
+                        "const": "compatibility"
+                      }
+                    },
+                    "required": [
+                      "targetId",
+                      "family",
+                      "tier"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "targetId": {
+                        "const": "webmcp-native"
+                      },
+                      "family": {
+                        "const": "webmcp"
+                      },
+                      "tier": {
+                        "const": "native-webmcp"
+                      }
+                    },
+                    "required": [
+                      "targetId",
+                      "family",
+                      "tier"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "targetId": {
+                        "const": "mcp-sdk"
+                      },
+                      "family": {
+                        "const": "mcp"
+                      },
+                      "tier": {
+                        "const": "protocol"
+                      }
+                    },
+                    "required": [
+                      "targetId",
+                      "family",
+                      "tier"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "targetId": {
+                        "const": "playwright-managed"
+                      },
+                      "family": {
+                        "const": "playwright"
+                      },
+                      "tier": {
+                        "const": "managed-engine"
+                      }
+                    },
+                    "required": [
+                      "targetId",
+                      "family",
+                      "tier"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "failed",
+        "unsupported"
+      ],
+      "properties": {
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unsupported": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "reportDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

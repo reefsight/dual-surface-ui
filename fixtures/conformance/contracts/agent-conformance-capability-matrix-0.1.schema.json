@@ -1,0 +1,412 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/private/agent-conformance-capability-matrix-0.1.json",
+  "title": "Dual Surface UI Private Conformance Capability Matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "matrixId",
+    "targets",
+    "cases",
+    "matrixDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "agent-conformance-capability-matrix"
+    },
+    "matrixId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "targets": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "prefixItems": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targetId",
+            "family",
+            "tier"
+          ],
+          "properties": {
+            "targetId": {
+              "const": "dom-jsdom"
+            },
+            "family": {
+              "const": "dom"
+            },
+            "tier": {
+              "const": "in-process"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targetId",
+            "family",
+            "tier"
+          ],
+          "properties": {
+            "targetId": {
+              "const": "webmcp-compat"
+            },
+            "family": {
+              "const": "webmcp"
+            },
+            "tier": {
+              "const": "compatibility"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targetId",
+            "family",
+            "tier"
+          ],
+          "properties": {
+            "targetId": {
+              "const": "webmcp-native"
+            },
+            "family": {
+              "const": "webmcp"
+            },
+            "tier": {
+              "const": "native-webmcp"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targetId",
+            "family",
+            "tier"
+          ],
+          "properties": {
+            "targetId": {
+              "const": "mcp-sdk"
+            },
+            "family": {
+              "const": "mcp"
+            },
+            "tier": {
+              "const": "protocol"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "targetId",
+            "family",
+            "tier"
+          ],
+          "properties": {
+            "targetId": {
+              "const": "playwright-managed"
+            },
+            "family": {
+              "const": "playwright"
+            },
+            "tier": {
+              "const": "managed-engine"
+            }
+          }
+        }
+      ],
+      "items": false
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 26,
+      "maxItems": 26,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "caseId",
+          "capability",
+          "targets"
+        ],
+        "properties": {
+          "caseId": {
+            "enum": [
+              "DISC-01",
+              "DISC-02",
+              "SUCCESS-01",
+              "SUCCESS-02",
+              "INVALID-01",
+              "STALE-01",
+              "REPLACED-01",
+              "DENY-01",
+              "CONFIRM-01",
+              "CONFIRM-02",
+              "PRE-01",
+              "PRE-02",
+              "VERIFY-01",
+              "VERIFY-02",
+              "REPLAY-01",
+              "CONFLICT-01",
+              "ORIGIN-01",
+              "PRINCIPAL-01",
+              "SURFACE-01",
+              "CANCEL-01",
+              "CANCEL-02",
+              "DISP-01",
+              "DISP-02",
+              "REDACT-01",
+              "REDACT-02",
+              "REDACT-03"
+            ]
+          },
+          "capability": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "targets": {
+            "type": "array",
+            "minItems": 5,
+            "maxItems": 5,
+            "prefixItems": [
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "targetId",
+                      "status"
+                    ],
+                    "properties": {
+                      "targetId": {
+                        "const": "dom-jsdom"
+                      },
+                      "status": {
+                        "const": "supported"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "targetId",
+                      "status",
+                      "reason"
+                    ],
+                    "properties": {
+                      "targetId": {
+                        "const": "dom-jsdom"
+                      },
+                      "status": {
+                        "const": "unsupported"
+                      },
+                      "reason": {
+                        "enum": [
+                          "dom_no_abort_signal",
+                          "dom_no_disposal_boundary"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "targetId",
+                      "status"
+                    ],
+                    "properties": {
+                      "targetId": {
+                        "const": "webmcp-compat"
+                      },
+                      "status": {
+                        "const": "supported"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "targetId",
+                      "status",
+                      "reason"
+                    ],
+                    "properties": {
+                      "targetId": {
+                        "const": "webmcp-compat"
+                      },
+                      "status": {
+                        "const": "unsupported"
+                      },
+                      "reason": {
+                        "enum": [
+                          "dom_no_abort_signal",
+                          "dom_no_disposal_boundary"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "targetId",
+                      "status"
+                    ],
+                    "properties": {
+                      "targetId": {
+                        "const": "webmcp-native"
+                      },
+                      "status": {
+                        "const": "supported"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "targetId",
+                      "status",
+                      "reason"
+                    ],
+                    "properties": {
+                      "targetId": {
+                        "const": "webmcp-native"
+                      },
+                      "status": {
+                        "const": "unsupported"
+                      },
+                      "reason": {
+                        "enum": [
+                          "dom_no_abort_signal",
+                          "dom_no_disposal_boundary"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "targetId",
+                      "status"
+                    ],
+                    "properties": {
+                      "targetId": {
+                        "const": "mcp-sdk"
+                      },
+                      "status": {
+                        "const": "supported"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "targetId",
+                      "status",
+                      "reason"
+                    ],
+                    "properties": {
+                      "targetId": {
+                        "const": "mcp-sdk"
+                      },
+                      "status": {
+                        "const": "unsupported"
+                      },
+                      "reason": {
+                        "enum": [
+                          "dom_no_abort_signal",
+                          "dom_no_disposal_boundary"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "targetId",
+                      "status"
+                    ],
+                    "properties": {
+                      "targetId": {
+                        "const": "playwright-managed"
+                      },
+                      "status": {
+                        "const": "supported"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "targetId",
+                      "status",
+                      "reason"
+                    ],
+                    "properties": {
+                      "targetId": {
+                        "const": "playwright-managed"
+                      },
+                      "status": {
+                        "const": "unsupported"
+                      },
+                      "reason": {
+                        "enum": [
+                          "dom_no_abort_signal",
+                          "dom_no_disposal_boundary"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "items": false
+          }
+        }
+      }
+    },
+    "matrixDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

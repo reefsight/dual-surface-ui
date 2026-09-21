@@ -1,4 +1,5 @@
 import { resolve } from "node:path";
+import { readFile, realpath } from "node:fs/promises";
 
 import { createServer } from "vite";
 
@@ -6,6 +7,26 @@ const workspaceRoot = resolve(process.cwd());
 const primaryPort = Number(process.env.BROWSER_FIXTURE_PORT ?? "43991");
 const ports = [primaryPort, primaryPort + 1];
 const servers = [];
+let conformanceAliases = [
+  { find: /^dual-surface-ui\/webmcp$/, replacement: resolve(workspaceRoot, ".conformance-evidence", "UNVERIFIED-webmcp.js") },
+  { find: /^dual-surface-ui$/, replacement: resolve(workspaceRoot, ".conformance-evidence", "UNVERIFIED-root.js") },
+];
+try {
+  const evidence = JSON.parse(await readFile(
+    resolve(workspaceRoot, ".conformance-evidence", "package.json"),
+    "utf8",
+  ));
+  const installedRoot = await realpath(evidence.install.root);
+  if (installedRoot !== evidence.install.root) throw new Error("installed package root is aliased");
+  conformanceAliases = [
+    { find: /^dual-surface-ui\/webmcp$/, replacement: resolve(installedRoot, "dist/webmcp/index.js") },
+    { find: /^dual-surface-ui$/, replacement: resolve(installedRoot, "dist/index.js") },
+  ];
+} catch {
+  // Ordinary browser fixtures do not require conformance installation. The
+  // conformance page fails closed instead of falling back to workspace package
+  // self-resolution when authenticated install evidence is absent.
+}
 
 function healthPlugin() {
   return {
@@ -59,6 +80,7 @@ for (const port of ports) {
     clearScreen: false,
     logLevel: "error",
     plugins: [healthPlugin()],
+    resolve: { alias: conformanceAliases },
     root: workspaceRoot,
     server: {
       host: "127.0.0.1",

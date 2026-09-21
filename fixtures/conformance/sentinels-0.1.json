@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-conformance-sentinel-set",
+  "sentinelSetId": "phase3-conformance",
+  "sentinels": [
+    {
+      "sentinelId": "sentinel-input",
+      "value": "DSUI_TEST_SECRET_INPUT_7f3c9a",
+      "channels": [
+        "fixture_host_input"
+      ],
+      "sentinelDigest": "sha256:b4c55c7d198a8eb7ae86ebd8689ad3250a37bddc4a56c684762f7aa1b075f4f4"
+    },
+    {
+      "sentinelId": "sentinel-state",
+      "value": "DSUI_TEST_SECRET_STATE_4d8e2b",
+      "channels": [
+        "authoritative_state"
+      ],
+      "sentinelDigest": "sha256:337013f7cc84aeb745952e34c74a050b0ff0431928ea470c73f82e1155f49865"
+    }
+  ],
+  "sentinelSetDigest": "sha256:7b3537e48ba5e718f28b95a0af169c950f0f5728b5cb29a056f2a94a2572cf73"
+}

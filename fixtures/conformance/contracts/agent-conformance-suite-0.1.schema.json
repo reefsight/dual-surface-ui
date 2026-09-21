@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/private/agent-conformance-suite-0.1.json",
+  "title": "Dual Surface UI Private Conformance Suite Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "suiteId",
+    "matrixDigest",
+    "scenarios",
+    "fixtureHostDigest",
+    "driverDigests",
+    "sentinelSetDigest",
+    "scanChannels",
+    "suiteDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "agent-conformance-suite"
+    },
+    "suiteId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "matrixDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 26,
+      "maxItems": 26,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "caseId",
+          "scenarioId",
+          "scenarioDigest",
+          "injectionDigest"
+        ],
+        "properties": {
+          "caseId": {
+            "enum": [
+              "DISC-01",
+              "DISC-02",
+              "SUCCESS-01",
+              "SUCCESS-02",
+              "INVALID-01",
+              "STALE-01",
+              "REPLACED-01",
+              "DENY-01",
+              "CONFIRM-01",
+              "CONFIRM-02",
+              "PRE-01",
+              "PRE-02",
+              "VERIFY-01",
+              "VERIFY-02",
+              "REPLAY-01",
+              "CONFLICT-01",
+              "ORIGIN-01",
+              "PRINCIPAL-01",
+              "SURFACE-01",
+              "CANCEL-01",
+              "CANCEL-02",
+              "DISP-01",
+              "DISP-02",
+              "REDACT-01",
+              "REDACT-02",
+              "REDACT-03"
+            ]
+          },
+          "scenarioId": {
+            "enum": [
+              "DISC-01",
+              "DISC-02",
+              "SUCCESS-01",
+              "SUCCESS-02",
+              "INVALID-01",
+              "STALE-01",
+              "REPLACED-01",
+              "DENY-01",
+              "CONFIRM-01",
+              "CONFIRM-02",
+              "PRE-01",
+              "PRE-02",
+              "VERIFY-01",
+              "VERIFY-02",
+              "REPLAY-01",
+              "CONFLICT-01",
+              "ORIGIN-01",
+              "PRINCIPAL-01",
+              "SURFACE-01",
+              "CANCEL-01",
+              "CANCEL-02",
+              "DISP-01",
+              "DISP-02",
+              "REDACT-01",
+              "REDACT-02",
+              "REDACT-03"
+            ]
+          },
+          "scenarioDigest": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "injectionDigest": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "fixtureHostDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "driverDigests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dom-jsdom",
+        "webmcp-compat",
+        "webmcp-native",
+        "mcp-sdk",
+        "playwright-managed"
+      ],
+      "properties": {
+        "dom-jsdom": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "webmcp-compat": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "webmcp-native": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "mcp-sdk": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "playwright-managed": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      }
+    },
+    "sentinelSetDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "scanChannels": {
+      "type": "array",
+      "minItems": 13,
+      "maxItems": 13,
+      "prefixItems": [
+        {
+          "const": "scenario_artifacts"
+        },
+        {
+          "const": "capability_matrix"
+        },
+        {
+          "const": "suite_manifest"
+        },
+        {
+          "const": "fixture_host_input"
+        },
+        {
+          "const": "authoritative_state"
+        },
+        {
+          "const": "driver_result"
+        },
+        {
+          "const": "normalized_observation"
+        },
+        {
+          "const": "mismatches"
+        },
+        {
+          "const": "report_payload"
+        },
+        {
+          "const": "stdout"
+        },
+        {
+          "const": "stderr"
+        },
+        {
+          "const": "packed_tarball_files"
+        },
+        {
+          "const": "installed_package_files"
+        }
+      ],
+      "items": false
+    },
+    "suiteDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

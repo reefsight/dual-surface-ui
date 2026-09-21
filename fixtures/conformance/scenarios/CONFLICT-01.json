@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-conformance-scenario",
+  "scenarioId": "CONFLICT-01",
+  "capability": "conflict",
+  "actions": [
+    {
+      "ref": "action-1",
+      "elementId": "approval",
+      "action": "approve",
+      "disposition": "permitted"
+    }
+  ],
+  "initialState": {
+    "decision": "pending",
+    "mutations": 0
+  },
+  "requests": [
+    {
+      "operation": 1,
+      "elementId": "approval",
+      "action": "approve",
+      "input": {
+        "decision": "approve"
+      },
+      "controls": {
+        "policy": "allow"
+      },
+      "idempotencyKey": "approval-key-1"
+    },
+    {
+      "operation": 2,
+      "elementId": "approval",
+      "action": "approve",
+      "input": {
+        "decision": "reject"
+      },
+      "controls": {
+        "policy": "allow"
+      },
+      "idempotencyKey": "approval-key-1"
+    }
+  ],
+  "sentinelInjections": [],
+  "expected": {
+    "discovery": [
+      {
+        "actionRef": "action-1",
+        "risk": "consequential",
+        "requiresConfirmation": false,
+        "idempotency": "keyed",
+        "inputSchemaDigest": "sha256:85e7354eafd103d9d5364af22ae9ae2951db964b69c83502a17a8e18f00a6f2c"
+      }
+    ],
+    "outcomes": [
+      {
+        "operation": 1,
+        "status": "succeeded",
+        "previousRevisionRef": "revision-1",
+        "revisionRef": "revision-2",
+        "actionRef": "action-1",
+        "targetPresent": true
+      },
+      {
+        "operation": 2,
+        "status": "failed",
+        "revisionRef": "revision-2",
+        "code": "idempotency_conflict"
+      }
+    ],
+    "lifecycle": [
+      {
+        "operation": 1,
+        "event": "action_requested",
+        "outcome": "requested",
+        "sequence": 1,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "policy_decided",
+        "outcome": "allow",
+        "sequence": 2,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "action_started",
+        "outcome": "started",
+        "sequence": 3,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "action_verified",
+        "outcome": "succeeded",
+        "sequence": 4,
+        "revisionRef": "revision-2",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 2,
+        "event": "action_requested",
+        "outcome": "requested",
+        "sequence": 1,
+        "revisionRef": "revision-2",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 2,
+        "event": "action_failed",
+        "outcome": "idempotency_conflict",
+        "sequence": 2,
+        "revisionRef": "revision-2",
+        "actionRef": "action-1"
+      }
+    ],
+    "finalState": {
+      "decision": "approved",
+      "mutations": 1
+    }
+  },
+  "scenarioDigest": "sha256:f7e4a7f1af992e42ed1887930a69dbe66248b635ed8db97c1eef839c8d72aaec"
+}

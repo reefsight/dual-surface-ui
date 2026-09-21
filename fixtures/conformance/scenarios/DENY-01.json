@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-conformance-scenario",
+  "scenarioId": "DENY-01",
+  "capability": "deny",
+  "actions": [
+    {
+      "ref": "action-1",
+      "elementId": "approval",
+      "action": "approve",
+      "disposition": "forbidden"
+    }
+  ],
+  "initialState": {
+    "decision": "pending",
+    "mutations": 0
+  },
+  "requests": [
+    {
+      "operation": 1,
+      "elementId": "approval",
+      "action": "approve",
+      "input": {
+        "decision": "approve"
+      },
+      "controls": {
+        "policy": "deny"
+      }
+    }
+  ],
+  "sentinelInjections": [],
+  "expected": {
+    "discovery": [
+      {
+        "actionRef": "action-1",
+        "risk": "consequential",
+        "requiresConfirmation": false,
+        "idempotency": "none",
+        "inputSchemaDigest": "sha256:85e7354eafd103d9d5364af22ae9ae2951db964b69c83502a17a8e18f00a6f2c"
+      }
+    ],
+    "outcomes": [
+      {
+        "operation": 1,
+        "status": "failed",
+        "revisionRef": "revision-1",
+        "code": "authorization_required"
+      }
+    ],
+    "lifecycle": [
+      {
+        "operation": 1,
+        "event": "action_requested",
+        "outcome": "requested",
+        "sequence": 1,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "policy_decided",
+        "outcome": "deny",
+        "sequence": 2,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "action_failed",
+        "outcome": "authorization_required",
+        "sequence": 3,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      }
+    ],
+    "finalState": {
+      "decision": "pending",
+      "mutations": 0
+    }
+  },
+  "scenarioDigest": "sha256:4fc0c388c7c1485db4cb39181e67fc73a3ff5264085904363a717673a4882563"
+}

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-conformance-scenario",
+  "scenarioId": "CANCEL-01",
+  "capability": "cancel",
+  "actions": [
+    {
+      "ref": "action-1",
+      "elementId": "approval",
+      "action": "approve",
+      "disposition": "permitted"
+    }
+  ],
+  "initialState": {
+    "decision": "pending",
+    "mutations": 0
+  },
+  "requests": [
+    {
+      "operation": 1,
+      "elementId": "approval",
+      "action": "approve",
+      "input": {
+        "decision": "approve"
+      },
+      "controls": {
+        "policy": "allow",
+        "cancelTiming": "before_start"
+      }
+    }
+  ],
+  "sentinelInjections": [],
+  "expected": {
+    "discovery": [
+      {
+        "actionRef": "action-1",
+        "risk": "consequential",
+        "requiresConfirmation": false,
+        "idempotency": "none",
+        "inputSchemaDigest": "sha256:85e7354eafd103d9d5364af22ae9ae2951db964b69c83502a17a8e18f00a6f2c"
+      }
+    ],
+    "outcomes": [
+      {
+        "operation": 1,
+        "status": "failed",
+        "revisionRef": "revision-1",
+        "code": "internal_error"
+      }
+    ],
+    "lifecycle": [
+      {
+        "operation": 1,
+        "event": "action_failed",
+        "outcome": "internal_error",
+        "sequence": 1,
+        "revisionRef": "revision-1"
+      }
+    ],
+    "finalState": {
+      "decision": "pending",
+      "mutations": 0
+    }
+  },
+  "scenarioDigest": "sha256:d514fc31d6d3e05fd9a1949d3c2aea49d2c0ba6ccb0c342f99c2c9390f014c97"
+}

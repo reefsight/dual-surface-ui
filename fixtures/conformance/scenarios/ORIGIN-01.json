@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-conformance-scenario",
+  "scenarioId": "ORIGIN-01",
+  "capability": "origin",
+  "actions": [
+    {
+      "ref": "action-1",
+      "elementId": "approval",
+      "action": "approve",
+      "disposition": "permitted"
+    }
+  ],
+  "initialState": {
+    "decision": "pending",
+    "mutations": 0
+  },
+  "requests": [
+    {
+      "operation": 1,
+      "elementId": "approval",
+      "action": "approve",
+      "input": {
+        "decision": "approve"
+      },
+      "controls": {
+        "policy": "allow",
+        "originRef": "origin-a",
+        "principalRef": "principal-a"
+      },
+      "idempotencyKey": "approval-key-1"
+    },
+    {
+      "operation": 2,
+      "elementId": "approval",
+      "action": "approve",
+      "input": {
+        "decision": "approve"
+      },
+      "controls": {
+        "policy": "allow",
+        "originRef": "origin-b",
+        "principalRef": "principal-a"
+      },
+      "idempotencyKey": "approval-key-1"
+    }
+  ],
+  "sentinelInjections": [],
+  "expected": {
+    "discovery": [
+      {
+        "actionRef": "action-1",
+        "risk": "consequential",
+        "requiresConfirmation": false,
+        "idempotency": "keyed",
+        "inputSchemaDigest": "sha256:85e7354eafd103d9d5364af22ae9ae2951db964b69c83502a17a8e18f00a6f2c"
+      }
+    ],
+    "outcomes": [
+      {
+        "operation": 1,
+        "status": "succeeded",
+        "previousRevisionRef": "revision-1",
+        "revisionRef": "revision-2",
+        "actionRef": "action-1",
+        "targetPresent": true
+      },
+      {
+        "operation": 2,
+        "status": "failed",
+        "revisionRef": "revision-3",
+        "code": "stale_revision"
+      }
+    ],
+    "lifecycle": [
+      {
+        "operation": 1,
+        "event": "action_requested",
+        "outcome": "requested",
+        "sequence": 1,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "policy_decided",
+        "outcome": "allow",
+        "sequence": 2,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "action_started",
+        "outcome": "started",
+        "sequence": 3,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "action_verified",
+        "outcome": "succeeded",
+        "sequence": 4,
+        "revisionRef": "revision-2",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 2,
+        "event": "action_failed",
+        "outcome": "stale_revision",
+        "sequence": 1,
+        "revisionRef": "revision-3"
+      }
+    ],
+    "finalState": {
+      "decision": "approved",
+      "mutations": 1
+    }
+  },
+  "scenarioDigest": "sha256:6c0dda659f3234066a0c9b71cc9c3e84d6aaef64c97a9cf38c03a2d7fb9881db"
+}

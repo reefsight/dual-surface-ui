@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "agent-conformance-scenario",
+  "scenarioId": "REDACT-03",
+  "capability": "redact",
+  "actions": [
+    {
+      "ref": "action-1",
+      "elementId": "approval",
+      "action": "approve",
+      "disposition": "permitted"
+    }
+  ],
+  "initialState": {
+    "decision": "pending",
+    "mutations": 0,
+    "privateNote": {
+      "$sentinelRef": "sentinel-state"
+    }
+  },
+  "requests": [
+    {
+      "operation": 1,
+      "elementId": "approval",
+      "action": "approve",
+      "input": {
+        "decision": "approve",
+        "note": {
+          "$sentinelRef": "sentinel-input"
+        }
+      },
+      "controls": {
+        "policy": "allow"
+      }
+    }
+  ],
+  "sentinelInjections": [
+    {
+      "channel": "fixture_host_input",
+      "sentinelId": "sentinel-input",
+      "sentinelDigest": "sha256:b4c55c7d198a8eb7ae86ebd8689ad3250a37bddc4a56c684762f7aa1b075f4f4",
+      "count": 1
+    },
+    {
+      "channel": "authoritative_state",
+      "sentinelId": "sentinel-state",
+      "sentinelDigest": "sha256:337013f7cc84aeb745952e34c74a050b0ff0431928ea470c73f82e1155f49865",
+      "count": 1
+    }
+  ],
+  "expected": {
+    "discovery": [
+      {
+        "actionRef": "action-1",
+        "risk": "consequential",
+        "requiresConfirmation": false,
+        "idempotency": "none",
+        "inputSchemaDigest": "sha256:85e7354eafd103d9d5364af22ae9ae2951db964b69c83502a17a8e18f00a6f2c"
+      }
+    ],
+    "outcomes": [
+      {
+        "operation": 1,
+        "status": "succeeded",
+        "previousRevisionRef": "revision-1",
+        "revisionRef": "revision-2",
+        "actionRef": "action-1",
+        "targetPresent": true
+      }
+    ],
+    "lifecycle": [
+      {
+        "operation": 1,
+        "event": "action_requested",
+        "outcome": "requested",
+        "sequence": 1,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "policy_decided",
+        "outcome": "allow",
+        "sequence": 2,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "action_started",
+        "outcome": "started",
+        "sequence": 3,
+        "revisionRef": "revision-1",
+        "actionRef": "action-1"
+      },
+      {
+        "operation": 1,
+        "event": "action_verified",
+        "outcome": "succeeded",
+        "sequence": 4,
+        "revisionRef": "revision-2",
+        "actionRef": "action-1"
+      }
+    ],
+    "finalState": {
+      "decision": "approved",
+      "mutations": 1,
+      "privateNote": {
+        "$sentinelRef": "sentinel-state"
+      }
+    }
+  },
+  "scenarioDigest": "sha256:5c9e5e6e0a035f030755dc79dd729f7e647e5e3734d545e6d3d17489ab0fa8d5"
+}
