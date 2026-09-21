@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/private/agent-golden-task-suite-0.1.json",
+  "title": "Dual Surface UI Private Golden Task Suite",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "suiteId",
+    "supportedDrivers",
+    "dimensions",
+    "cases",
+    "suiteDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "agent-golden-task-suite"
+    },
+    "suiteId": {
+      "const": "phase3-golden-tasks"
+    },
+    "supportedDrivers": {
+      "type": "array",
+      "const": [
+        "deterministic-model-a@0.1",
+        "deterministic-model-b@0.1"
+      ]
+    },
+    "dimensions": {
+      "type": "array",
+      "const": [
+        "discovery",
+        "selection",
+        "arguments",
+        "safety",
+        "execution",
+        "verification",
+        "efficiency",
+        "environment"
+      ]
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "caseId",
+          "category",
+          "userRequest",
+          "initialState",
+          "permittedActions",
+          "forbiddenActions",
+          "expectedArguments",
+          "confirmation",
+          "finalState",
+          "rubric"
+        ],
+        "properties": {
+          "caseId": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "userRequest": {
+            "type": "string"
+          },
+          "initialState": {
+            "type": "object"
+          },
+          "permittedActions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "forbiddenActions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expectedArguments": {
+            "type": "object"
+          },
+          "confirmation": {
+            "type": "string"
+          },
+          "finalState": {
+            "type": "object"
+          },
+          "rubric": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "suiteDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}
