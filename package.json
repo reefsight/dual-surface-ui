@@ -95,6 +95,8 @@
     "test:adversarial": "vitest run test/adversarial/adversarial-suite.test.ts --pool=vmThreads --maxWorkers=1 --no-file-parallelism --isolate=false",
     "test:golden": "node scripts/generate-golden-tasks.mjs && vitest run test/golden-task-suite.test.ts --pool=vmThreads --maxWorkers=1 --no-file-parallelism --isolate=false",
     "benchmark:p3.9:structural": "node scripts/run-p3.9-structural-benchmark.mjs",
+    "probe:p3:openrouter": "node --env-file=.env scripts/run-phase3-openrouter-probe.mjs",
+    "probe:p3:openrouter:dry": "node scripts/run-phase3-openrouter-probe.mjs --dry-run",
     "phase3:preflight": "node scripts/check-phase3-readiness.mjs",
     "phase3:gate": "node scripts/check-phase3-readiness.mjs --require-ready",
     "phase3:contracts": "node scripts/generate-phase3-gate-contracts.mjs",

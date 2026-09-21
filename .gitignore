@@ -8,3 +8,5 @@ test-results/
 .benchmark-evidence/
 .phase3-preflight/
 *.log
+.env
+.env*.local

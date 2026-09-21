@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "phase3-openrouter-free-probe-plan",
+  "models": [
+    {
+      "requestModel": "inclusionai/ling-3.0-flash-vl:free",
+      "canonicalModel": "inclusionai/ling-3.0-flash-vl-20260910",
+      "provider": {
+        "allow_fallbacks": false,
+        "data_collection": "deny",
+        "zdr": true,
+        "require_parameters": true
+      }
+    },
+    {
+      "requestModel": "nex-agi/nex-n2.5-pro:free",
+      "canonicalModel": "nex-agi/nex-n2.5-pro-20260907",
+      "provider": {
+        "allow_fallbacks": false,
+        "data_collection": "deny",
+        "require_parameters": true
+      }
+    }
+  ],
+  "taskSuite": "fixtures/evaluation/golden-tasks-0.1.json",
+  "taskCount": 12,
+  "maxCalls": 24,
+  "maxInputTokens": 250000,
+  "maxOutputTokens": 24000,
+  "maxTokensPerCall": 512,
+  "timeoutMs": 60000,
+  "retries": 0,
+  "concurrency": 1,
+  "temperature": 0,
+  "retention": "redacted scores, bounded usage, model and provider metadata only; no raw prompt or response; Ling requires ZDR; Nex denies data collection but may retain transiently",
+  "scope": "synthetic fixtures only; exploratory and not Phase 3 gate evidence"
+}
