@@ -97,6 +97,7 @@
     "benchmark:p3.9:structural": "node scripts/run-p3.9-structural-benchmark.mjs",
     "phase3:preflight": "node scripts/check-phase3-readiness.mjs",
     "phase3:gate": "node scripts/check-phase3-readiness.mjs --require-ready",
+    "phase3:contracts": "node scripts/generate-phase3-gate-contracts.mjs",
     "test:browser": "playwright test",
     "test:browser:chromium": "playwright test --project=chromium",
     "test:browser:native": "playwright test --config playwright.native.config.ts",

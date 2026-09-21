@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/private/p3.7-independent-security-review-0.1.json",
+  "title": "P3.7 Independent Security Review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "status",
+    "reviewedCommit",
+    "corpusDigest",
+    "matrixDigest",
+    "reportDigest",
+    "reviewer",
+    "findings",
+    "unresolvedCriticalHigh",
+    "disposition"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "p3.7-independent-security-review"
+    },
+    "status": {
+      "enum": [
+        "approved",
+        "changes_required"
+      ]
+    },
+    "reviewedCommit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "corpusDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "matrixDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "reportDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "independent"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$"
+        },
+        "independent": {
+          "type": "boolean"
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "severity",
+          "status",
+          "summary"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$"
+          },
+          "severity": {
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "info"
+            ]
+          },
+          "status": {
+            "enum": [
+              "open",
+              "resolved",
+              "accepted"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      }
+    },
+    "unresolvedCriticalHigh": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "disposition": {
+      "enum": [
+        "no_unresolved_critical_high",
+        "unresolved_findings"
+      ]
+    }
+  }
+}

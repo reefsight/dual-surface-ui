@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/private/p3.9-model-benchmark-report-0.1.json",
+  "title": "P3.9 Model Benchmark Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "status",
+    "sourceCommit",
+    "fixtureSuiteDigest",
+    "modelReportDigest",
+    "taskCount",
+    "baselines",
+    "tokenAccounting",
+    "rawSamplesDigest",
+    "completionRate",
+    "wrongActionRate",
+    "unauthorizedConsequentialActions",
+    "secretLeaks",
+    "medianStepImprovement",
+    "medianTokenImprovement",
+    "visionComparable",
+    "reportDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1"
+    },
+    "kind": {
+      "const": "p3.9-model-benchmark-report"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "incomplete"
+      ]
+    },
+    "sourceCommit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "fixtureSuiteDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "modelReportDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "taskCount": {
+      "type": "integer",
+      "minimum": 12
+    },
+    "baselines": {
+      "type": "array",
+      "minItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$"
+      }
+    },
+    "tokenAccounting": {
+      "enum": [
+        "exact_provider_usage",
+        "versioned_tokenizer",
+        "unavailable"
+      ]
+    },
+    "rawSamplesDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "completionRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "wrongActionRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "unauthorizedConsequentialActions": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "secretLeaks": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "medianStepImprovement": {
+      "type": "number",
+      "minimum": -10,
+      "maximum": 1
+    },
+    "medianTokenImprovement": {
+      "type": "number",
+      "minimum": -10,
+      "maximum": 1
+    },
+    "visionComparable": {
+      "type": "boolean"
+    },
+    "reportDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}
