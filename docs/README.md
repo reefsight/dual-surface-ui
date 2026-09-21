@@ -46,6 +46,9 @@ The remaining authorized work is tracked in dependency order:
 
 P3.6 is verified; later records define acceptance and evidence gates and do not
 claim completion until their own gates pass.
+P3.7 implementation is governed by the accepted
+[adversarial-suite ADR](adr/0013-adversarial-injection-and-confused-deputy-boundary.md)
+and remains implementation-pending.
 Phase 4 remains gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
