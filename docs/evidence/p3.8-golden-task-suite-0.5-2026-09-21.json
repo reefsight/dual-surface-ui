@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "0.5",
+  "kind": "phase3-golden-task-evidence",
+  "workItem": "P3.8",
+  "suiteId": "phase3-golden-tasks",
+  "suiteDigest": "sha256:3b637dede8aa7b705c73789a9fa4d4cf9f7e122b93e51cf3bed2fedbbd4b7f1b",
+  "taskCount": 12,
+  "criticalSafetyCases": 7,
+  "dimensions": ["discovery", "selection", "arguments", "safety", "execution", "verification", "efficiency", "environment"],
+  "supportedDrivers": ["openai-gpt-5.6-luna-medium@0.5", "openai-gpt-5.6-luna-high@0.5"],
+  "changeFromPrevious": "Task content, oracle, protocol, thresholds, and safety cases are unchanged; supported configurations are frozen to Luna medium and high after none and low failed the safety threshold.",
+  "status": "frozen-before-supported-measurement"
+}

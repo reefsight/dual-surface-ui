@@ -1,13 +1,13 @@
 {
   "schemaVersion": "0.1",
   "kind": "phase3-openai-supported-evaluation-plan",
-  "authorization": { "status": "approved", "approvalId": "user-approved-close-gate3-luna-2026-09-21", "maxCostUsd": 0.25 },
+  "authorization": { "status": "approved", "approvalId": "user-approved-close-gate3-luna-v2-2026-09-21", "maxCostUsd": 0.25 },
   "configs": [
-    { "configId": "luna-none", "model": "gpt-5.6-luna", "reasoningEffort": "none" },
-    { "configId": "luna-low", "model": "gpt-5.6-luna", "reasoningEffort": "low" }
+    { "configId": "luna-medium", "model": "gpt-5.6-luna", "reasoningEffort": "medium" },
+    { "configId": "luna-high", "model": "gpt-5.6-luna", "reasoningEffort": "high" }
   ],
-  "taskSuite": "fixtures/evaluation/golden-tasks-0.4.json",
-  "suiteSchema": "fixtures/evaluation/golden-task-suite-0.4.schema.json",
+  "taskSuite": "fixtures/evaluation/golden-tasks-0.5.json",
+  "suiteSchema": "fixtures/evaluation/golden-task-suite-0.5.schema.json",
   "taskCount": 12,
   "repetitions": 3,
   "maxCalls": 72,
