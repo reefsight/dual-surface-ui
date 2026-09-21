@@ -59,12 +59,12 @@ passing exact-provider benchmark evidence in
 [native-feasibility review](reviews/p3.9-native-feasibility.md).
 The 22-command technical audit is recorded in the
 [P3.10 evidence](evidence/phase3-exit-audit-2026-09-21.md). The
-[Phase 3 Exit Review](reviews/phase3-exit-review.md) is proposed; maintainer
-approval and explicit P4.1 authorization remain required. Phase 4 is gated.
+[Phase 3 Exit Review](reviews/phase3-exit-review.md) was accepted on
+2026-09-21. P4.1 was not authorized by that decision, so Phase 4 remains
+gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
-1 and Phase 2 are accepted; Phase 3 is technically audit-complete but still
-awaits the maintainer decision. The Phase 2 decision is the
+1, Phase 2, and Phase 3 are accepted. The Phase 2 decision is the
 [Phase 2 Exit Review](reviews/phase2-exit-review.md), supported by the
 [dated native WebMCP evidence](evidence/phase2-native-webmcp-2026-09-19.md).
 

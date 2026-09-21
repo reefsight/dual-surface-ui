@@ -1,6 +1,7 @@
 # Phase 3 Exit Review
 
-Status: Proposed — awaiting maintainer decision
+Status: Phase 3 Exit Gate accepted by repository maintainer on 2026-09-21;
+P4.1 authorization pending
 
 Audit date: 2026-09-21
 
@@ -10,10 +11,13 @@ Decision owner: Repository maintainer
 
 ## Recommendation
 
-Approve the Phase 3 exit gate and authorize P4.1 language-neutral native
-protocol design only. The completed deliverables, security disposition,
-quality/efficiency measurements, compatibility evidence, and 22-command clean
-audit satisfy the documented Phase 3 exit conditions.
+The repository maintainer approved the Phase 3 exit gate on 2026-09-21. The
+completed deliverables, security disposition, quality/efficiency measurements,
+compatibility evidence, and 22-command clean audit satisfy the documented
+Phase 3 exit conditions.
+
+Authorization for P4.1 language-neutral native protocol design was not part of
+this decision and remains pending.
 
 This recommendation does not authorize a native adapter or daemon, select an
 implementation language, publish a package, change a version, create a tag, or
@@ -76,11 +80,13 @@ See the complete
 
 ## Maintainer decision
 
-- [ ] Approve the Phase 3 exit gate.
+- [x] Approve the Phase 3 exit gate — approved 2026-09-21.
 - [ ] Authorize planning and implementation of P4.1 language-neutral protocol
-  design only.
-- [ ] Keep native adapters, daemon work, language selection, publication,
-  versioning, tagging, and deployment blocked pending their own gates.
+  design only — not authorized by this decision.
+- [x] Keep native adapters, daemon work, language selection, publication,
+  versioning, tagging, and deployment blocked under their existing gates;
+  unchanged by this decision.
 
-Until the maintainer records those decisions, Phase 3 remains technically
-audit-complete but not accepted, and P4.1 remains blocked.
+Phase 3 is accepted. P4.1 remains blocked until the maintainer records a
+separate explicit authorization; all later native implementation and release
+decisions retain their own gates.
