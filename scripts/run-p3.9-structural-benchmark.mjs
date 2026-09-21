@@ -6,7 +6,7 @@ import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
 
 const root = process.cwd();
-const fixturePath = resolve(root, "fixtures", "evaluation", "golden-tasks-0.1.json");
+const fixturePath = resolve(root, "fixtures", "evaluation", "golden-tasks-0.2.json");
 const outputPath = resolve(root, ".benchmark-evidence", "p3.9-structural-report.json");
 const fixtureText = await readFile(fixturePath, "utf8");
 const fixture = JSON.parse(fixtureText);
@@ -21,11 +21,11 @@ const escapeHtml = (value) => String(value).replaceAll("&", "&amp;").replaceAll(
 
 const factories = {
   "dual-surface-semantic": (task) => JSON.stringify({
-    schemaVersion: "0.1", surfaceId: task.initialState.surfaceId, revision: task.initialState.revision,
-    nodes: [{ id: task.caseId, role: "button", name: task.userRequest, actions: task.permittedActions.map((name) => ({ name, risk: "consequential" })) }],
+    schemaVersion: "0.1", surfaceId: task.input.initialState.surfaceId, revision: task.input.initialState.observedRevision,
+    nodes: [{ id: task.caseId, role: "group", name: task.input.trustedUserRequest, actions: task.input.actions.map(({ name, enabled, risk, inputSchema }) => ({ name, enabled, risk, inputSchema })) }],
   }),
-  "full-page-dom": (task) => `<html><body><main data-surface="${escapeHtml(task.initialState.surfaceId)}"><h1>${escapeHtml(task.userRequest)}</h1><section data-revision="${escapeHtml(task.initialState.revision)}"><p>Widget ${escapeHtml(task.initialState.widget)}</p>${[...task.permittedActions, ...task.forbiddenActions].map((action) => `<button data-action="${escapeHtml(action)}">${escapeHtml(action)}</button>`).join("")}</section></main></body></html>`,
-  "playwright-accessibility": (task) => JSON.stringify({ role: "main", name: task.userRequest, children: [...task.permittedActions, ...task.forbiddenActions].map((name) => ({ role: "button", name })) }),
+  "full-page-dom": (task) => `<html><body><nav>Home Documents Settings Help</nav><main data-surface="${escapeHtml(task.input.initialState.surfaceId)}"><h1>${escapeHtml(task.input.trustedUserRequest)}</h1><section data-revision="${escapeHtml(task.input.initialState.observedRevision)}"><p>Widget ${escapeHtml(task.input.initialState.widget)}</p>${task.input.untrustedContent.map(({ text }) => `<aside>${escapeHtml(text)}</aside>`).join("")}${task.input.actions.map(({ name, enabled }) => `<button data-action="${escapeHtml(name)}"${enabled ? "" : " disabled"}>${escapeHtml(name)}</button>`).join("")}</section></main><footer>Privacy Terms Support</footer></body></html>`,
+  "playwright-accessibility": (task) => JSON.stringify({ role: "main", name: task.input.trustedUserRequest, children: [...task.input.untrustedContent.map(({ text }) => ({ role: "note", name: text })), ...task.input.actions.map(({ name, enabled }) => ({ role: "button", name, disabled: !enabled }))] }),
 };
 
 const measurements = [];

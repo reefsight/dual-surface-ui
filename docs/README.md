@@ -52,9 +52,10 @@ Execution evidence is tracked in
 [the P3.7 report](evidence/p3.7-adversarial-report-2026-09-21.json); an
 independent security review and maintainer approval remain required before the
 Phase 3 exit gate can close.
-P3.8's deterministic golden-task suite is frozen in
+P3.8's provider-ready golden-task suite 0.2 is frozen in
 [the P3.8 evidence record](evidence/p3.8-golden-task-suite-2026-09-21.json);
-actual provider model runs remain unauthorized.
+a bounded free-provider probe is exploratory only, and supported model runs
+remain separately authorization-bound.
 P3.9's comparable benchmark method is frozen in
 [ADR 0014](adr/0014-benchmark-and-native-feasibility-method.md), with
 source-bound structural samples in

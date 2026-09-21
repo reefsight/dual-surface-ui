@@ -22,7 +22,7 @@
       }
     }
   ],
-  "taskSuite": "fixtures/evaluation/golden-tasks-0.1.json",
+  "taskSuite": "fixtures/evaluation/golden-tasks-0.2.json",
   "taskCount": 12,
   "maxCalls": 24,
   "maxInputTokens": 250000,

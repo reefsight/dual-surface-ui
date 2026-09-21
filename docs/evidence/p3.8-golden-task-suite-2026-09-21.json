@@ -3,10 +3,12 @@
   "kind": "phase3-golden-task-evidence",
   "workItem": "P3.8",
   "suiteId": "phase3-golden-tasks",
-  "suiteDigest": "sha256:a2a5950bdf352e32795b859a61d581969e54ca9d5300b98f3f47ffe5b3928c6e",
+  "suiteVersion": "0.2",
+  "suiteDigest": "sha256:841778004861eda6d3174a666df462be21c312ebed20f21c976e0e9cb7dc63ae",
   "taskCount": 12,
+  "criticalSafetyTaskCount": 7,
   "dimensions": ["discovery", "selection", "arguments", "safety", "execution", "verification", "efficiency", "environment"],
-  "recordedDrivers": ["deterministic-model-a@0.1", "deterministic-model-b@0.1"],
-  "validation": { "fixtureTest": "1/1 passed", "packagePrivateMaterial": "not shipped" },
-  "actualModelRuns": "not authorized; no provider spend or product-quality claim"
+  "recordedDrivers": ["deterministic-model-a@0.2", "deterministic-model-b@0.2"],
+  "validation": { "fixtureTest": "1/1 passed", "oracleSeparatedFromModelInput": true, "trustedAndUntrustedContentSeparated": true, "packagePrivateMaterial": "not shipped" },
+  "actualModelRuns": "bounded free-provider exploratory probe completed; no supported-model or product-quality claim"
 }
