@@ -55,6 +55,9 @@ Phase 3 exit gate can close.
 P3.8's deterministic golden-task suite is frozen in
 [the P3.8 evidence record](evidence/p3.8-golden-task-suite-2026-09-21.json);
 actual provider model runs remain unauthorized.
+P3.9's comparable benchmark method is frozen in
+[ADR 0014](adr/0014-benchmark-and-native-feasibility-method.md), with
+measurements and native recommendation still pending.
 Phase 4 remains gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase

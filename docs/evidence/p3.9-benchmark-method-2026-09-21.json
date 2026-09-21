@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "phase3-benchmark-method-evidence",
+  "workItem": "P3.9",
+  "methodAdr": "0014",
+  "fixtureSuite": "phase3-golden-tasks",
+  "baselines": ["dual-surface-semantic", "full-page-dom", "playwright-accessibility", "vision-screenshot"],
+  "metrics": ["completion", "wrong_action", "safety", "steps", "fallback_rate", "serialized_bytes", "context_tokens", "p50_latency_ms", "p95_latency_ms"],
+  "frozenRules": { "retries": 0, "outlierPolicy": "preserve-all-samples", "tokenClaim": "provider-usage-or-versioned-tokenizer-only" },
+  "measuredRun": "not started",
+  "nativeRecommendation": "pending",
+  "nonClaims": ["no actual provider model quality", "no vision-token gate", "no real-OS accessibility", "no native language selection"]
+}
