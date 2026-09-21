@@ -115,8 +115,9 @@ the exit gate remains open pending independent security review and maintainer
 approval.
 P3.8 now has a frozen 12-case deterministic golden-task suite; actual model
 evaluation remains authorization-gated.
-P3.9's comparable benchmark method is frozen in ADR 0014; measurements and
-native feasibility recommendation remain open.
+P3.9's method and structural measurement are recorded, with a conditional
+recommendation limited to P4.1 language-neutral protocol design. Actual
+model/token thresholds and real-OS proof remain open.
 Work-item records define the acceptance and evidence gates; design records do
 not claim implementation or completion.
 

@@ -7,7 +7,7 @@
   "baselines": ["dual-surface-semantic", "full-page-dom", "playwright-accessibility", "vision-screenshot"],
   "metrics": ["completion", "wrong_action", "safety", "steps", "fallback_rate", "serialized_bytes", "context_tokens", "p50_latency_ms", "p95_latency_ms"],
   "frozenRules": { "retries": 0, "outlierPolicy": "preserve-all-samples", "tokenClaim": "provider-usage-or-versioned-tokenizer-only" },
-  "measuredRun": "not started",
-  "nativeRecommendation": "pending",
+  "measuredRun": "structural-only; see p3.9-structural-benchmark-2026-09-21.json",
+  "nativeRecommendation": "proceed with conditions for P4.1 language-neutral protocol design only",
   "nonClaims": ["no actual provider model quality", "no vision-token gate", "no real-OS accessibility", "no native language selection"]
 }

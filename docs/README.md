@@ -57,7 +57,10 @@ P3.8's deterministic golden-task suite is frozen in
 actual provider model runs remain unauthorized.
 P3.9's comparable benchmark method is frozen in
 [ADR 0014](adr/0014-benchmark-and-native-feasibility-method.md), with
-measurements and native recommendation still pending.
+source-bound structural samples in
+[the P3.9 report](evidence/p3.9-structural-benchmark-2026-09-21.json) and a
+bounded [native-feasibility review](reviews/p3.9-native-feasibility.md).
+Actual model/token thresholds remain pending.
 Phase 4 remains gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
