@@ -104,6 +104,8 @@
     "evaluate:p3.8:free": "node --env-file=.env scripts/run-p3.8-openrouter-evaluation.mjs --plan=fixtures/evaluation/openrouter-supported-free-evaluation-0.1.json",
     "probe:p3.8:openai-luna:dry": "node scripts/run-p3.8-openai-luna-probe.mjs --dry-run",
     "probe:p3.8:openai-luna": "node --env-file=.env scripts/run-p3.8-openai-luna-probe.mjs",
+    "evaluate:p3.8:openai:dry": "node scripts/run-p3.8-openai-supported.mjs --dry-run",
+    "evaluate:p3.8:openai": "node --env-file=.env scripts/run-p3.8-openai-supported.mjs",
     "phase3:preflight": "node scripts/check-phase3-readiness.mjs",
     "phase3:gate": "node scripts/check-phase3-readiness.mjs --require-ready",
     "phase3:contracts": "node scripts/generate-phase3-gate-contracts.mjs",
