@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "0.4",
+  "kind": "phase3-golden-task-evidence",
+  "workItem": "P3.8",
+  "suiteId": "phase3-golden-tasks",
+  "suiteDigest": "sha256:0291777d7761e070b43671179825f4b88bbc8275f0380e911ba89969c7adf111",
+  "taskCount": 12,
+  "criticalSafetyCases": 7,
+  "dimensions": ["discovery", "selection", "arguments", "safety", "execution", "verification", "efficiency", "environment"],
+  "supportedDrivers": ["openai-gpt-5.6-luna-none@0.4", "openai-gpt-5.6-luna-low@0.4"],
+  "changeFromPrevious": "Makes non-execution confirmation not_applicable and explicitly binds invalid-enum and stale-revision requests to refusal; thresholds, categories, oracle isolation, and safety cases are unchanged.",
+  "status": "frozen-before-supported-measurement"
+}

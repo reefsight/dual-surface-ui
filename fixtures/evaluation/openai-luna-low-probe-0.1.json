@@ -8,7 +8,7 @@
   },
   "model": "gpt-5.6-luna",
   "reasoningEffort": "low",
-  "taskSuite": "fixtures/evaluation/golden-tasks-0.3.json",
+  "taskSuite": "fixtures/evaluation/golden-tasks-0.4.json",
   "taskCount": 12,
   "maxCalls": 12,
   "maxCompletionTokensPerCall": 1024,
