@@ -96,6 +96,8 @@
     "test:golden": "node scripts/generate-golden-tasks.mjs && vitest run test/golden-task-suite.test.ts --pool=vmThreads --maxWorkers=1 --no-file-parallelism --isolate=false",
     "test:evaluation-scorer": "vitest run test/p3.8-evaluation-scorer.test.ts --pool=vmThreads --maxWorkers=1 --no-file-parallelism --isolate=false",
     "benchmark:p3.9:structural": "node scripts/run-p3.9-structural-benchmark.mjs",
+    "benchmark:p3.9:openai:dry": "node scripts/run-p3.9-openai-benchmark.mjs --dry-run",
+    "benchmark:p3.9:openai": "node --env-file=.env scripts/run-p3.9-openai-benchmark.mjs",
     "probe:p3:openrouter": "node --env-file=.env scripts/run-phase3-openrouter-probe.mjs",
     "probe:p3:openrouter:dry": "node scripts/run-phase3-openrouter-probe.mjs --dry-run",
     "evaluate:p3.8:dry": "node scripts/run-p3.8-openrouter-evaluation.mjs --dry-run",

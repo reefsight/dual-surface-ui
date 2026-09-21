@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "phase3-openai-model-benchmark-plan",
+  "authorization": { "status": "approved", "approvalId": "user-approved-close-gate3-p39-2026-09-21", "maxCostUsd": 0.5 },
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "medium",
+  "taskSuite": "fixtures/evaluation/golden-tasks-0.5.json",
+  "taskCount": 12,
+  "baselines": ["dual-surface-semantic", "full-page-dom", "playwright-accessibility", "vision-screenshot"],
+  "repetitions": 3,
+  "maxCalls": 144,
+  "maxOutputTokensPerCall": 1024,
+  "timeoutMs": 60000,
+  "retries": 0,
+  "concurrency": 1,
+  "retention": "redacted scores, exact provider usage, bounded errors, serialized byte counts, latency, and step counts only"
+}
