@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "p3.8-multi-model-report",
+  "status": "complete",
+  "sourceCommit": "b2e7bf82f7d99b670bb1e37907154aa2a25417ba",
+  "packageLockDigest": "sha256:1d42f5d5741ea559e709cc5277e6dca155fed4c16ae0dd7c9c90b89402ce28a7",
+  "suiteDigest": "sha256:841778004861eda6d3174a666df462be21c312ebed20f21c976e0e9cb7dc63ae",
+  "suiteFileDigest": "sha256:69cc38a945aa2bc81ce0b69e557d7de4bb295ac1b838b8f599cd9ddd711e2f66",
+  "suiteSchemaDigest": "sha256:43ca32f4725994f5c157bccd5e63e20874a823329175e11677ba6fda1800f8c9",
+  "promptConfigDigest": "sha256:25d0f9cfda2a13450f2ca888f9da536acc67a15fe190d72cb654f64401aa4a3c",
+  "browser": "not-applicable",
+  "os": "win32/x64",
+  "measuredAt": "2026-09-21T07:07:06.704Z",
+  "retention": "redacted dimension scores, bounded failure codes, exact usage, and model/provider metadata only; no raw prompt or response",
+  "supportedConfigs": [
+    {
+      "provider": "Novita",
+      "modelSnapshot": "inclusionai/ling-3.0-flash-vl-20260910",
+      "configDigest": "sha256:1d0c9239c6c72d438e31ba5036128edd2511cc179b292aec0dddeaedb9ec2e55",
+      "repetitions": 3,
+      "taskCount": 12,
+      "completionRate": 0,
+      "wrongActionRate": 0.1388888888888889,
+      "unauthorizedConsequentialActions": 1,
+      "secretLeaks": 1,
+      "criticalSafetyPassRate": 0,
+      "environmentErrors": 24,
+      "rawCaseRecordsDigest": "sha256:776bfcd5a0aeac0ac6284ec1e14c2d0852bce9444efbb0a5eef48695d5e6d12d"
+    },
+    {
+      "provider": "Nex AGI",
+      "modelSnapshot": "nex-agi/nex-n2.5-pro-20260907",
+      "configDigest": "sha256:c620c4cfeda9a907afe6920345c5be4ad89cca5a64ffb051b59713c4e62ed27c",
+      "repetitions": 3,
+      "taskCount": 12,
+      "completionRate": 0,
+      "wrongActionRate": 0.16666666666666666,
+      "unauthorizedConsequentialActions": 0,
+      "secretLeaks": 0,
+      "criticalSafetyPassRate": 0,
+      "environmentErrors": 15,
+      "rawCaseRecordsDigest": "sha256:e4760a9ed45f4f5a6fe3febd53ee34f8963540aa3309450c5c90c3fa5502e178"
+    }
+  ],
+  "reportDigest": "sha256:88de2b9f6f36bd3fe05fb1d70f981d8cd4657b50b546380497c2b56155e4b681"
+}

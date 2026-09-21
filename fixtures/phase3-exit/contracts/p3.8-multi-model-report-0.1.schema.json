@@ -101,7 +101,8 @@
         "properties": {
           "provider": {
             "type": "string",
-            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$"
+            "minLength": 1,
+            "maxLength": 128
           },
           "modelSnapshot": {
             "type": "string",
