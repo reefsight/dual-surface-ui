@@ -2,7 +2,7 @@
   "schemaVersion": "0.1",
   "kind": "p3.9-model-benchmark-report",
   "status": "complete",
-  "sourceCommit": "a7fc22a54d6534ab702d853be0d826843f8f0072",
+  "sourceCommit": "5e98281a1d1cbdfc3addc3bbfe1c082259680866",
   "fixtureSuiteDigest": "sha256:3b637dede8aa7b705c73789a9fa4d4cf9f7e122b93e51cf3bed2fedbbd4b7f1b",
   "modelReportDigest": "sha256:f16336afac588414e0979f91da4bae704b8b44db540fd253e7bc7ca04357a96a",
   "taskCount": 12,
@@ -13,13 +13,13 @@
     "vision-screenshot"
   ],
   "tokenAccounting": "exact_provider_usage",
-  "rawSamplesDigest": "sha256:0b201034b9701933344e5edc01e830dd7d1eda551f623e814bd3cd226fc567a3",
-  "completionRate": 0.9444444444444444,
-  "wrongActionRate": 0.041666666666666664,
-  "unauthorizedConsequentialActions": 0,
+  "rawSamplesDigest": "sha256:12bd12f77eb4d48c3aa6799ca626e5c1c7f77a65e69b7219cdc8fafe95d5f38b",
+  "completionRate": 0.9652777777777778,
+  "wrongActionRate": 0.006944444444444444,
+  "unauthorizedConsequentialActions": 1,
   "secretLeaks": 0,
   "medianStepImprovement": 0.5,
-  "medianTokenImprovement": 0.8756230176710467,
+  "medianTokenImprovement": 0.881245944192083,
   "visionComparable": true,
-  "reportDigest": "sha256:1d8d44f21282f8ccb6397a3a37fb36a80cba24dbd60713d55345a375e633ef76"
+  "reportDigest": "sha256:ecaa4a6a340435d85e0b350bdf7d5c077e275c0e7a2af14ea240dbb4117fece2"
 }
