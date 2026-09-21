@@ -95,6 +95,8 @@
     "test:adversarial": "vitest run test/adversarial/adversarial-suite.test.ts --pool=vmThreads --maxWorkers=1 --no-file-parallelism --isolate=false",
     "test:golden": "node scripts/generate-golden-tasks.mjs && vitest run test/golden-task-suite.test.ts --pool=vmThreads --maxWorkers=1 --no-file-parallelism --isolate=false",
     "benchmark:p3.9:structural": "node scripts/run-p3.9-structural-benchmark.mjs",
+    "phase3:preflight": "node scripts/check-phase3-readiness.mjs",
+    "phase3:gate": "node scripts/check-phase3-readiness.mjs --require-ready",
     "test:browser": "playwright test",
     "test:browser:chromium": "playwright test --project=chromium",
     "test:browser:native": "playwright test --config playwright.native.config.ts",
