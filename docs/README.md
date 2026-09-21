@@ -61,6 +61,8 @@ source-bound structural samples in
 [the P3.9 report](evidence/p3.9-structural-benchmark-2026-09-21.json) and a
 bounded [native-feasibility review](reviews/p3.9-native-feasibility.md).
 Actual model/token thresholds remain pending.
+The authority-bound blockers preventing P3.10 are listed in the
+[Phase 3 readiness gaps](reviews/phase3-readiness-gaps.md).
 Phase 4 remains gated.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
