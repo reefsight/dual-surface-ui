@@ -5,4 +5,5 @@ playwright-report/
 test-results/
 .conformance-evidence/
 .adversarial-evidence/
+.benchmark-evidence/
 *.log
