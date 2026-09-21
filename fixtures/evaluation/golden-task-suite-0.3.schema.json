@@ -1,0 +1,399 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/private/agent-golden-task-suite-0.3.json",
+  "title": "Dual Surface UI Private Golden Task Suite",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "suiteId",
+    "supportedDrivers",
+    "dimensions",
+    "cases",
+    "suiteDigest"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "0.3"
+    },
+    "kind": {
+      "const": "agent-golden-task-suite"
+    },
+    "suiteId": {
+      "const": "phase3-golden-tasks"
+    },
+    "supportedDrivers": {
+      "type": "array",
+      "const": [
+        "openai-gpt-5.6-luna-none@0.3",
+        "openai-gpt-5.6-luna-low@0.3"
+      ]
+    },
+    "dimensions": {
+      "type": "array",
+      "const": [
+        "discovery",
+        "selection",
+        "arguments",
+        "safety",
+        "execution",
+        "verification",
+        "efficiency",
+        "environment"
+      ]
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "caseId",
+          "category",
+          "criticalSafety",
+          "input",
+          "oracle",
+          "rubric"
+        ],
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "criticalSafety": {
+            "type": "boolean"
+          },
+          "input": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "trustedUserRequest",
+              "initialState",
+              "untrustedContent",
+              "confirmationState",
+              "visualOnly",
+              "protocol",
+              "actions"
+            ],
+            "properties": {
+              "trustedUserRequest": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "initialState": {
+                "type": "object",
+                "maxProperties": 64
+              },
+              "untrustedContent": {
+                "type": "array",
+                "maxItems": 8,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "source",
+                    "text"
+                  ],
+                  "properties": {
+                    "source": {
+                      "enum": [
+                        "page",
+                        "tool_output"
+                      ]
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    }
+                  }
+                }
+              },
+              "confirmationState": {
+                "enum": [
+                  "not_requested",
+                  "cancelled"
+                ]
+              },
+              "visualOnly": {
+                "type": "boolean"
+              },
+              "protocol": {
+                "type": "object",
+                "maxProperties": 64
+              },
+              "actions": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 16,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "name",
+                    "enabled",
+                    "risk",
+                    "inputSchema",
+                    "postcondition"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "risk": {
+                      "enum": [
+                        "safe",
+                        "consequential",
+                        "destructive"
+                      ]
+                    },
+                    "inputSchema": {
+                      "type": "object",
+                      "maxProperties": 64
+                    },
+                    "postcondition": {
+                      "type": "object",
+                      "maxProperties": 64
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "oracle": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "decision",
+              "action",
+              "arguments",
+              "confirmation",
+              "finalState",
+              "forbiddenActions"
+            ],
+            "properties": {
+              "decision": {
+                "enum": [
+                  "execute",
+                  "clarify",
+                  "refuse",
+                  "cancel"
+                ]
+              },
+              "action": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "arguments": {
+                "type": "object",
+                "maxProperties": 64
+              },
+              "confirmation": {
+                "enum": [
+                  "request",
+                  "cancelled",
+                  "not_applicable"
+                ]
+              },
+              "finalState": {
+                "type": "object",
+                "maxProperties": 64
+              },
+              "forbiddenActions": {
+                "type": "array",
+                "uniqueItems": true,
+                "maxItems": 16,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              }
+            }
+          },
+          "rubric": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "discovery",
+              "selection",
+              "arguments",
+              "safety",
+              "execution",
+              "verification",
+              "efficiency",
+              "environment"
+            ],
+            "properties": {
+              "discovery": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "required",
+                  "description"
+                ],
+                "properties": {
+                  "required": {
+                    "const": true
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  }
+                }
+              },
+              "selection": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "required",
+                  "description"
+                ],
+                "properties": {
+                  "required": {
+                    "const": true
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  }
+                }
+              },
+              "arguments": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "required",
+                  "description"
+                ],
+                "properties": {
+                  "required": {
+                    "const": true
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  }
+                }
+              },
+              "safety": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "required",
+                  "description"
+                ],
+                "properties": {
+                  "required": {
+                    "const": true
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  }
+                }
+              },
+              "execution": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "required",
+                  "description"
+                ],
+                "properties": {
+                  "required": {
+                    "const": true
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  }
+                }
+              },
+              "verification": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "required",
+                  "description"
+                ],
+                "properties": {
+                  "required": {
+                    "const": true
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  }
+                }
+              },
+              "efficiency": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "required",
+                  "description"
+                ],
+                "properties": {
+                  "required": {
+                    "const": true
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  }
+                }
+              },
+              "environment": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "required",
+                  "description"
+                ],
+                "properties": {
+                  "required": {
+                    "const": true
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "suiteDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  }
+}

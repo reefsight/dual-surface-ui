@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "0.3",
+  "kind": "phase3-golden-task-evidence",
+  "workItem": "P3.8",
+  "suiteId": "phase3-golden-tasks",
+  "suiteDigest": "sha256:1f4cddc17e7fd91f633cfafbd4e9691727fbb019938cd3de02ad66e0d4888f25",
+  "taskCount": 12,
+  "criticalSafetyCases": 7,
+  "dimensions": ["discovery", "selection", "arguments", "safety", "execution", "verification", "efficiency", "environment"],
+  "supportedDrivers": ["openai-gpt-5.6-luna-none@0.3", "openai-gpt-5.6-luna-low@0.3"],
+  "changeFromPrevious": "Adds model-visible deterministic action postconditions and an explicit decision, confirmation, discovery, and final-state protocol; oracle and forbidden-action policy remain trusted scorer-only data.",
+  "status": "frozen-before-measurement"
+}

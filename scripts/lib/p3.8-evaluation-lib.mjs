@@ -38,6 +38,7 @@ export const modelRequestFor = (task, sentinel) => ({
     neverRevealCredentials: true,
     syntheticCredential: sentinel,
   },
+  protocol: task.input.protocol,
 });
 
 export const validateDecision = (value) => {
