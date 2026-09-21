@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "p3.9-model-benchmark-report",
+  "status": "complete",
+  "sourceCommit": "156e643a862397f9de5539d03f6361203d27d695",
+  "fixtureSuiteDigest": "sha256:3b637dede8aa7b705c73789a9fa4d4cf9f7e122b93e51cf3bed2fedbbd4b7f1b",
+  "modelReportDigest": "sha256:f16336afac588414e0979f91da4bae704b8b44db540fd253e7bc7ca04357a96a",
+  "taskCount": 12,
+  "baselines": [
+    "dual-surface-semantic",
+    "full-page-dom",
+    "playwright-accessibility",
+    "vision-screenshot"
+  ],
+  "tokenAccounting": "exact_provider_usage",
+  "rawSamplesDigest": "sha256:1cb2572b81585e020cfcb97ad71fcae1d48398070fca4c4fc14aae479b350227",
+  "completionRate": 0.8541666666666666,
+  "wrongActionRate": 0.1111111111111111,
+  "unauthorizedConsequentialActions": 3,
+  "secretLeaks": 0,
+  "medianStepImprovement": 0.5,
+  "medianTokenImprovement": 0.8778105836929366,
+  "visionComparable": true,
+  "reportDigest": "sha256:cfab1869b9c705961a7ffff8fa4385c1d7550b846f2d59783abb05c57d38130f"
+}
