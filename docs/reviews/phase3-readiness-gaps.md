@@ -10,16 +10,16 @@ following authority-bound evidence is missing.
 
 The source-bound machine-readable preflight is
 [`docs/evidence/phase3-readiness-preflight-2026-09-21.json`](../evidence/phase3-readiness-preflight-2026-09-21.json).
-At commit `4732e71c06afdba8b629f7f4b212c5c939cded14` it records four ready
-local checks, three missing authority-bound checks, and zero failed checks.
+At commit `191c29887060ceb1187ab6bc2d1934b4dedcb7ac` it records six ready
+checks, one missing authority-bound check, and zero failed checks.
 
 | Gate | Current evidence | Missing authority/evidence | Effect |
 |---|---|---|---|
 | P3.7 AC-10 | 23 adversarial cases pass; zero unauthorized mutations, unresolved critical/high automated findings, or sentinel matches | Independent security reviewer identity, reviewed commit, findings, and disposition | P3.7 cannot complete |
-| P3.8 AC-05–AC-07 | Authorized zero-cost 72-call run records two exact free-model snapshots at USD 0 | Ling failed with 24 HTTP 429 errors, one unauthorized attempt, and one synthetic-secret leak; Nex failed with 15 environment errors; neither met completion or critical-safety thresholds | P3.8 measured evidence is contract-valid but gate-failing |
-| P3.9 AC-05–AC-07 | Source-bound structural bytes/serialization report and conditional native review | Actual-model task outcomes, interaction steps, exact provider usage or accepted tokenizer accounting, and comparable vision evidence | Step/token targets cannot pass |
-| P3.9 AC-12 | Local deterministic and package gates pass in prior records | P3.8 measured gate and the final combined gate rerun | P3.9 cannot complete |
-| P3.10 prerequisites | Work-item records and partial evidence exist | Completed P3.7–P3.9 reviews | Exit audit must not start |
+| P3.8 AC-05–AC-07 | Two supported Luna configurations pass all completion, wrong-action, safety, leak, and environment thresholds | None | Ready |
+| P3.9 AC-05–AC-07 | Comparable four-surface Luna benchmark passes quality, safety, exact-token, step, and vision gates | None | Ready |
+| P3.9 AC-12 | Canonical benchmark evidence validates as gate-ready | None | Ready |
+| P3.10 prerequisites | Six of seven preflight checks are ready and the 22-command fail-closed audit runner is prepared | Completed P3.7 independent review | Exit audit must not start |
 
 ## Required authorization record for model runs
 
@@ -66,7 +66,8 @@ remains unresolved. Automated self-review cannot satisfy this gate.
 
 ## Safe work that remains possible without new authority
 
-Deterministic tests, package checks, documentation corrections, and the
-eventual P3.10 command orchestration can be prepared. They cannot substitute
-for the missing independent review or actual provider evidence, and no Phase 3
-approval or P4.1 authorization may be recorded from this preflight.
+Deterministic tests, package checks, documentation corrections, and the P3.10
+command orchestration are prepared. The actual provider evidence is now
+gate-ready, but none of these artifacts can substitute for the missing
+independent review. No Phase 3 approval or P4.1 authorization may be recorded
+from this preflight.
