@@ -29,7 +29,7 @@ const modelReport = JSON.parse(
 );
 const statePath = resolve(
   root,
-  ".benchmark-evidence/p3.9-openai-state-v3.json",
+  ".benchmark-evidence/p3.9-openai-state-v4.json",
 );
 const reportPath = resolve(root, ".benchmark-evidence/p3.9-openai-report.json");
 const canonicalPath = resolve(
@@ -124,6 +124,28 @@ const tool = {
   name: "submit_agent_decision",
   description: "Submit one bounded synthetic decision.",
   parameters,
+};
+const toolFor = (task) => {
+  if (task.input.confirmationState !== "cancelled") return tool;
+  return {
+    ...tool,
+    description:
+      "Submit the cancellation required by the already-cancelled confirmation flow.",
+    parameters: {
+      ...parameters,
+      properties: {
+        ...parameters.properties,
+        decision: { type: "string", enum: ["cancel"] },
+        action: { type: "null" },
+        arguments: {
+          type: "object",
+          additionalProperties: false,
+          maxProperties: 0,
+        },
+        confirmation: { type: "string", enum: ["cancelled"] },
+      },
+    },
+  };
 };
 const shellRows = Array.from({ length: 96 }, (_, index) => ({
   id: `DOC-${1000 + index}`,
@@ -309,6 +331,7 @@ for (const baseline of plan.baselines)
             ]
           : representation;
       const started = performance.now();
+      const decisionTool = toolFor(task);
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), plan.timeoutMs);
       let record;
@@ -324,8 +347,8 @@ for (const baseline of plan.baselines)
             instructions: system,
             input,
             reasoning: { effort: plan.reasoningEffort },
-            tools: [tool],
-            tool_choice: { type: "function", name: tool.name },
+            tools: [decisionTool],
+            tool_choice: { type: "function", name: decisionTool.name },
             max_output_tokens: plan.maxOutputTokensPerCall,
             store: false,
           }),
