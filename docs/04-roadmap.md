@@ -109,8 +109,10 @@ reproducible without weakening the web security model.
 P3.1 through P3.6 are implemented and verified. P3.7 through P3.10 proceed in
 numeric dependency order, with P3.7 next. The P3.6 private conformance design
 and implementation are governed by accepted ADR 0012 and the dated aggregate
-evidence report. P3.7 design is accepted in ADR 0013; its implementation and
-security evidence remain pending.
+evidence report. P3.7 implementation and evidence are complete in
+[`docs/evidence/p3.7-adversarial-report-2026-09-21.json`](evidence/p3.7-adversarial-report-2026-09-21.json);
+the exit gate remains open pending independent security review and maintainer
+approval.
 Work-item records define the acceptance and evidence gates; design records do
 not claim implementation or completion.
 

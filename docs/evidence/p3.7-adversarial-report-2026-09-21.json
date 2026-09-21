@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "phase3-adversarial-evidence",
+  "workItem": "P3.7",
+  "implementationCommit": "e0c5410126ca82dff08a5add4ebb5547335d4d18",
+  "corpusId": "phase3-adversarial",
+  "matrixDigest": "sha256:93363450c4d281c05241664dc672400168281870eea76202c7d64f98a1e3eda9",
+  "reportDigest": "sha256:da70545596a25e32263440e84bef08e0305570ab2b47405cbccce1d09cc9e09a",
+  "cases": 23,
+  "repetitions": { "criticalHigh": 3, "medium": 1 },
+  "summary": { "prevented": 23, "failed": 0, "unauthorizedMutations": 0, "unresolvedCriticalHigh": 0, "sentinelMatches": 0 },
+  "package": { "fileCount": 268, "tarballDigest": "sha256:5fcb2768afd364cca6c9d8391909f6bdc1dc96280cf1c8f3d2b10099c9c260b0", "privateCorpusLeaked": false, "sentinelLeaked": false },
+  "validation": {
+    "adversarialSuite": "24/24 passed",
+    "defaultSuite": "48 files / 565 tests passed",
+    "phase1Gate": "46 files / 526 tests passed",
+    "typecheck": "passed",
+    "contractCheck": "passed",
+    "packageGates": ["delta", "trace-replay", "playwright", "cli", "conformance", "adversarial"],
+    "npmAudit": "0 vulnerabilities"
+  },
+  "securityReview": { "automatedFindings": "none", "independentReviewer": "pending", "phase3ExitGate": "blocked pending independent security review and maintainer approval" }
+}
