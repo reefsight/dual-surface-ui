@@ -13,7 +13,7 @@ const plan = Object.freeze([
   ["npm", ["run", "build"]],
   ["npm", ["run", "test:gate"]],
   ["npm", ["run", "test:conformance"]],
-  ["npm", ["run", "test:browser"]],
+  ["npm", ["run", "test:browser", "--", "--workers=1"]],
   ["npm", ["run", "test:adversarial"]],
   ["npm", ["run", "test:golden"]],
   ["npm", ["run", "test:evaluation-scorer"]],
