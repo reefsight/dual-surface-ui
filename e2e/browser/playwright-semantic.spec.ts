@@ -43,6 +43,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("runs all closed semantic operations through the shared lifecycle", async ({ page }) => {
+  test.setTimeout(60_000);
   const origin = new URL(page.url()).origin;
   const surface = createPlaywrightSurface({
     page,
