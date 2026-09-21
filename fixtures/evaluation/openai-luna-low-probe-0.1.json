@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "phase3-openai-model-probe-plan",
+  "authorization": {
+    "status": "approved",
+    "approvalId": "user-approved-openai-luna-low-2026-09-21",
+    "maxCostUsd": 0.25
+  },
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "low",
+  "taskSuite": "fixtures/evaluation/golden-tasks-0.2.json",
+  "taskCount": 12,
+  "maxCalls": 12,
+  "maxCompletionTokensPerCall": 1024,
+  "timeoutMs": 60000,
+  "retries": 0,
+  "concurrency": 1,
+  "retention": "redacted scores and exact token usage only; no raw prompt or response",
+  "scope": "synthetic one-repetition diagnostic; not canonical Gate 3 evidence"
+}
