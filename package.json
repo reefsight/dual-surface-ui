@@ -110,6 +110,8 @@
     "evaluate:p3.8:openai": "node --env-file=.env scripts/run-p3.8-openai-supported.mjs",
     "phase3:preflight": "node scripts/check-phase3-readiness.mjs",
     "phase3:gate": "node scripts/check-phase3-readiness.mjs --require-ready",
+    "phase3:audit:dry": "node scripts/run-phase3-exit-audit.mjs --dry-run",
+    "phase3:audit": "node scripts/run-phase3-exit-audit.mjs",
     "phase3:contracts": "node scripts/generate-phase3-gate-contracts.mjs",
     "phase3:evidence:validate": "node scripts/validate-phase3-evidence.mjs",
     "test:browser": "playwright test",
