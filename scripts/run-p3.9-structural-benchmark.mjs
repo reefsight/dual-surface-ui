@@ -8,6 +8,13 @@ import { performance } from "node:perf_hooks";
 const root = process.cwd();
 const fixturePath = resolve(root, "fixtures", "evaluation", "golden-tasks-0.2.json");
 const outputPath = resolve(root, ".benchmark-evidence", "p3.9-structural-report.json");
+const trackedEvidencePath = process.env.DSUI_P39_EVIDENCE_PATH;
+let relativeEvidencePath;
+if (trackedEvidencePath) {
+  if (!isAbsolute(trackedEvidencePath)) throw new Error("DSUI_P39_EVIDENCE_PATH must be absolute");
+  relativeEvidencePath = relative(root, trackedEvidencePath).replaceAll("\\", "/");
+  if (relativeEvidencePath.startsWith("../") || !relativeEvidencePath.startsWith("docs/evidence/")) throw new Error("tracked evidence path must stay under docs/evidence");
+}
 const fixtureText = await readFile(fixturePath, "utf8");
 const fixture = JSON.parse(fixtureText);
 const encoder = new TextEncoder();
@@ -18,14 +25,25 @@ const canonical = (value) => Array.isArray(value) ? value.map(canonical) : value
 const percentile = (samples, fraction) => [...samples].sort((a, b) => a - b)[Math.max(0, Math.ceil(samples.length * fraction) - 1)];
 const round = (value, digits = 3) => Math.round(value * 10 ** digits) / 10 ** digits;
 const escapeHtml = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+const shellRows = Array.from({ length: 32 }, (_, index) => ({
+  id: `document-${String(index + 1).padStart(2, "0")}`,
+  owner: `Synthetic Owner ${index + 1}`,
+  status: index % 3 === 0 ? "Pending" : index % 3 === 1 ? "Completed" : "Draft",
+}));
+const domShell = `<header><a href="/">Workspace</a><input aria-label="Search documents"><button>Notifications</button><button>Profile</button></header><nav>${["Dashboard", "Documents", "Templates", "Approvals", "Reports", "Settings", "Help"].map((name) => `<a href="/${name.toLowerCase()}">${name}</a>`).join("")}</nav><aside><h2>Recent documents</h2>${shellRows.map(({ id, status }) => `<a href="/documents/${id}">${id} ${status}</a>`).join("")}</aside>`;
+const accessibilityShell = [
+  { role: "banner", name: "Workspace", children: [{ role: "searchbox", name: "Search documents" }, { role: "button", name: "Notifications" }, { role: "button", name: "Profile" }] },
+  { role: "navigation", name: "Primary", children: ["Dashboard", "Documents", "Templates", "Approvals", "Reports", "Settings", "Help"].map((name) => ({ role: "link", name })) },
+  { role: "complementary", name: "Recent documents", children: shellRows.map(({ id, owner, status }) => ({ role: "link", name: `${id} ${owner} ${status}` })) },
+];
 
 const factories = {
   "dual-surface-semantic": (task) => JSON.stringify({
     schemaVersion: "0.1", surfaceId: task.input.initialState.surfaceId, revision: task.input.initialState.observedRevision,
     nodes: [{ id: task.caseId, role: "group", name: task.input.trustedUserRequest, actions: task.input.actions.map(({ name, enabled, risk, inputSchema }) => ({ name, enabled, risk, inputSchema })) }],
   }),
-  "full-page-dom": (task) => `<html><body><nav>Home Documents Settings Help</nav><main data-surface="${escapeHtml(task.input.initialState.surfaceId)}"><h1>${escapeHtml(task.input.trustedUserRequest)}</h1><section data-revision="${escapeHtml(task.input.initialState.observedRevision)}"><p>Widget ${escapeHtml(task.input.initialState.widget)}</p>${task.input.untrustedContent.map(({ text }) => `<aside>${escapeHtml(text)}</aside>`).join("")}${task.input.actions.map(({ name, enabled }) => `<button data-action="${escapeHtml(name)}"${enabled ? "" : " disabled"}>${escapeHtml(name)}</button>`).join("")}</section></main><footer>Privacy Terms Support</footer></body></html>`,
-  "playwright-accessibility": (task) => JSON.stringify({ role: "main", name: task.input.trustedUserRequest, children: [...task.input.untrustedContent.map(({ text }) => ({ role: "note", name: text })), ...task.input.actions.map(({ name, enabled }) => ({ role: "button", name, disabled: !enabled }))] }),
+  "full-page-dom": (task) => `<html><body>${domShell}<main data-surface="${escapeHtml(task.input.initialState.surfaceId)}"><h1>${escapeHtml(task.input.trustedUserRequest)}</h1><section data-revision="${escapeHtml(task.input.initialState.observedRevision)}"><p>Widget ${escapeHtml(task.input.initialState.widget)}</p>${task.input.untrustedContent.map(({ text }) => `<aside>${escapeHtml(text)}</aside>`).join("")}${task.input.actions.map(({ name, enabled }) => `<button data-action="${escapeHtml(name)}"${enabled ? "" : " disabled"}>${escapeHtml(name)}</button>`).join("")}</section><table><thead><tr><th>Document</th><th>Owner</th><th>Status</th></tr></thead><tbody>${shellRows.map(({ id, owner, status }) => `<tr><td>${id}</td><td>${owner}</td><td>${status}</td></tr>`).join("")}</tbody></table></main><footer>Privacy Terms Security Accessibility Support</footer></body></html>`,
+  "playwright-accessibility": (task) => JSON.stringify({ role: "document", name: "Document workspace", children: [...accessibilityShell, { role: "main", name: task.input.trustedUserRequest, children: [...task.input.untrustedContent.map(({ text }) => ({ role: "note", name: text })), ...task.input.actions.map(({ name, enabled }) => ({ role: "button", name, disabled: !enabled })), { role: "table", name: "Documents", children: shellRows.map(({ id, owner, status }) => ({ role: "row", children: [{ role: "cell", name: id }, { role: "cell", name: owner }, { role: "cell", name: status }] })) }] }] }),
 };
 
 const measurements = [];
@@ -52,7 +70,9 @@ const summaries = Object.keys(factories).map((baseline) => {
 });
 summaries.push({ baseline: "vision-screenshot", taskCount: fixture.cases.length, status: "unavailable", contextTokens: null, tokenAccounting: "unavailable" });
 const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
-const sourceDirty = execFileSync("git", ["status", "--porcelain"], { cwd: root, encoding: "utf8" }).trim().length > 0;
+const dirtyPaths = execFileSync("git", ["status", "--porcelain"], { cwd: root, encoding: "utf8" })
+  .split(/\r?\n/u).filter(Boolean).map((line) => line.slice(3).replaceAll("\\", "/"));
+const sourceDirty = dirtyPaths.some((path) => path !== relativeEvidencePath);
 const reportBase = {
   schemaVersion: "0.1", kind: "phase3-structural-benchmark-report", benchmarkId: "p3.9-structural-0.1",
   sourceCommit, sourceDirty, fixtureSuiteDigest: fixture.suiteDigest, fixtureSha256: sha(fixtureText.replace(/\r\n?/g, "\n")),
@@ -65,11 +85,7 @@ const reportBase = {
 const report = { ...reportBase, reportDigest: sha(`dual-surface-ui:p3.9-structural-report:0.1\0${JSON.stringify(canonical(reportBase))}`) };
 await mkdir(resolve(root, ".benchmark-evidence"), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(report)}\n`, "utf8");
-const trackedEvidencePath = process.env.DSUI_P39_EVIDENCE_PATH;
 if (trackedEvidencePath) {
-  if (!isAbsolute(trackedEvidencePath)) throw new Error("DSUI_P39_EVIDENCE_PATH must be absolute");
-  const relativeEvidencePath = relative(root, trackedEvidencePath).replaceAll("\\", "/");
-  if (relativeEvidencePath.startsWith("../") || !relativeEvidencePath.startsWith("docs/evidence/")) throw new Error("tracked evidence path must stay under docs/evidence");
   await mkdir(dirname(trackedEvidencePath), { recursive: true });
   await writeFile(trackedEvidencePath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 }

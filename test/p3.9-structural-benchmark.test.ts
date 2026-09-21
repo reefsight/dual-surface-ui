@@ -12,6 +12,9 @@ describe("P3.9 structural benchmark", () => {
     expect(report.summaries.map((item: { baseline: string }) => item.baseline)).toEqual(["dual-surface-semantic", "full-page-dom", "playwright-accessibility", "vision-screenshot"]);
     expect(report.measurements.filter((item: { baseline: string }) => item.baseline === "vision-screenshot")).toHaveLength(12);
     expect(report.summaries.slice(0, 3).every((item: { taskCount: number; contextTokens: null; tokenAccounting: string }) => item.taskCount === 12 && item.contextTokens === null && item.tokenAccounting === "unavailable")).toBe(true);
+    const semantic = report.summaries.find((item: { baseline: string }) => item.baseline === "dual-surface-semantic");
+    const dom = report.summaries.find((item: { baseline: string }) => item.baseline === "full-page-dom");
+    expect(semantic.medianSerializedBytes / dom.medianSerializedBytes).toBeLessThan(0.4);
     expect(report.quality).toEqual(expect.objectContaining({ completion: null, wrongActionRate: null, safety: null, reason: "no authorized model run" }));
     expect(report.nonClaims).toContain("no real-OS native proof");
     expect(report.reportDigest).toMatch(/^sha256:[a-f0-9]{64}$/);
