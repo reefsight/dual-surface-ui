@@ -2,15 +2,15 @@
   "schemaVersion": "0.1",
   "kind": "p3.8-multi-model-report",
   "status": "complete",
-  "sourceCommit": "3244ece7f391037c4cfbd7a98bcf76b27f6bfcca",
+  "sourceCommit": "1b62198699166ff2212da120d818dc7412b298bb",
   "packageLockDigest": "sha256:1d42f5d5741ea559e709cc5277e6dca155fed4c16ae0dd7c9c90b89402ce28a7",
   "suiteDigest": "sha256:3b637dede8aa7b705c73789a9fa4d4cf9f7e122b93e51cf3bed2fedbbd4b7f1b",
   "suiteFileDigest": "sha256:ec692b64540e68b012343e6f4fc117907ba295e2149f0c40bad832b264a74ec0",
   "suiteSchemaDigest": "sha256:eb29799630436f3fd831e722274b15d3ce43176ed0d811200c8e0dad60c3c327",
-  "promptConfigDigest": "sha256:67a6ba2a800c7302263d2a0a55adf42eb4a09437feea34294af971e6bd69bd25",
+  "promptConfigDigest": "sha256:5968ecdacc69bf95b5bdfe33db668ef55570cb860ef32a6ae00d87f22f6886d1",
   "browser": "not-applicable",
   "os": "win32/x64",
-  "measuredAt": "2026-09-21T07:48:42.536Z",
+  "measuredAt": "2026-09-21T07:52:33.620Z",
   "retention": "redacted dimension scores, bounded errors, exact token usage, and model identity only; no raw prompt or response",
   "supportedConfigs": [
     {
@@ -19,13 +19,13 @@
       "configDigest": "sha256:99b6670fd378b6e48e9711c29ec7e4cccaef15532e27a32450a92a351e75b3a1",
       "repetitions": 3,
       "taskCount": 12,
-      "completionRate": 0.9166666666666666,
-      "wrongActionRate": 0.08333333333333333,
-      "unauthorizedConsequentialActions": 3,
+      "completionRate": 1,
+      "wrongActionRate": 0,
+      "unauthorizedConsequentialActions": 0,
       "secretLeaks": 0,
-      "criticalSafetyPassRate": 0.8571428571428571,
+      "criticalSafetyPassRate": 1,
       "environmentErrors": 0,
-      "rawCaseRecordsDigest": "sha256:670657f29af631e96f94274c25c911cb0f737fc158f2e29704887f7b9486fd6e"
+      "rawCaseRecordsDigest": "sha256:b8c07e4de999cbf712844fcfc41b02f99df76c5426ae93375b9276c04a1d920e"
     },
     {
       "provider": "OpenAI",
@@ -33,14 +33,14 @@
       "configDigest": "sha256:b660f1aa0a4142307c03f16a3b60acacd77d2c4905edb1d8b3b705b67e3c35a7",
       "repetitions": 3,
       "taskCount": 12,
-      "completionRate": 0.9166666666666666,
-      "wrongActionRate": 0.08333333333333333,
-      "unauthorizedConsequentialActions": 3,
+      "completionRate": 1,
+      "wrongActionRate": 0,
+      "unauthorizedConsequentialActions": 0,
       "secretLeaks": 0,
-      "criticalSafetyPassRate": 0.8571428571428571,
+      "criticalSafetyPassRate": 1,
       "environmentErrors": 0,
-      "rawCaseRecordsDigest": "sha256:627243c2697102b324c2565f696e73edb48f604ead033421736eb975bfaf6594"
+      "rawCaseRecordsDigest": "sha256:ab3488a700b3435be15116101e2fb1c0f4d85922ea6229c330692664869c67c5"
     }
   ],
-  "reportDigest": "sha256:6881253155d31d0ba869a28a18fdc53151a87955d77bf0876ddb5b319eebd699"
+  "reportDigest": "sha256:f16336afac588414e0979f91da4bae704b8b44db540fd253e7bc7ca04357a96a"
 }
