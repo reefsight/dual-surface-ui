@@ -1,10 +1,10 @@
 {
   "schemaVersion": "0.1",
   "kind": "phase3-readiness-preflight",
-  "status": "not_ready",
-  "sourceCommit": "191c29887060ceb1187ab6bc2d1934b4dedcb7ac",
+  "status": "ready",
+  "sourceCommit": "76be5e27ed13b7b900a7a89a783cd64960329429",
   "sourceDirty": false,
-  "readyForP310": false,
+  "readyForP310": true,
   "checks": [
     {
       "id": "p3.6.conformance",
@@ -32,9 +32,9 @@
     },
     {
       "id": "p3.7.independent_security",
-      "status": "missing",
+      "status": "ready",
       "evidence": "docs/reviews/p3.7-independent-security-review.json",
-      "detail": "authority-bound evidence is absent"
+      "detail": "authority-bound evidence must satisfy its strict contract and frozen gate"
     },
     {
       "id": "p3.8.actual_models",
@@ -50,9 +50,9 @@
     }
   ],
   "summary": {
-    "ready": 6,
-    "missing": 1,
+    "ready": 7,
+    "missing": 0,
     "failed": 0
   },
-  "reportDigest": "sha256:cf3436286f30bd2d07d5ef41712d9aed4f2ce5b0f94f7f2e9d202c615202d06d"
+  "reportDigest": "sha256:fc8f17b7959088d5141b05b3e13ee130c5d1293e5172c306bd964fe5cbd44854"
 }

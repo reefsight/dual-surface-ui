@@ -1,25 +1,25 @@
 # Phase 3 Exit-Audit Readiness Gaps
 
-Status: Preflight only — P3.10 has not started
+Status: Ready — P3.10 clean-checkout audit authorized by prerequisite gate
 
 Date: 2026-09-21
 
 P3.10 requires reviewed completion evidence for P3.1 through P3.9. The current
-repository is not yet eligible for the clean-checkout exit audit because the
-following authority-bound evidence is missing.
+repository is eligible for the clean-checkout exit audit because all local and
+authority-bound preflight checks are ready.
 
 The source-bound machine-readable preflight is
 [`docs/evidence/phase3-readiness-preflight-2026-09-21.json`](../evidence/phase3-readiness-preflight-2026-09-21.json).
-At commit `191c29887060ceb1187ab6bc2d1934b4dedcb7ac` it records six ready
-checks, one missing authority-bound check, and zero failed checks.
+At commit `76be5e27ed13b7b900a7a89a783cd64960329429` it records seven ready
+checks, zero missing checks, and zero failed checks.
 
 | Gate | Current evidence | Missing authority/evidence | Effect |
 |---|---|---|---|
-| P3.7 AC-10 | 23 adversarial cases pass; zero unauthorized mutations, unresolved critical/high automated findings, or sentinel matches | Independent security reviewer identity, reviewed commit, findings, and disposition | P3.7 cannot complete |
+| P3.7 AC-10 | 23 adversarial cases pass and the independent review records no unresolved critical/high finding | None | Ready |
 | P3.8 AC-05–AC-07 | Two supported Luna configurations pass all completion, wrong-action, safety, leak, and environment thresholds | None | Ready |
 | P3.9 AC-05–AC-07 | Comparable four-surface Luna benchmark passes quality, safety, exact-token, step, and vision gates | None | Ready |
 | P3.9 AC-12 | Canonical benchmark evidence validates as gate-ready | None | Ready |
-| P3.10 prerequisites | Six of seven preflight checks are ready and the 22-command fail-closed audit runner is prepared | Completed P3.7 independent review | Exit audit must not start |
+| P3.10 prerequisites | All seven preflight checks are ready and the 22-command fail-closed audit runner is prepared | None | Exit audit may start |
 
 ## Required authorization record for model runs
 
@@ -59,15 +59,14 @@ validator emits only bounded status metadata and never echoes evidence content.
 
 ## Independent security review record
 
-The security reviewer must be independent of the P3.7 implementation and
-record the reviewed source commit, corpus/matrix/report digests, scope,
-findings with severity, disposition, and whether any critical/high finding
-remains unresolved. Automated self-review cannot satisfy this gate.
+The canonical record identifies `Pitchayut586` as independent from the P3.7
+implementation and binds the reviewed source commit, corpus/matrix/report
+digests, findings, and zero-unresolved-critical/high disposition. The strict
+security evidence validator reports `gate_ready`.
 
-## Safe work that remains possible without new authority
+## Authorized next work
 
-Deterministic tests, package checks, documentation corrections, and the P3.10
-command orchestration are prepared. The actual provider evidence is now
-gate-ready, but none of these artifacts can substitute for the missing
-independent review. No Phase 3 approval or P4.1 authorization may be recorded
-from this preflight.
+The deterministic, browser, contract, package, dependency, and diff checks may
+now run through `npm run phase3:audit`. A passing P3.10 audit may prepare only a
+proposed Phase 3 Exit Review; Phase 3 approval and P4.1 authorization still
+require a separate explicit maintainer decision.
