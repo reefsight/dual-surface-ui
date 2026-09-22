@@ -128,6 +128,12 @@ not claim implementation or completion.
 
 ## Phase 4 — Native surfaces
 
+Execution status on 2026-09-22: Phase 4 execution through Exit Gate
+preparation is authorized under the original language decision gate. P4.1
+language-neutral protocol design is accepted; implementation evidence has not
+started. Rust is preferred by the maintainer but remains evidence-gated. See
+the [Phase 4 Execution Authorization](reviews/phase4-execution-authorization.md).
+
 ### Objective
 
 Reuse the proven contract for desktop applications without embedding platform

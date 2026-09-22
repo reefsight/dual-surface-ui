@@ -1,11 +1,12 @@
 # Dual Surface UI — Master Plan
 
-Status: **Phase 3 execution authorized through Exit Gate preparation**
+Status: **Phase 4 execution authorized; P4.1 protocol design accepted**
 
-Implementation status: Phase 2 was accepted by the repository maintainer on
-2026-09-19. P3.1 is implemented and verified. The maintainer authorized all
-remaining Phase 3 work through P3.10 Exit Gate preparation; Phase 4 remains
-subject to a separate explicit approval.
+Implementation status: Phases 1–3 are accepted. The maintainer authorized
+Phase 4 execution on 2026-09-22 under the original language decision gate.
+P4.1 must freeze a language-neutral protocol and portable evidence before any
+OS adapter begins. Rust is preferred but not selected before measurement. The
+Phase 4 Exit Gate remains a separate decision.
 
 Dual Surface UI is a standards-first compatibility and safety framework that
 turns existing applications into reliable agent interfaces without replacing
@@ -37,7 +38,7 @@ details, while keeping the visible human UI and its state authoritative.
 | 1 | Core contract | Stable schema, policy model, DOM reference adapter | Gate 0 accepted |
 | 2 | Web standards | WebMCP export and framework integrations | Phase 1 exit passed |
 | 3 | Ecosystem and reliability | MCP, Playwright fallback, CLI, evals, replay | Phase 2 exit passed |
-| 4 | Native surfaces | Windows first, then macOS; Rust only after decision gate | Phase 3 exit passed |
+| 4 | Native surfaces | Windows first, then macOS; Rust only after decision gate | Phase 3 exit passed and Phase 4 execution authorized |
 
 No phase may silently absorb unfinished work from a later phase. Experimental
 spikes are allowed only under `experiments/` and do not count as deliverables.
@@ -136,5 +137,7 @@ legacy and modern `2026-07-28` integration evidence, and bounded secret-safe
 serialization. Its final gate passes 27 files / 340 tests, preserves the frozen
 32/6/5 root contract, reports zero vulnerabilities, and passes isolated
 tarball-consumer checks. Independent security and SDK reviews found no
-unresolved critical/high issue. The maintainer subsequently authorized P3.2
-through P3.10 on 2026-09-19; P3.2 Playwright fallback design is next.
+unresolved critical/high issue. The maintainer subsequently completed and
+accepted Phase 3 on 2026-09-21. Phase 4 execution was authorized on 2026-09-22
+under the original evidence-based Rust decision gate. P4.1 language-neutral
+native-protocol design is accepted and implementation is next.

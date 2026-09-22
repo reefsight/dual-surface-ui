@@ -1,8 +1,8 @@
 # Dual Surface UI
 
-> Project status: P3.1 through P3.4 are verified and Phase 3 execution through Exit Gate
-> preparation is authorized. The public API is not stable, and Phase 4 remains
-> gated. Read the [master plan](PLAN.md) and
+> Project status: Phases 1–3 are accepted. Phase 4 execution is authorized and
+> P4.1 language-neutral native-protocol design is accepted. The public API is
+> not stable. Read the [master plan](PLAN.md) and
 > [documentation index](docs/README.md) before implementing or adopting it.
 
 Dual Surface UI keeps the interface humans see unchanged while exposing a

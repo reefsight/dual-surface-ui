@@ -20,7 +20,7 @@ an architectural change requires an ADR.
 Active work-item records live under `work-items/` and carry the traceability and
 evidence required by `AI_SDLC.md`.
 
-Phase 3 has started. P3.1 is implemented and verified under the accepted
+Phase 3 is accepted. Its implementation began under the accepted
 design in
 [P3.1 MCP exporter](work-items/P3.1-mcp-exporter.md) and
 [ADR 0007](adr/0007-mcp-exporter-boundary.md). The maintainer authorized all
@@ -61,7 +61,12 @@ The 22-command technical audit is recorded in the
 [P3.10 evidence](evidence/phase3-exit-audit-2026-09-21.md). The
 [Phase 3 Exit Review](reviews/phase3-exit-review.md) was accepted on
 2026-09-21. P4.1 was not authorized by that decision, so Phase 4 remains
-gated.
+gated by default. The maintainer subsequently authorized Phase 4 execution and
+retained the original Rust decision gate on 2026-09-22 in the
+[Phase 4 Execution Authorization](reviews/phase4-execution-authorization.md).
+P4.1 is governed by
+[the native-protocol work item](work-items/P4.1-native-protocol.md) and
+[ADR 0015](adr/0015-native-protocol-boundary.md).
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
 1, Phase 2, and Phase 3 are accepted. The Phase 2 decision is the
