@@ -130,8 +130,9 @@ not claim implementation or completion.
 
 Execution status on 2026-09-22: Phase 4 execution through Exit Gate
 preparation is authorized under the original language decision gate. P4.1
-language-neutral protocol design is accepted; implementation evidence has not
-started. Rust is preferred by the maintainer but remains evidence-gated. See
+language-neutral protocol design is accepted; its handshake implementation is
+verified and the remaining message families are in progress. Rust is preferred
+by the maintainer but remains evidence-gated. See
 the [Phase 4 Execution Authorization](reviews/phase4-execution-authorization.md).
 
 ### Objective

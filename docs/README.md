@@ -65,7 +65,8 @@ gated by default. The maintainer subsequently authorized Phase 4 execution and
 retained the original Rust decision gate on 2026-09-22 in the
 [Phase 4 Execution Authorization](reviews/phase4-execution-authorization.md).
 P4.1 is governed by
-[the native-protocol work item](work-items/P4.1-native-protocol.md) and
+[the native-protocol work item](work-items/P4.1-native-protocol.md),
+[the Native Protocol 0.1 specification](protocol/native-protocol-0.1.md), and
 [ADR 0015](adr/0015-native-protocol-boundary.md).
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
