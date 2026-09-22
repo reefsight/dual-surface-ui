@@ -7,6 +7,7 @@ import {
 import {
   NATIVE_PROTOCOL_CAPABILITIES,
   NATIVE_PROTOCOL_CLIENT_HELLO_SCHEMA,
+  NATIVE_PROTOCOL_ERROR_MESSAGES,
   NATIVE_PROTOCOL_LIMITS,
   NATIVE_PROTOCOL_SCHEMA_VERSION,
   NATIVE_PROTOCOL_VERSION,
@@ -45,11 +46,7 @@ const protocolError = (
   kind: "protocol-error",
   requestId,
   code,
-  message: code === "invalid_message"
-    ? "Invalid native protocol message"
-    : code === "no_compatible_version"
-      ? "No compatible native protocol version"
-      : "Required native protocol capability is unavailable",
+  message: NATIVE_PROTOCOL_ERROR_MESSAGES[code],
 });
 
 const reject = (

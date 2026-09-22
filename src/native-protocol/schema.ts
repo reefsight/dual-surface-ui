@@ -20,6 +20,12 @@ export const NATIVE_PROTOCOL_LIMITS = Object.freeze({
   actionsPerSurface: 128,
 } as const);
 
+export const NATIVE_PROTOCOL_ERROR_MESSAGES = Object.freeze({
+  invalid_message: "Invalid native protocol message",
+  missing_required_capability: "Required native protocol capability is unavailable",
+  no_compatible_version: "No compatible native protocol version",
+} as const);
+
 const OPAQUE_ID_PATTERN = "^[A-Za-z0-9._~-]{1,128}$";
 const CAPABILITY_SCHEMA = {
   type: "string",
@@ -114,11 +120,7 @@ const PROTOCOL_ERROR_SCHEMA = {
       ],
     },
     code: {
-      enum: [
-        "invalid_message",
-        "missing_required_capability",
-        "no_compatible_version",
-      ],
+      enum: Object.keys(NATIVE_PROTOCOL_ERROR_MESSAGES),
     },
     message: {
       type: "string",

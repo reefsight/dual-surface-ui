@@ -12,6 +12,7 @@ import {
   NATIVE_PROTOCOL_MESSAGE_SCHEMA,
   NATIVE_PROTOCOL_REQUEST_ERROR_MESSAGES,
   negotiateNativeProtocol,
+  parseNativeProtocolFrame,
   type NativeProtocolClientHello,
 } from "../src/native-protocol/index.js";
 import { AGENT_SNAPSHOT_DELTA_SCHEMA } from "../src/delta/schema.js";
@@ -526,5 +527,87 @@ describe("native protocol execution messages", () => {
       surfaceRef: "surface-1",
       revision: "leaked-revision",
     })).toThrow("Invalid native protocol execution message");
+  });
+});
+
+const encodeFrame = (value: unknown): Uint8Array =>
+  new TextEncoder().encode(JSON.stringify(value));
+
+describe("native protocol byte frames", () => {
+  it("parses a valid UTF-8 frame independently of key order", () => {
+    const message = parseNativeProtocolFrame(encodeFrame({
+      requiredCapabilities: ["snapshots"],
+      capabilities: ["snapshots"],
+      supportedVersions: ["0.1"],
+      requestId: "frame-1",
+      kind: "client-hello",
+      schemaVersion: "0.1",
+    }));
+    expect(message.kind).toBe("client-hello");
+    expect(Object.isFrozen(message)).toBe(true);
+  });
+
+  it.each([
+    '{"schemaVersion":"0.1","kind":"surface-list-request","kind":"surface-list-request","requestId":"r1","sessionRef":"s1"}',
+    '{"schemaVersion":"0.1","kind":"surface-list-request","\\u006bind":"surface-list-request","requestId":"r1","sessionRef":"s1"}',
+    '{"schemaVersion":"0.1","kind":"action-request","requestId":"r1","sessionRef":"s1","surfaceRef":"surface-1","revision":"1","elementId":"e1","action":"read","input":{"nested":1,"nested":2}}',
+  ])("rejects duplicate object keys before JSON.parse dispatch", (text) => {
+    expect(() => parseNativeProtocolFrame(new TextEncoder().encode(text))).toThrow(
+      "Invalid native protocol frame",
+    );
+  });
+
+  it.each([
+    { label: "trailing bytes", text: '{"schemaVersion":"0.1"} trailing' },
+    { label: "trailing comma", text: '{"schemaVersion":"0.1",}' },
+    { label: "comment", text: '{/*comment*/"schemaVersion":"0.1"}' },
+    { label: "truncation", text: '{"schemaVersion":"0.1"' },
+    { label: "non-finite number", text: '{"schemaVersion":"0.1","kind":"action-request","requestId":"r1","sessionRef":"s1","surfaceRef":"s1","revision":"1","elementId":"e1","action":"read","input":1e400}' },
+    { label: "unpaired surrogate", text: '{"schemaVersion":"0.1","kind":"action-request","requestId":"r1","sessionRef":"s1","surfaceRef":"s1","revision":"1","elementId":"e1","action":"read","input":"\\uD800"}' },
+  ])("rejects $label", ({ text }) => {
+    expect(() => parseNativeProtocolFrame(new TextEncoder().encode(text))).toThrow(
+      "Invalid native protocol frame",
+    );
+  });
+
+  it("rejects malformed UTF-8 and a UTF-8 byte-order mark", () => {
+    expect(() => parseNativeProtocolFrame(new Uint8Array([0xc3, 0x28]))).toThrow(
+      "Invalid native protocol frame",
+    );
+    const valid = encodeFrame({
+      schemaVersion: "0.1",
+      kind: "surface-list-request",
+      requestId: "r1",
+      sessionRef: "s1",
+    });
+    const bom = new Uint8Array(valid.length + 3);
+    bom.set([0xef, 0xbb, 0xbf]);
+    bom.set(valid, 3);
+    expect(() => parseNativeProtocolFrame(bom)).toThrow(
+      "Invalid native protocol frame",
+    );
+  });
+
+  it("rejects frames above the one MiB admission limit before parsing", () => {
+    expect(() => parseNativeProtocolFrame(
+      new Uint8Array(NATIVE_PROTOCOL_LIMITS.frameBytes + 1),
+    )).toThrow("Invalid native protocol frame");
+  });
+
+  it("rejects excessive nesting before schema dispatch", () => {
+    const nested = `${"[".repeat(66)}null${"]".repeat(66)}`;
+    expect(() => parseNativeProtocolFrame(new TextEncoder().encode(nested))).toThrow(
+      "Invalid native protocol frame",
+    );
+  });
+
+  it("rejects caller-controlled handshake error text", () => {
+    expect(() => parseNativeProtocolFrame(encodeFrame({
+      schemaVersion: "0.1",
+      kind: "protocol-error",
+      requestId: "r1",
+      code: "invalid_message",
+      message: "token=secret-sentinel",
+    }))).toThrow("Invalid native protocol frame");
   });
 });

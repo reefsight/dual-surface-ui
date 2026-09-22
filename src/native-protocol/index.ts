@@ -1,6 +1,7 @@
 export {
   NATIVE_PROTOCOL_CAPABILITIES,
   NATIVE_PROTOCOL_CLIENT_HELLO_SCHEMA,
+  NATIVE_PROTOCOL_ERROR_MESSAGES,
   NATIVE_PROTOCOL_HANDSHAKE_SCHEMA,
   NATIVE_PROTOCOL_LIMITS,
   NATIVE_PROTOCOL_SCHEMA_VERSION,
@@ -17,4 +18,6 @@ export {
 export { negotiateNativeProtocol } from "./negotiation.js";
 export { captureAndValidateNativeProtocolDataMessage } from "./data-validation.js";
 export { captureAndValidateNativeProtocolExecutionMessage } from "./execution-validation.js";
+export { captureAndValidateNativeProtocolMessage } from "./message-validation.js";
+export { parseNativeProtocolFrame } from "./frame.js";
 export type * from "./types.js";
