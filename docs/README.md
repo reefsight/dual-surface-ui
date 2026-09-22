@@ -81,6 +81,10 @@ P4.4's evidence-gated language selection is specified in the
 [native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
 Rust remains preferred, but no language is selected before comparable P4.3 evidence.
+P4.5 and P4.6 are planned in the
+[authenticated native host](work-items/P4.5-authenticated-native-host.md) and
+[macOS Accessibility adapter](work-items/P4.6-macos-accessibility-adapter.md)
+work items. Both remain gated on the earlier accepted evidence and decisions.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
 1, Phase 2, and Phase 3 are accepted. The Phase 2 decision is the

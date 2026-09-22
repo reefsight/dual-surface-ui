@@ -161,6 +161,11 @@ remains gated on accepted P4.2 real-fixture evidence.
 P4.4's frozen language-decision method is planned in
 [the native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
+P4.5's authenticated local host is planned in
+[the native host work item](work-items/P4.5-authenticated-native-host.md) and
+proposed [ADR 0019](adr/0019-authenticated-local-native-host.md). P4.6 macOS
+parity is planned in
+[the macOS Accessibility work item](work-items/P4.6-macos-accessibility-adapter.md).
 
 ### Exit gate
 
