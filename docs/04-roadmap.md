@@ -154,6 +154,13 @@ P4.2 fixture planning is complete in
 [the controlled Windows fixture work item](work-items/P4.2-native-fixture-application.md)
 and proposed [ADR 0016](adr/0016-native-fixture-application-boundary.md).
 Runtime implementation remains gated on P4.1 independent approval.
+P4.3 Windows adapter planning is complete in
+[the Windows UIA adapter work item](work-items/P4.3-windows-uia-adapter.md) and
+proposed [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md); runtime work
+remains gated on accepted P4.2 real-fixture evidence.
+P4.4's frozen language-decision method is planned in
+[the native language decision work item](work-items/P4.4-native-language-decision.md)
+and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
 
 ### Exit gate
 

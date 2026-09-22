@@ -73,6 +73,14 @@ P4.2 planning is recorded in the
 and proposed [ADR 0016](adr/0016-native-fixture-application-boundary.md).
 Implementation remains blocked until the P4.1 independent review is approved;
 the fixture technology does not select the future bridge language.
+P4.3 is specified in the
+[Windows UI Automation adapter work item](work-items/P4.3-windows-uia-adapter.md)
+and proposed [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md). Its
+implementation remains blocked on accepted real-fixture evidence from P4.2.
+P4.4's evidence-gated language selection is specified in the
+[native language decision work item](work-items/P4.4-native-language-decision.md)
+and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
+Rust remains preferred, but no language is selected before comparable P4.3 evidence.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
 1, Phase 2, and Phase 3 are accepted. The Phase 2 decision is the
