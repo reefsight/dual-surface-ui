@@ -166,6 +166,10 @@ P4.5's authenticated local host is planned in
 proposed [ADR 0019](adr/0019-authenticated-local-native-host.md). P4.6 macOS
 parity is planned in
 [the macOS Accessibility work item](work-items/P4.6-macos-accessibility-adapter.md).
+P4.7 consolidates real-host parity, security, performance, packaging, operations,
+and independent reviews in the
+[Phase 4 Exit Audit work item](work-items/P4.7-phase4-exit-audit.md); exit approval
+and any `0.4` release remain explicit later maintainer decisions.
 
 ### Exit gate
 

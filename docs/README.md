@@ -85,6 +85,9 @@ P4.5 and P4.6 are planned in the
 [authenticated native host](work-items/P4.5-authenticated-native-host.md) and
 [macOS Accessibility adapter](work-items/P4.6-macos-accessibility-adapter.md)
 work items. Both remain gated on the earlier accepted evidence and decisions.
+The final cross-platform verification and gate preparation are specified in
+[P4.7 Phase 4 Exit Audit](work-items/P4.7-phase4-exit-audit.md). It prepares the
+decision but cannot approve or release Phase 4 on the maintainer's behalf.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
 1, Phase 2, and Phase 3 are accepted. The Phase 2 decision is the
