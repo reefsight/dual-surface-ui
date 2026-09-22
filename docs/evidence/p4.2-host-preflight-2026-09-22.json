@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "p4.2-host-preflight",
+  "recordedAt": "2026-09-22",
+  "status": "planning_only",
+  "host": {
+    "operatingSystem": "Microsoft Windows 11 Pro",
+    "version": "10.0.26200",
+    "build": "26200",
+    "architecture": "64-bit",
+    "powerShell": "7.6.5",
+    "uiAutomationCorePresent": true
+  },
+  "toolchains": {
+    "dotnetSdk": [],
+    "windowsDesktopRuntimes": ["8.0.28", "9.0.17", "10.0.9"],
+    "rustcAvailable": false,
+    "cargoAvailable": false
+  },
+  "decision": {
+    "fixtureImplementationAuthorized": false,
+    "toolchainInstallationAuthorized": false,
+    "bridgeLanguageSelected": false
+  },
+  "limitations": [
+    "Environment presence is not real fixture or adapter evidence.",
+    "No SDK installation or native implementation was performed.",
+    "P4.1 independent review remains the P4.2 entry gate."
+  ]
+}

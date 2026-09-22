@@ -150,6 +150,11 @@ details in the core schema.
 5. Implement macOS Accessibility adapter after Windows conformance passes.
 6. Evaluate mobile separately; it is not implied by desktop completion.
 
+P4.2 fixture planning is complete in
+[the controlled Windows fixture work item](work-items/P4.2-native-fixture-application.md)
+and proposed [ADR 0016](adr/0016-native-fixture-application-boundary.md).
+Runtime implementation remains gated on P4.1 independent approval.
+
 ### Exit gate
 
 - Windows and macOS map equivalent controls/actions to the same core semantics.

@@ -68,6 +68,11 @@ P4.1 is governed by
 [the native-protocol work item](work-items/P4.1-native-protocol.md),
 [the Native Protocol 0.1 specification](protocol/native-protocol-0.1.md), and
 [ADR 0015](adr/0015-native-protocol-boundary.md).
+P4.2 planning is recorded in the
+[controlled Windows fixture work item](work-items/P4.2-native-fixture-application.md)
+and proposed [ADR 0016](adr/0016-native-fixture-application-boundary.md).
+Implementation remains blocked until the P4.1 independent review is approved;
+the fixture technology does not select the future bridge language.
 
 Phase exit decisions and their combined evidence live under `reviews/`. Phase
 1, Phase 2, and Phase 3 are accepted. The Phase 2 decision is the
