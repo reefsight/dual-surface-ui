@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "native-protocol-property-evidence",
+  "recordedAt": "2026-09-22",
+  "status": "passed",
+  "suite": {
+    "path": "test/native-protocol-properties.test.ts",
+    "tests": 6,
+    "result": "passed"
+  },
+  "properties": [
+    "all accepted messages survive four deterministic recursive key-order permutations",
+    "duplicate JSON keys rejected before permissive parser semantics can apply",
+    "caller-supplied principal, process, window, policy, confirmation, risk, and expected effects rejected",
+    "injection text remains inert data while caller-controlled stable error text is rejected",
+    "safe-integer and frame-allocation boundaries enforced",
+    "sensitive snapshot state cannot carry a secret value"
+  ],
+  "verification": {
+    "typecheck": "passed",
+    "fullGate": "58 files, 610 tests",
+    "dependencyAudit": "0 vulnerabilities",
+    "packageBoundary": "passed"
+  },
+  "limitations": [
+    "The mutations are deterministic and reproducible, not an unbounded fuzz campaign.",
+    "A second-language implementation has not yet executed the frozen corpora.",
+    "No OS adapter, transport, authentication, signing, or distribution evidence is claimed."
+  ]
+}
