@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/native/native-protocol-message-0.1.json",
+  "title": "Dual Surface UI Native Protocol Messages 0.1",
+  "oneOf": [
+    {
+      "$ref": "https://dual-surface-ui.dev/schema/native/native-protocol-handshake-0.1.json"
+    },
+    {
+      "$ref": "https://dual-surface-ui.dev/schema/native/native-protocol-data-0.1.json"
+    }
+  ]
+}

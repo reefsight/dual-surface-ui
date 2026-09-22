@@ -55,6 +55,78 @@ export type NativeProtocolHandshakeMessage =
   | NativeProtocolServerHello
   | NativeProtocolError;
 
+export interface NativeProtocolSurfaceEntry {
+  readonly surfaceRef: string;
+  readonly revision: string;
+  readonly title: string;
+  readonly application: string;
+  readonly capabilities: readonly NativeProtocolCapability[];
+  readonly actionCount: number;
+}
+
+export interface NativeProtocolSurfaceListRequest {
+  readonly schemaVersion: "0.1";
+  readonly kind: "surface-list-request";
+  readonly requestId: string;
+  readonly sessionRef: string;
+}
+
+export interface NativeProtocolSurfaceListResponse {
+  readonly schemaVersion: "0.1";
+  readonly kind: "surface-list-response";
+  readonly requestId: string;
+  readonly sessionRef: string;
+  readonly surfaces: readonly NativeProtocolSurfaceEntry[];
+}
+
+export interface NativeProtocolSnapshotRequest {
+  readonly schemaVersion: "0.1";
+  readonly kind: "snapshot-request";
+  readonly requestId: string;
+  readonly sessionRef: string;
+  readonly surfaceRef: string;
+}
+
+export interface NativeProtocolSnapshotResponse {
+  readonly schemaVersion: "0.1";
+  readonly kind: "snapshot-response";
+  readonly requestId: string;
+  readonly sessionRef: string;
+  readonly surfaceRef: string;
+  readonly snapshot: AgentSnapshot;
+}
+
+export interface NativeProtocolDeltaRequest {
+  readonly schemaVersion: "0.1";
+  readonly kind: "delta-request";
+  readonly requestId: string;
+  readonly sessionRef: string;
+  readonly surfaceRef: string;
+  readonly baseRevision: string;
+  readonly baseDigest: AgentSnapshotDeltaDigest;
+}
+
+export interface NativeProtocolDeltaResponse {
+  readonly schemaVersion: "0.1";
+  readonly kind: "delta-response";
+  readonly requestId: string;
+  readonly sessionRef: string;
+  readonly surfaceRef: string;
+  readonly delta: AgentSnapshotDelta;
+}
+
+export type NativeProtocolDataMessage =
+  | NativeProtocolSurfaceListRequest
+  | NativeProtocolSurfaceListResponse
+  | NativeProtocolSnapshotRequest
+  | NativeProtocolSnapshotResponse
+  | NativeProtocolDeltaRequest
+  | NativeProtocolDeltaResponse;
+
+export type NativeProtocolMessage =
+  | NativeProtocolHandshakeMessage
+  | NativeProtocolDataMessage;
+
 export interface NativeProtocolNegotiationOptions {
   readonly sessionRef: string;
   readonly capabilities: readonly NativeProtocolCapability[];
@@ -69,3 +141,5 @@ export type NativeProtocolNegotiationResult =
       readonly status: "rejected";
       readonly message: NativeProtocolError;
     };
+import type { AgentSnapshot } from "../types.js";
+import type { AgentSnapshotDelta, AgentSnapshotDeltaDigest } from "../delta/types.js";
