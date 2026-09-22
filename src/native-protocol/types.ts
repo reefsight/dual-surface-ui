@@ -205,7 +205,10 @@ interface NativeProtocolEventBase {
 
 export type NativeProtocolEvent =
   | (NativeProtocolEventBase & {
-      readonly event: "catalog-changed" | "session-invalidated";
+      readonly event: "catalog-changed";
+    })
+  | (NativeProtocolEventBase & {
+      readonly event: "session-invalidated";
     })
   | (NativeProtocolEventBase & {
       readonly event: "surface-changed";
@@ -229,6 +232,23 @@ export type NativeProtocolMessage =
   | NativeProtocolHandshakeMessage
   | NativeProtocolDataMessage
   | NativeProtocolExecutionMessage;
+
+export type NativeProtocolSessionPhase =
+  | "awaiting-client-hello"
+  | "awaiting-server-hello"
+  | "active"
+  | "closed";
+
+export interface NativeProtocolSessionState {
+  readonly phase: NativeProtocolSessionPhase;
+  readonly sessionRef: string | null;
+  readonly capabilities: readonly NativeProtocolCapability[];
+  readonly activeRequests: number;
+  readonly completedRequests: number;
+  readonly surfaces: number;
+  readonly lastEventSequence: number;
+  readonly catalogStale: boolean;
+}
 
 export interface NativeProtocolNegotiationOptions {
   readonly sessionRef: string;

@@ -21,4 +21,8 @@ export { captureAndValidateNativeProtocolDataMessage } from "./data-validation.j
 export { captureAndValidateNativeProtocolExecutionMessage } from "./execution-validation.js";
 export { captureAndValidateNativeProtocolMessage } from "./message-validation.js";
 export { parseNativeProtocolFrame } from "./frame.js";
+export {
+  NativeProtocolSessionError,
+  NativeProtocolSessionVerifier,
+} from "./session.js";
 export type * from "./types.js";

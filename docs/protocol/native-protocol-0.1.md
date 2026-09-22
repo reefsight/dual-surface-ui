@@ -51,6 +51,14 @@ revisions, confirmations, cancellation targets, and replay entries. References
 from a different or expired session return a fixed protocol error without
 revealing whether the referenced application still exists.
 
+The TypeScript reference projection exports `NativeProtocolSessionVerifier`.
+It verifies protocol transcripts; it does not authenticate a peer, authorize an
+action, execute an action, or select a transport. Any structural, correlation,
+capability, session, surface, revision, replay, resource, or event-sequence
+violation closes the current verifier session. A catalog-change event blocks new
+stateful requests until catalog refresh completes. An event-sequence gap requires
+reconnect and resynchronization.
+
 ## Session state machine
 
 ```text
@@ -72,6 +80,13 @@ unique active `requestId`. Reusing an active request ID is invalid. Reusing a
 completed request ID with identical replay-bound content follows the relevant
 idempotency rule; reusing it with different content returns
 `request_conflict`.
+
+The reference verifier permits completed-request replay only for an action
+request that carries an idempotency key. The replayed request must be canonically
+identical independent of object-key order, and its repeated response must match
+the recorded response exactly. The verifier tracks at most 128 active requests
+and 4,096 completed requests; exceeding either bound returns `resource_limit`
+and closes the session.
 
 ## Capability names
 

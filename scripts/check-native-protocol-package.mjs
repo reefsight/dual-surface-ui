@@ -71,7 +71,7 @@ try {
 
   const runtimeCheck = `
     import * as root from "dual-surface-ui";
-    import { captureAndValidateNativeProtocolDataMessage, captureAndValidateNativeProtocolExecutionMessage, negotiateNativeProtocol, parseNativeProtocolFrame } from "dual-surface-ui/native-protocol";
+    import { captureAndValidateNativeProtocolDataMessage, captureAndValidateNativeProtocolExecutionMessage, negotiateNativeProtocol, NativeProtocolSessionVerifier, parseNativeProtocolFrame } from "dual-surface-ui/native-protocol";
     if (Object.keys(root).length !== 32) throw new Error("frozen root export count changed");
     const result = negotiateNativeProtocol({schemaVersion:"0.1",kind:"client-hello",requestId:"r1",supportedVersions:["0.1"],capabilities:["snapshots","surface-catalog"],requiredCapabilities:["surface-catalog"]},{sessionRef:"s1",capabilities:["surface-catalog","snapshots"]});
     if (result.status !== "accepted" || result.message.sessionRef !== "s1") throw new Error("native protocol negotiation failed");
@@ -81,14 +81,18 @@ try {
     if (execution.kind !== "cancel-request") throw new Error("native protocol execution validation failed");
     const frame = parseNativeProtocolFrame(new TextEncoder().encode(JSON.stringify({schemaVersion:"0.1",kind:"surface-list-request",requestId:"r4",sessionRef:"s1"})));
     if (frame.kind !== "surface-list-request") throw new Error("native protocol frame parsing failed");
+    const verifier = new NativeProtocolSessionVerifier();
+    verifier.accept({schemaVersion:"0.1",kind:"client-hello",requestId:"h1",supportedVersions:["0.1"],capabilities:[],requiredCapabilities:[]});
+    verifier.accept({schemaVersion:"0.1",kind:"server-hello",requestId:"h1",sessionRef:"session-package",protocolVersion:"0.1",capabilities:[],limits:{frameBytes:1048576,snapshotBytes:1048576,deltaBytes:524288,actionResultBytes:262144,errorMessageCharacters:500,surfaces:128,actionsPerSurface:128}});
+    if (verifier.state.phase !== "active") throw new Error("native protocol session verifier failed");
   `;
   run(nodeCommand, ["--input-type=module", "-e", runtimeCheck], consumer);
 
   await writeFile(
     join(consumer, "index.ts"),
-    `import { captureAndValidateNativeProtocolDataMessage, captureAndValidateNativeProtocolExecutionMessage, negotiateNativeProtocol, parseNativeProtocolFrame, type NativeProtocolClientHello } from "dual-surface-ui/native-protocol";\n` +
+    `import { captureAndValidateNativeProtocolDataMessage, captureAndValidateNativeProtocolExecutionMessage, negotiateNativeProtocol, NativeProtocolSessionVerifier, parseNativeProtocolFrame, type NativeProtocolClientHello } from "dual-surface-ui/native-protocol";\n` +
       `const hello: NativeProtocolClientHello = {schemaVersion:"0.1",kind:"client-hello",requestId:"r1",supportedVersions:["0.1"],capabilities:[],requiredCapabilities:[]};\n` +
-      `void captureAndValidateNativeProtocolDataMessage; void captureAndValidateNativeProtocolExecutionMessage; void negotiateNativeProtocol; void parseNativeProtocolFrame; void hello;\n`,
+      `void captureAndValidateNativeProtocolDataMessage; void captureAndValidateNativeProtocolExecutionMessage; void negotiateNativeProtocol; void NativeProtocolSessionVerifier; void parseNativeProtocolFrame; void hello;\n`,
   );
   await writeFile(
     join(consumer, "tsconfig.json"),

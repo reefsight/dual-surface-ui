@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "native-protocol-session-verifier-evidence",
+  "recordedAt": "2026-09-22",
+  "status": "passed",
+  "focusedSuite": {
+    "file": "test/native-protocol-session.test.ts",
+    "tests": 13,
+    "result": "passed"
+  },
+  "coverage": [
+    "handshake order and capability escalation",
+    "capability-family gating",
+    "session and surface binding",
+    "request and response correlation",
+    "authoritative revision transitions",
+    "delta base revision and digest correlation",
+    "same-session cancellation targets",
+    "contiguous event sequence and invalidation",
+    "catalog-change stale-state blocking",
+    "identical keyed replay and changed-response conflict",
+    "active-request resource limit"
+  ],
+  "verification": {
+    "typecheck": "passed",
+    "fullGate": "56 files, 603 tests",
+    "conformance": "2 files, 12 tests",
+    "contract": "32 runtime exports, 6 declaration files, 5 core schemas",
+    "dependencyAudit": "0 vulnerabilities",
+    "packageBoundary": "passed"
+  },
+  "limitations": [
+    "The verifier receives already authenticated protocol transcripts and is not an authenticator.",
+    "No OS adapter, transport, daemon, permission, signing, or distribution evidence is claimed.",
+    "Portable session transcript fixtures and second-language execution remain open."
+  ]
+}
