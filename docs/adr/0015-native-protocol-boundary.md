@@ -121,4 +121,3 @@ budgets may be accepted later without changing semantic meaning.
 - [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12)
 - [RFC 8259 — The JavaScript Object Notation Data Interchange Format](https://www.rfc-editor.org/rfc/rfc8259)
 - [RFC 8785 — JSON Canonicalization Scheme](https://www.rfc-editor.org/rfc/rfc8785)
-

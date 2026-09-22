@@ -50,4 +50,3 @@ handle, or serializer default may become the public protocol contract.
 - Unit or mock tests are not native proof. Windows and macOS claims require
   real OS accessibility APIs, permission behavior, authoritative fixture state,
   and recorded OS/API versions.
-
