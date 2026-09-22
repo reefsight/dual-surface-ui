@@ -1,5 +1,6 @@
 import { AGENT_SNAPSHOT_DELTA_SCHEMA } from "../delta/schema.js";
 import { AGENT_SNAPSHOT_SCHEMA } from "../schema.js";
+import { NATIVE_PROTOCOL_EXECUTION_SCHEMA } from "./execution-schema.js";
 import {
   NATIVE_PROTOCOL_CAPABILITIES,
   NATIVE_PROTOCOL_HANDSHAKE_SCHEMA,
@@ -128,5 +129,6 @@ export const NATIVE_PROTOCOL_MESSAGE_SCHEMA = {
   oneOf: [
     { $ref: NATIVE_PROTOCOL_HANDSHAKE_SCHEMA.$id },
     { $ref: NATIVE_PROTOCOL_DATA_SCHEMA.$id },
+    { $ref: NATIVE_PROTOCOL_EXECUTION_SCHEMA.$id },
   ],
 } as const;

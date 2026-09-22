@@ -106,6 +106,12 @@ when the request ID itself was not structurally valid. It never contains a
 session reference, catalog, platform error, exception, stack, or untrusted
 message text.
 
+After negotiation, protocol-level failures use `request-error`, which contains
+the validated `requestId`, bound `sessionRef`, stable error `code`, and the
+exact package-owned message for that code. It never carries a raw exception,
+platform code, accessibility object, or caller-controlled message. Core action
+failures remain inside `action-response` outcomes.
+
 ### Surface catalog
 
 `surface-list-request` contains `requestId` and `sessionRef` only.

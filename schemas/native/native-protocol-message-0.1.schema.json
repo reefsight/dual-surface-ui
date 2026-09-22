@@ -8,6 +8,9 @@
     },
     {
       "$ref": "https://dual-surface-ui.dev/schema/native/native-protocol-data-0.1.json"
+    },
+    {
+      "$ref": "https://dual-surface-ui.dev/schema/native/native-protocol-execution-0.1.json"
     }
   ]
 }

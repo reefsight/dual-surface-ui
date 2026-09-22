@@ -10,6 +10,11 @@ export {
   NATIVE_PROTOCOL_DATA_SCHEMA,
   NATIVE_PROTOCOL_MESSAGE_SCHEMA,
 } from "./data-schema.js";
+export {
+  NATIVE_PROTOCOL_EXECUTION_SCHEMA,
+  NATIVE_PROTOCOL_REQUEST_ERROR_MESSAGES,
+} from "./execution-schema.js";
 export { negotiateNativeProtocol } from "./negotiation.js";
 export { captureAndValidateNativeProtocolDataMessage } from "./data-validation.js";
+export { captureAndValidateNativeProtocolExecutionMessage } from "./execution-validation.js";
 export type * from "./types.js";

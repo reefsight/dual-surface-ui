@@ -1,3 +1,10 @@
+import type { AgentSnapshotDelta, AgentSnapshotDeltaDigest } from "../delta/types.js";
+import type {
+  AgentActionOutcome,
+  AgentJsonValue,
+  AgentSnapshot,
+} from "../types.js";
+
 export type NativeProtocolVersion = "0.1";
 
 export type NativeProtocolCapability =
@@ -123,9 +130,105 @@ export type NativeProtocolDataMessage =
   | NativeProtocolDeltaRequest
   | NativeProtocolDeltaResponse;
 
+export interface NativeProtocolActionRequest {
+  readonly schemaVersion: "0.1";
+  readonly kind: "action-request";
+  readonly requestId: string;
+  readonly sessionRef: string;
+  readonly surfaceRef: string;
+  readonly revision: string;
+  readonly elementId: string;
+  readonly action: string;
+  readonly input?: AgentJsonValue;
+  readonly idempotencyKey?: string;
+}
+
+export interface NativeProtocolActionResponse {
+  readonly schemaVersion: "0.1";
+  readonly kind: "action-response";
+  readonly requestId: string;
+  readonly sessionRef: string;
+  readonly surfaceRef: string;
+  readonly outcome: AgentActionOutcome;
+}
+
+export interface NativeProtocolCancelRequest {
+  readonly schemaVersion: "0.1";
+  readonly kind: "cancel-request";
+  readonly requestId: string;
+  readonly sessionRef: string;
+  readonly targetRequestId: string;
+}
+
+export type NativeProtocolCancellationDisposition =
+  | "accepted"
+  | "already-completed"
+  | "not-cancellable";
+
+export interface NativeProtocolCancelResponse {
+  readonly schemaVersion: "0.1";
+  readonly kind: "cancel-response";
+  readonly requestId: string;
+  readonly sessionRef: string;
+  readonly targetRequestId: string;
+  readonly disposition: NativeProtocolCancellationDisposition;
+}
+
+export type NativeProtocolRequestErrorCode =
+  | "capability_not_negotiated"
+  | "internal_error"
+  | "invalid_message"
+  | "invalid_session"
+  | "permission_denied"
+  | "request_cancelled"
+  | "request_conflict"
+  | "resource_limit"
+  | "resync_required"
+  | "stale_revision"
+  | "surface_unavailable";
+
+export interface NativeProtocolRequestError {
+  readonly schemaVersion: "0.1";
+  readonly kind: "request-error";
+  readonly requestId: string;
+  readonly sessionRef: string;
+  readonly code: NativeProtocolRequestErrorCode;
+  readonly message: string;
+}
+
+interface NativeProtocolEventBase {
+  readonly schemaVersion: "0.1";
+  readonly kind: "event";
+  readonly sessionRef: string;
+  readonly sequence: number;
+}
+
+export type NativeProtocolEvent =
+  | (NativeProtocolEventBase & {
+      readonly event: "catalog-changed" | "session-invalidated";
+    })
+  | (NativeProtocolEventBase & {
+      readonly event: "surface-changed";
+      readonly surfaceRef: string;
+      readonly revision: string;
+    })
+  | (NativeProtocolEventBase & {
+      readonly event: "surface-closed";
+      readonly surfaceRef: string;
+    });
+
+export type NativeProtocolExecutionMessage =
+  | NativeProtocolActionRequest
+  | NativeProtocolActionResponse
+  | NativeProtocolCancelRequest
+  | NativeProtocolCancelResponse
+  | NativeProtocolRequestError
+  | NativeProtocolEvent;
+
 export type NativeProtocolMessage =
   | NativeProtocolHandshakeMessage
-  | NativeProtocolDataMessage;
+  | NativeProtocolDataMessage
+  | NativeProtocolExecutionMessage;
 
 export interface NativeProtocolNegotiationOptions {
   readonly sessionRef: string;
@@ -141,5 +244,3 @@ export type NativeProtocolNegotiationResult =
       readonly status: "rejected";
       readonly message: NativeProtocolError;
     };
-import type { AgentSnapshot } from "../types.js";
-import type { AgentSnapshotDelta, AgentSnapshotDeltaDigest } from "../delta/types.js";

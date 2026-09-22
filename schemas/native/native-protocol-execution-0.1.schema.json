@@ -1,0 +1,359 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/native/native-protocol-execution-0.1.json",
+  "title": "Dual Surface UI Native Protocol Execution Messages 0.1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "requestId",
+        "sessionRef",
+        "surfaceRef",
+        "revision",
+        "elementId",
+        "action"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "action-request"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "sessionRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "surfaceRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "elementId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "action": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "input": {},
+        "idempotencyKey": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "requestId",
+        "sessionRef",
+        "surfaceRef",
+        "outcome"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "action-response"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "sessionRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "surfaceRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "outcome": {
+          "oneOf": [
+            {
+              "$ref": "https://dual-surface-ui.dev/schema/agent-action-result-0.1.json"
+            },
+            {
+              "$ref": "https://dual-surface-ui.dev/schema/agent-action-failure-0.1.json"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "requestId",
+        "sessionRef",
+        "targetRequestId"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "cancel-request"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "sessionRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "targetRequestId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "requestId",
+        "sessionRef",
+        "targetRequestId",
+        "disposition"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "cancel-response"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "sessionRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "targetRequestId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "disposition": {
+          "enum": [
+            "accepted",
+            "already-completed",
+            "not-cancellable"
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "requestId",
+        "sessionRef",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "request-error"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "sessionRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "code": {
+          "enum": [
+            "capability_not_negotiated",
+            "internal_error",
+            "invalid_message",
+            "invalid_session",
+            "permission_denied",
+            "request_cancelled",
+            "request_conflict",
+            "resource_limit",
+            "resync_required",
+            "stale_revision",
+            "surface_unavailable"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "sessionRef",
+        "sequence",
+        "event"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "event"
+        },
+        "sessionRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "event": {
+          "const": "catalog-changed"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "sessionRef",
+        "sequence",
+        "event",
+        "surfaceRef",
+        "revision"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "event"
+        },
+        "sessionRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "event": {
+          "const": "surface-changed"
+        },
+        "surfaceRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "sessionRef",
+        "sequence",
+        "event",
+        "surfaceRef"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "event"
+        },
+        "sessionRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "event": {
+          "const": "surface-closed"
+        },
+        "surfaceRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "sessionRef",
+        "sequence",
+        "event"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "event"
+        },
+        "sessionRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "event": {
+          "const": "session-invalidated"
+        }
+      }
+    }
+  ]
+}

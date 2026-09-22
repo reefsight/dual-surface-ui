@@ -4,15 +4,22 @@ import { describe, expect, it } from "vitest";
 
 import {
   captureAndValidateNativeProtocolDataMessage,
+  captureAndValidateNativeProtocolExecutionMessage,
   NATIVE_PROTOCOL_DATA_SCHEMA,
+  NATIVE_PROTOCOL_EXECUTION_SCHEMA,
   NATIVE_PROTOCOL_HANDSHAKE_SCHEMA,
   NATIVE_PROTOCOL_LIMITS,
   NATIVE_PROTOCOL_MESSAGE_SCHEMA,
+  NATIVE_PROTOCOL_REQUEST_ERROR_MESSAGES,
   negotiateNativeProtocol,
   type NativeProtocolClientHello,
 } from "../src/native-protocol/index.js";
 import { AGENT_SNAPSHOT_DELTA_SCHEMA } from "../src/delta/schema.js";
-import { AGENT_SNAPSHOT_SCHEMA } from "../src/schema.js";
+import {
+  AGENT_ACTION_FAILURE_SCHEMA,
+  AGENT_ACTION_RESULT_SCHEMA,
+  AGENT_SNAPSHOT_SCHEMA,
+} from "../src/schema.js";
 
 const hello = (
   overrides: Partial<NativeProtocolClientHello> = {},
@@ -362,11 +369,162 @@ describe("native protocol catalog and state messages", () => {
     addFormatsModule(validator);
     validator.addSchema(AGENT_SNAPSHOT_SCHEMA);
     validator.addSchema(AGENT_SNAPSHOT_DELTA_SCHEMA);
+    validator.addSchema(AGENT_ACTION_RESULT_SCHEMA);
+    validator.addSchema(AGENT_ACTION_FAILURE_SCHEMA);
     validator.addSchema(NATIVE_PROTOCOL_HANDSHAKE_SCHEMA);
     validator.addSchema(NATIVE_PROTOCOL_DATA_SCHEMA);
+    validator.addSchema(NATIVE_PROTOCOL_EXECUTION_SCHEMA);
     validator.addSchema(NATIVE_PROTOCOL_MESSAGE_SCHEMA);
     expect(validator.getSchema(NATIVE_PROTOCOL_MESSAGE_SCHEMA.$id)).toBeTypeOf(
       "function",
     );
+  });
+});
+
+describe("native protocol execution messages", () => {
+  it("captures a JSON-only action request and deeply freezes it", () => {
+    const result = captureAndValidateNativeProtocolExecutionMessage({
+      schemaVersion: "0.1",
+      kind: "action-request",
+      requestId: "request-action-1",
+      sessionRef: "session-1",
+      surfaceRef: "surface-1",
+      revision: "revision-1",
+      elementId: "button-1",
+      action: "click",
+      input: { confirmed: true },
+      idempotencyKey: "idem-1",
+    });
+    expect(result.kind).toBe("action-request");
+    expect(Object.isFrozen(result)).toBe(true);
+    expect(Object.isFrozen(result.kind === "action-request" && result.input)).toBe(true);
+  });
+
+  it.each([
+    { risk: "destructive" },
+    { processId: 42 },
+    { principal: { id: "attacker" } },
+    { confirmation: true },
+  ])("rejects caller-supplied authority fields", (extra) => {
+    expect(() => captureAndValidateNativeProtocolExecutionMessage({
+      schemaVersion: "0.1",
+      kind: "action-request",
+      requestId: "request-action-2",
+      sessionRef: "session-1",
+      surfaceRef: "surface-1",
+      revision: "revision-1",
+      elementId: "button-1",
+      action: "click",
+      ...extra,
+    })).toThrow("Invalid native protocol execution message");
+  });
+
+  it("validates a successful core outcome against its surface binding", () => {
+    const envelope = {
+      schemaVersion: "0.1",
+      kind: "action-response",
+      requestId: "request-action-3",
+      sessionRef: "session-1",
+      surfaceRef: "surface-1",
+      outcome: {
+        schemaVersion: "0.1",
+        surfaceId: "surface-1",
+        previousRevision: "revision-1",
+        revision: "revision-2",
+        status: "succeeded",
+        action: "click",
+        targetId: "button-1",
+        targetPresent: true,
+        node: node(),
+        output: { saved: true },
+      },
+    };
+    expect(captureAndValidateNativeProtocolExecutionMessage(envelope).kind).toBe(
+      "action-response",
+    );
+    expect(() => captureAndValidateNativeProtocolExecutionMessage({
+      ...envelope,
+      surfaceRef: "surface-other",
+    })).toThrow("Invalid native protocol execution message");
+  });
+
+  it("enforces the 256 KiB action-result budget", () => {
+    expect(() => captureAndValidateNativeProtocolExecutionMessage({
+      schemaVersion: "0.1",
+      kind: "action-response",
+      requestId: "request-action-large",
+      sessionRef: "session-1",
+      surfaceRef: "surface-1",
+      outcome: {
+        schemaVersion: "0.1",
+        surfaceId: "surface-1",
+        previousRevision: "revision-1",
+        revision: "revision-2",
+        status: "succeeded",
+        action: "read",
+        targetId: "output-1",
+        targetPresent: false,
+        output: Array.from({ length: 34 }, () => "x".repeat(8_000)),
+      },
+    })).toThrow("Invalid native protocol execution message");
+  });
+
+  it("accepts fixed cancellation dispositions without cross-session fields", () => {
+    expect(captureAndValidateNativeProtocolExecutionMessage({
+      schemaVersion: "0.1",
+      kind: "cancel-response",
+      requestId: "request-cancel-1",
+      sessionRef: "session-1",
+      targetRequestId: "request-action-3",
+      disposition: "already-completed",
+    }).kind).toBe("cancel-response");
+  });
+
+  it("requires package-owned request error messages", () => {
+    const valid = {
+      schemaVersion: "0.1",
+      kind: "request-error",
+      requestId: "request-error-1",
+      sessionRef: "session-1",
+      code: "permission_denied",
+      message: NATIVE_PROTOCOL_REQUEST_ERROR_MESSAGES.permission_denied,
+    };
+    expect(captureAndValidateNativeProtocolExecutionMessage(valid).kind).toBe(
+      "request-error",
+    );
+    expect(() => captureAndValidateNativeProtocolExecutionMessage({
+      ...valid,
+      message: "OS error: token=secret-sentinel",
+    })).toThrow("Invalid native protocol execution message");
+  });
+
+  it("enforces event-specific fields and safe integer sequences", () => {
+    expect(captureAndValidateNativeProtocolExecutionMessage({
+      schemaVersion: "0.1",
+      kind: "event",
+      sessionRef: "session-1",
+      sequence: 1,
+      event: "surface-changed",
+      surfaceRef: "surface-1",
+      revision: "revision-2",
+    }).kind).toBe("event");
+    expect(() => captureAndValidateNativeProtocolExecutionMessage({
+      schemaVersion: "0.1",
+      kind: "event",
+      sessionRef: "session-1",
+      sequence: Number.MAX_SAFE_INTEGER + 1,
+      event: "surface-changed",
+      surfaceRef: "surface-1",
+      revision: "revision-2",
+    })).toThrow("Invalid native protocol execution message");
+    expect(() => captureAndValidateNativeProtocolExecutionMessage({
+      schemaVersion: "0.1",
+      kind: "event",
+      sessionRef: "session-1",
+      sequence: 2,
+      event: "surface-closed",
+      surfaceRef: "surface-1",
+      revision: "leaked-revision",
+    })).toThrow("Invalid native protocol execution message");
   });
 });
