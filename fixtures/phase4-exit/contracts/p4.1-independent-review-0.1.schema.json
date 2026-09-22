@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/phase4/p4.1-independent-review-0.1.json",
+  "title": "P4.1 Independent Protocol Review 0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "status",
+    "reviewedCommit",
+    "messageCorpusDigest",
+    "sessionCorpusDigest",
+    "reviewer",
+    "scopes",
+    "findings",
+    "unresolvedCriticalHigh",
+    "disposition"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "0.1" },
+    "kind": { "const": "p4.1-independent-protocol-review" },
+    "status": { "enum": ["approved", "changes_required"] },
+    "reviewedCommit": { "const": "033738e3c265d5b615630b6f9bee78c7fc897806" },
+    "messageCorpusDigest": { "const": "sha256:1e783a3be9098efc776ce8771e1ce9d44bf5c89eff9913e472fc686c5fa7b241" },
+    "sessionCorpusDigest": { "const": "sha256:9be355e4276a9d0249927693144f084b0fb52316cb92f3ba5f08440762e72692" },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "independent"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$" },
+        "independent": { "type": "boolean" }
+      }
+    },
+    "scopes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol", "security", "interoperability", "package"],
+      "properties": {
+        "protocol": { "enum": ["approved", "changes_required"] },
+        "security": { "enum": ["approved", "changes_required"] },
+        "interoperability": { "enum": ["approved", "changes_required"] },
+        "package": { "enum": ["approved", "changes_required"] }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "status", "summary"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$" },
+          "severity": { "enum": ["critical", "high", "medium", "low"] },
+          "status": { "enum": ["resolved", "accepted", "open"] },
+          "summary": { "type": "string", "minLength": 1, "maxLength": 1000 },
+          "resolution": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        }
+      }
+    },
+    "unresolvedCriticalHigh": { "type": "integer", "minimum": 0, "maximum": 256 },
+    "disposition": { "enum": ["no_unresolved_critical_high", "blocked"] }
+  }
+}

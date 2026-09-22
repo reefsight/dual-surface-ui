@@ -124,6 +124,7 @@
     "phase3:audit": "node scripts/run-phase3-exit-audit.mjs",
     "phase3:contracts": "node scripts/generate-phase3-gate-contracts.mjs",
     "phase3:evidence:validate": "node scripts/validate-phase3-evidence.mjs",
+    "phase4:p4.1-review:validate": "node scripts/validate-p4.1-review.mjs",
     "test:browser": "playwright test",
     "test:browser:chromium": "playwright test --project=chromium",
     "test:browser:native": "playwright test --config playwright.native.config.ts",
