@@ -48,9 +48,9 @@ describe("native protocol portable session fixture corpus", () => {
       }
     }
 
-    expect({ accepted, rejected, total: corpus.cases.length }).toEqual({ accepted: 7, rejected: 12, total: 19 });
+    expect({ accepted, rejected, total: corpus.cases.length }).toEqual({ accepted: 8, rejected: 14, total: 22 });
     expect(`sha256:${createHash("sha256").update(source).digest("hex")}`).toBe(
-      "sha256:97cae0d18be73d51f2a8404a02f0aa554771da334f8b67be5137b015e2a38753",
+      "sha256:9be355e4276a9d0249927693144f084b0fb52316cb92f3ba5f08440762e72692",
     );
   });
 });

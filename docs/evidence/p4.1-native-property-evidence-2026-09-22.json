@@ -18,7 +18,7 @@
   ],
   "verification": {
     "typecheck": "passed",
-    "fullGate": "58 files, 610 tests",
+    "fullGate": "58 files, 612 tests",
     "dependencyAudit": "0 vulnerabilities",
     "packageBoundary": "passed"
   },

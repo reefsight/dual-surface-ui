@@ -269,6 +269,44 @@ describe("native protocol session verifier", () => {
     expectSessionError(() => verifier.accept(actionRequest()), "resync_required");
   });
 
+  it("rejects catalog refresh while an older stateful request remains active", () => {
+    const verifier = activate();
+    catalog(verifier);
+    verifier.accept(actionRequest());
+    verifier.accept({
+      schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1, event: "catalog-changed",
+    });
+    verifier.accept({ schemaVersion: "0.1", kind: "surface-list-request", requestId: "list-2", sessionRef: "session-1" });
+    expectSessionError(() => verifier.accept({
+      schemaVersion: "0.1",
+      kind: "surface-list-response",
+      requestId: "list-2",
+      sessionRef: "session-1",
+      surfaces: [],
+    }), "resync_required");
+  });
+
+  it("correlates event revisions with an in-flight action response", () => {
+    const accepted = activate();
+    catalog(accepted);
+    accepted.accept(actionRequest());
+    accepted.accept({
+      schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1,
+      event: "surface-changed", surfaceRef: "surface-1", revision: "revision-2",
+    });
+    accepted.accept(actionResponse());
+    expect(accepted.state).toMatchObject({ phase: "active", completedRequests: 2 });
+
+    const rejected = activate();
+    catalog(rejected);
+    rejected.accept(actionRequest());
+    rejected.accept({
+      schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1,
+      event: "surface-changed", surfaceRef: "surface-1", revision: "revision-other",
+    });
+    expectSessionError(() => rejected.accept(actionResponse()), "resync_required");
+  });
+
   it("permits only identical keyed replay with the recorded response", () => {
     const verifier = activate();
     catalog(verifier);

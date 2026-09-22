@@ -462,6 +462,148 @@
       }
     },
     {
+      "id": "accept-event-correlated-action",
+      "messages": [
+        {
+          "schemaVersion": "0.1",
+          "kind": "client-hello",
+          "requestId": "hello-1",
+          "supportedVersions": [
+            "0.1"
+          ],
+          "capabilities": [
+            "actions",
+            "cancellation",
+            "deltas",
+            "events",
+            "snapshots",
+            "surface-catalog"
+          ],
+          "requiredCapabilities": [
+            "actions",
+            "cancellation",
+            "deltas",
+            "events",
+            "snapshots",
+            "surface-catalog"
+          ]
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "server-hello",
+          "requestId": "hello-1",
+          "sessionRef": "session-1",
+          "protocolVersion": "0.1",
+          "capabilities": [
+            "actions",
+            "cancellation",
+            "deltas",
+            "events",
+            "snapshots",
+            "surface-catalog"
+          ],
+          "limits": {
+            "frameBytes": 1048576,
+            "snapshotBytes": 1048576,
+            "deltaBytes": 524288,
+            "actionResultBytes": 262144,
+            "errorMessageCharacters": 500,
+            "surfaces": 128,
+            "actionsPerSurface": 128
+          }
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "surface-list-request",
+          "requestId": "list-1",
+          "sessionRef": "session-1"
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "surface-list-response",
+          "requestId": "list-1",
+          "sessionRef": "session-1",
+          "surfaces": [
+            {
+              "surfaceRef": "surface-1",
+              "revision": "revision-1",
+              "title": "Fixture",
+              "application": "Fixture App",
+              "capabilities": [
+                "actions",
+                "deltas",
+                "snapshots"
+              ],
+              "actionCount": 1
+            }
+          ]
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "action-request",
+          "requestId": "action-1",
+          "sessionRef": "session-1",
+          "surfaceRef": "surface-1",
+          "revision": "revision-1",
+          "elementId": "button-1",
+          "action": "click",
+          "input": {
+            "confirmed": true
+          },
+          "idempotencyKey": "idem-1"
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "event",
+          "sessionRef": "session-1",
+          "sequence": 1,
+          "event": "surface-changed",
+          "surfaceRef": "surface-1",
+          "revision": "revision-2"
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "action-response",
+          "requestId": "action-1",
+          "sessionRef": "session-1",
+          "surfaceRef": "surface-1",
+          "outcome": {
+            "schemaVersion": "0.1",
+            "surfaceId": "surface-1",
+            "previousRevision": "revision-1",
+            "revision": "revision-2",
+            "status": "succeeded",
+            "action": "click",
+            "targetId": "button-1",
+            "targetPresent": false,
+            "output": {
+              "saved": true
+            }
+          }
+        }
+      ],
+      "expected": {
+        "status": "accepted",
+        "state": {
+          "phase": "active",
+          "sessionRef": "session-1",
+          "capabilities": [
+            "actions",
+            "cancellation",
+            "deltas",
+            "events",
+            "snapshots",
+            "surface-catalog"
+          ],
+          "activeRequests": 0,
+          "completedRequests": 2,
+          "surfaces": 1,
+          "lastEventSequence": 1,
+          "catalogStale": false
+        }
+      }
+    },
+    {
       "id": "accept-event-invalidation",
       "messages": [
         {
@@ -850,6 +992,134 @@
       }
     },
     {
+      "id": "reject-catalog-refresh-inflight",
+      "messages": [
+        {
+          "schemaVersion": "0.1",
+          "kind": "client-hello",
+          "requestId": "hello-1",
+          "supportedVersions": [
+            "0.1"
+          ],
+          "capabilities": [
+            "actions",
+            "cancellation",
+            "deltas",
+            "events",
+            "snapshots",
+            "surface-catalog"
+          ],
+          "requiredCapabilities": [
+            "actions",
+            "cancellation",
+            "deltas",
+            "events",
+            "snapshots",
+            "surface-catalog"
+          ]
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "server-hello",
+          "requestId": "hello-1",
+          "sessionRef": "session-1",
+          "protocolVersion": "0.1",
+          "capabilities": [
+            "actions",
+            "cancellation",
+            "deltas",
+            "events",
+            "snapshots",
+            "surface-catalog"
+          ],
+          "limits": {
+            "frameBytes": 1048576,
+            "snapshotBytes": 1048576,
+            "deltaBytes": 524288,
+            "actionResultBytes": 262144,
+            "errorMessageCharacters": 500,
+            "surfaces": 128,
+            "actionsPerSurface": 128
+          }
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "surface-list-request",
+          "requestId": "list-1",
+          "sessionRef": "session-1"
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "surface-list-response",
+          "requestId": "list-1",
+          "sessionRef": "session-1",
+          "surfaces": [
+            {
+              "surfaceRef": "surface-1",
+              "revision": "revision-1",
+              "title": "Fixture",
+              "application": "Fixture App",
+              "capabilities": [
+                "actions",
+                "deltas",
+                "snapshots"
+              ],
+              "actionCount": 1
+            }
+          ]
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "action-request",
+          "requestId": "action-1",
+          "sessionRef": "session-1",
+          "surfaceRef": "surface-1",
+          "revision": "revision-1",
+          "elementId": "button-1",
+          "action": "click",
+          "input": {
+            "confirmed": true
+          },
+          "idempotencyKey": "idem-1"
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "event",
+          "sessionRef": "session-1",
+          "sequence": 1,
+          "event": "catalog-changed"
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "surface-list-request",
+          "requestId": "list-2",
+          "sessionRef": "session-1"
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "surface-list-response",
+          "requestId": "list-2",
+          "sessionRef": "session-1",
+          "surfaces": []
+        }
+      ],
+      "expected": {
+        "status": "rejected",
+        "code": "resync_required",
+        "failedAt": 7,
+        "state": {
+          "phase": "closed",
+          "sessionRef": null,
+          "capabilities": [],
+          "activeRequests": 0,
+          "completedRequests": 0,
+          "surfaces": 0,
+          "lastEventSequence": 0,
+          "catalogStale": false
+        }
+      }
+    },
+    {
       "id": "reject-catalog-stale-action",
       "messages": [
         {
@@ -1080,6 +1350,143 @@
         "status": "rejected",
         "code": "resync_required",
         "failedAt": 5,
+        "state": {
+          "phase": "closed",
+          "sessionRef": null,
+          "capabilities": [],
+          "activeRequests": 0,
+          "completedRequests": 0,
+          "surfaces": 0,
+          "lastEventSequence": 0,
+          "catalogStale": false
+        }
+      }
+    },
+    {
+      "id": "reject-event-action-revision-race",
+      "messages": [
+        {
+          "schemaVersion": "0.1",
+          "kind": "client-hello",
+          "requestId": "hello-1",
+          "supportedVersions": [
+            "0.1"
+          ],
+          "capabilities": [
+            "actions",
+            "cancellation",
+            "deltas",
+            "events",
+            "snapshots",
+            "surface-catalog"
+          ],
+          "requiredCapabilities": [
+            "actions",
+            "cancellation",
+            "deltas",
+            "events",
+            "snapshots",
+            "surface-catalog"
+          ]
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "server-hello",
+          "requestId": "hello-1",
+          "sessionRef": "session-1",
+          "protocolVersion": "0.1",
+          "capabilities": [
+            "actions",
+            "cancellation",
+            "deltas",
+            "events",
+            "snapshots",
+            "surface-catalog"
+          ],
+          "limits": {
+            "frameBytes": 1048576,
+            "snapshotBytes": 1048576,
+            "deltaBytes": 524288,
+            "actionResultBytes": 262144,
+            "errorMessageCharacters": 500,
+            "surfaces": 128,
+            "actionsPerSurface": 128
+          }
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "surface-list-request",
+          "requestId": "list-1",
+          "sessionRef": "session-1"
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "surface-list-response",
+          "requestId": "list-1",
+          "sessionRef": "session-1",
+          "surfaces": [
+            {
+              "surfaceRef": "surface-1",
+              "revision": "revision-1",
+              "title": "Fixture",
+              "application": "Fixture App",
+              "capabilities": [
+                "actions",
+                "deltas",
+                "snapshots"
+              ],
+              "actionCount": 1
+            }
+          ]
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "action-request",
+          "requestId": "action-1",
+          "sessionRef": "session-1",
+          "surfaceRef": "surface-1",
+          "revision": "revision-1",
+          "elementId": "button-1",
+          "action": "click",
+          "input": {
+            "confirmed": true
+          },
+          "idempotencyKey": "idem-1"
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "event",
+          "sessionRef": "session-1",
+          "sequence": 1,
+          "event": "surface-changed",
+          "surfaceRef": "surface-1",
+          "revision": "revision-other"
+        },
+        {
+          "schemaVersion": "0.1",
+          "kind": "action-response",
+          "requestId": "action-1",
+          "sessionRef": "session-1",
+          "surfaceRef": "surface-1",
+          "outcome": {
+            "schemaVersion": "0.1",
+            "surfaceId": "surface-1",
+            "previousRevision": "revision-1",
+            "revision": "revision-2",
+            "status": "succeeded",
+            "action": "click",
+            "targetId": "button-1",
+            "targetPresent": false,
+            "output": {
+              "saved": true
+            }
+          }
+        }
+      ],
+      "expected": {
+        "status": "rejected",
+        "code": "resync_required",
+        "failedAt": 6,
         "state": {
           "phase": "closed",
           "sessionRef": null,

@@ -5,14 +5,14 @@
   "status": "passed",
   "corpus": {
     "path": "fixtures/native-protocol/session-corpus-0.1.json",
-    "accepted": 7,
-    "rejected": 12,
-    "total": 19,
-    "digest": "sha256:97cae0d18be73d51f2a8404a02f0aa554771da334f8b67be5137b015e2a38753"
+    "accepted": 8,
+    "rejected": 14,
+    "total": 22,
+    "digest": "sha256:9be355e4276a9d0249927693144f084b0fb52316cb92f3ba5f08440762e72692"
   },
   "verification": {
-    "focusedTests": "2 files, 14 tests",
-    "fullGate": "57 files, 604 tests",
+    "focusedTests": "2 files, 16 tests",
+    "fullGate": "58 files, 612 tests",
     "conformance": "2 files, 12 tests",
     "contract": "32 runtime exports, 6 declaration files, 5 core schemas",
     "dependencyAudit": "0 vulnerabilities",

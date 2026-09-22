@@ -39,6 +39,7 @@ interface PendingRequest {
   readonly kind: RequestMessage["kind"];
   readonly fingerprint: string;
   readonly message: RequestMessage;
+  readonly surfaceRevision?: string;
   readonly replayResponseFingerprint?: string;
 }
 
@@ -217,10 +218,16 @@ export class NativeProtocolSessionVerifier {
       if (message.targetRequestId === message.requestId) this.#fail("invalid_message");
       if (!this.#pending.has(message.targetRequestId)) this.#fail("request_conflict");
     }
+    const surfaceRevision = message.kind === "snapshot-request" ||
+      message.kind === "delta-request" ||
+      message.kind === "action-request"
+      ? this.#surfaces.get(message.surfaceRef)
+      : undefined;
     this.#pending.set(message.requestId, {
       kind: message.kind,
       fingerprint,
       message,
+      ...(surfaceRevision === undefined ? {} : { surfaceRevision }),
       ...(replayResponseFingerprint ? { replayResponseFingerprint } : {}),
     });
   }
@@ -237,7 +244,7 @@ export class NativeProtocolSessionVerifier {
       pending.replayResponseFingerprint !== undefined &&
       pending.replayResponseFingerprint !== responseFingerprint
     ) this.#fail("request_conflict");
-    this.#applyResponse(message, pending.message);
+    this.#applyResponse(message, pending);
     this.#pending.delete(message.requestId);
     this.#completed.set(message.requestId, {
       requestFingerprint: pending.fingerprint,
@@ -245,9 +252,19 @@ export class NativeProtocolSessionVerifier {
     });
   }
 
-  #applyResponse(message: ResponseMessage, request: RequestMessage): void {
+  #applyResponse(message: ResponseMessage, pending: PendingRequest): void {
+    const request = pending.message;
     if (message.kind === "request-error") return;
     if (message.kind === "surface-list-response") {
+      if (
+        this.#catalogStale &&
+        [...this.#pending.entries()].some(([requestId, candidate]) =>
+          requestId !== message.requestId &&
+          (candidate.kind === "snapshot-request" ||
+            candidate.kind === "delta-request" ||
+            candidate.kind === "action-request")
+        )
+      ) this.#fail("resync_required");
       this.#surfaces = new Map(
         message.surfaces.map((surface) => [surface.surfaceRef, surface.revision]),
       );
@@ -258,6 +275,11 @@ export class NativeProtocolSessionVerifier {
       if (request.kind !== "snapshot-request" || message.surfaceRef !== request.surfaceRef) {
         this.#fail("invalid_message");
       }
+      const currentRevision = this.#surfaces.get(message.surfaceRef);
+      if (
+        currentRevision !== pending.surfaceRevision &&
+        currentRevision !== message.snapshot.revision
+      ) this.#fail("resync_required");
       this.#surfaces.set(message.surfaceRef, message.snapshot.revision);
       return;
     }
@@ -268,6 +290,11 @@ export class NativeProtocolSessionVerifier {
         message.delta.baseRevision !== request.baseRevision ||
         message.delta.baseDigest !== request.baseDigest
       ) this.#fail("resync_required");
+      const currentRevision = this.#surfaces.get(message.surfaceRef);
+      if (
+        currentRevision !== pending.surfaceRevision &&
+        currentRevision !== message.delta.revision
+      ) this.#fail("resync_required");
       this.#surfaces.set(message.surfaceRef, message.delta.revision);
       return;
     }
@@ -275,6 +302,11 @@ export class NativeProtocolSessionVerifier {
       if (request.kind !== "action-request" || message.surfaceRef !== request.surfaceRef) {
         this.#fail("invalid_message");
       }
+      const currentRevision = this.#surfaces.get(message.surfaceRef);
+      if (
+        currentRevision !== pending.surfaceRevision &&
+        currentRevision !== message.outcome.revision
+      ) this.#fail("resync_required");
       if (
         message.outcome.status === "succeeded" &&
         message.outcome.previousRevision !== request.revision

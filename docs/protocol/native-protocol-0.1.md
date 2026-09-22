@@ -217,6 +217,13 @@ Sequence gaps require catalog refresh or snapshot resynchronization. Events are
 hints; clients verify authoritative state before acting. Session invalidation
 is terminal.
 
+An event may race an in-flight snapshot, delta, or action response. A verifier
+accepts the response only when the current surface revision still equals the
+request-time revision or already equals the response revision; any third
+revision requires resynchronization. A catalog refresh cannot replace the
+catalog while an older stateful request remains unresolved. These rules prevent
+late responses from resurrecting a closed surface or rolling back newer state.
+
 ## Stable protocol errors
 
 Protocol errors use package-owned constant messages and never echo invalid

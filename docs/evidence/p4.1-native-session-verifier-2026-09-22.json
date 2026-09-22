@@ -5,7 +5,7 @@
   "status": "passed",
   "focusedSuite": {
     "file": "test/native-protocol-session.test.ts",
-    "tests": 13,
+    "tests": 15,
     "result": "passed"
   },
   "coverage": [
@@ -17,13 +17,14 @@
     "delta base revision and digest correlation",
     "same-session cancellation targets",
     "contiguous event sequence and invalidation",
+    "in-flight response correlation with event and catalog races",
     "catalog-change stale-state blocking",
     "identical keyed replay and changed-response conflict",
     "active-request resource limit"
   ],
   "verification": {
     "typecheck": "passed",
-    "fullGate": "56 files, 603 tests",
+    "fullGate": "58 files, 612 tests",
     "conformance": "2 files, 12 tests",
     "contract": "32 runtime exports, 6 declaration files, 5 core schemas",
     "dependencyAudit": "0 vulnerabilities",

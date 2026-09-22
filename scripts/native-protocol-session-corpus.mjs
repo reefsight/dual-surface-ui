@@ -158,6 +158,10 @@ export const createNativeProtocolSessionFixtureCorpus = () => ({
     }], activeState({ activeRequests: 1, completedRequests: 1 })),
     accept("accept-catalog", [...handshake(), ...catalog()], activeState({ completedRequests: 1, surfaces: 1 })),
     accept("accept-delta", [...handshake(), ...catalog(), deltaRequest(), deltaResponse()], activeState({ completedRequests: 2, surfaces: 1 })),
+    accept("accept-event-correlated-action", [...handshake(), ...catalog(), actionRequest(), {
+      schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1,
+      event: "surface-changed", surfaceRef: "surface-1", revision: "revision-2",
+    }, actionResponse()], activeState({ completedRequests: 2, surfaces: 1, lastEventSequence: 1 })),
     accept("accept-event-invalidation", [...handshake(), {
       schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1, event: "session-invalidated",
     }], closedState),
@@ -166,6 +170,11 @@ export const createNativeProtocolSessionFixtureCorpus = () => ({
     reject("reject-cancel-missing-target", [...handshake(), {
       schemaVersion: "0.1", kind: "cancel-request", requestId: "cancel-1", sessionRef: "session-1", targetRequestId: "missing-1",
     }], "request_conflict"),
+    reject("reject-catalog-refresh-inflight", [...handshake(), ...catalog(), actionRequest(), {
+      schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1, event: "catalog-changed",
+    }, listRequest("list-2"), {
+      schemaVersion: "0.1", kind: "surface-list-response", requestId: "list-2", sessionRef: "session-1", surfaces: [],
+    }], "resync_required"),
     reject("reject-catalog-stale-action", [...handshake(), ...catalog(), {
       schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1, event: "catalog-changed",
     }, actionRequest()], "resync_required"),
@@ -173,6 +182,10 @@ export const createNativeProtocolSessionFixtureCorpus = () => ({
     reject("reject-event-sequence-gap", [...handshake(), {
       schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 2, event: "catalog-changed",
     }], "resync_required"),
+    reject("reject-event-action-revision-race", [...handshake(), ...catalog(), actionRequest(), {
+      schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1,
+      event: "surface-changed", surfaceRef: "surface-1", revision: "revision-other",
+    }, actionResponse()], "resync_required"),
     reject("reject-keyed-replay-changed-request", [...handshake(), ...catalog(), actionRequest(), actionResponse(), actionRequest({ input: { confirmed: false } })], "request_conflict"),
     reject("reject-keyed-replay-changed-response", [...handshake(), ...catalog(), actionRequest(), actionResponse(), actionRequest(), actionResponse({ saved: false })], "request_conflict"),
     reject("reject-response-kind-mismatch", [...handshake(), listRequest(), {
