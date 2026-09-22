@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dual-surface-ui.dev/schema/native/native-protocol-handshake-0.1.json",
+  "title": "Dual Surface UI Native Protocol Handshake 0.1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "requestId",
+        "supportedVersions",
+        "capabilities",
+        "requiredCapabilities"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "client-hello"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "supportedVersions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+$",
+            "maxLength": 16
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "actions",
+              "cancellation",
+              "deltas",
+              "events",
+              "snapshots",
+              "surface-catalog"
+            ]
+          }
+        },
+        "requiredCapabilities": {
+          "type": "array",
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "actions",
+              "cancellation",
+              "deltas",
+              "events",
+              "snapshots",
+              "surface-catalog"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "requestId",
+        "sessionRef",
+        "protocolVersion",
+        "capabilities",
+        "limits"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "server-hello"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "sessionRef": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+        },
+        "protocolVersion": {
+          "const": "0.1"
+        },
+        "capabilities": {
+          "type": "array",
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "actions",
+              "cancellation",
+              "deltas",
+              "events",
+              "snapshots",
+              "surface-catalog"
+            ]
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "frameBytes",
+            "snapshotBytes",
+            "deltaBytes",
+            "actionResultBytes",
+            "errorMessageCharacters",
+            "surfaces",
+            "actionsPerSurface"
+          ],
+          "properties": {
+            "frameBytes": {
+              "const": 1048576
+            },
+            "snapshotBytes": {
+              "const": 1048576
+            },
+            "deltaBytes": {
+              "const": 524288
+            },
+            "actionResultBytes": {
+              "const": 262144
+            },
+            "errorMessageCharacters": {
+              "const": 500
+            },
+            "surfaces": {
+              "const": 128
+            },
+            "actionsPerSurface": {
+              "const": 128
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "kind",
+        "requestId",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "kind": {
+          "const": "protocol-error"
+        },
+        "requestId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._~-]{1,128}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "code": {
+          "enum": [
+            "invalid_message",
+            "missing_required_capability",
+            "no_compatible_version"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    }
+  ]
+}
