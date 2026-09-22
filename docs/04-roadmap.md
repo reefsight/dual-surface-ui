@@ -131,7 +131,8 @@ not claim implementation or completion.
 Execution status on 2026-09-22: Phase 4 execution through Exit Gate
 preparation is authorized under the original language decision gate. P4.1
 language-neutral protocol implementation and automated evidence are complete;
-its independent protocol/security/interoperability/package review is pending.
+its independent protocol/security/interoperability/package review was approved
+by `Pitchayut586` on 2026-09-22 with no unresolved critical/high finding.
 Rust is preferred by the maintainer but remains evidence-gated. See
 the [Phase 4 Execution Authorization](reviews/phase4-execution-authorization.md).
 
@@ -153,7 +154,8 @@ details in the core schema.
 P4.2 fixture planning is complete in
 [the controlled Windows fixture work item](work-items/P4.2-native-fixture-application.md)
 and proposed [ADR 0016](adr/0016-native-fixture-application-boundary.md).
-Runtime implementation remains gated on P4.1 independent approval.
+P4.1 is accepted; P4.2 runtime implementation remains separately gated on
+acceptance of ADR 0016.
 P4.3 Windows adapter planning is complete in
 [the Windows UIA adapter work item](work-items/P4.3-windows-uia-adapter.md) and
 proposed [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md); runtime work
