@@ -1,7 +1,6 @@
 # ADR 0016: Controlled Windows Fixture Application Boundary
 
-Status: Proposed; P4.1 accepted, awaiting explicit maintainer acceptance before
-P4.2 source implementation or SDK installation
+Status: Accepted by repository maintainer `Pitchayut586` on 2026-09-22
 
 Date: 2026-09-22
 
@@ -17,12 +16,14 @@ P4.1 was accepted on 2026-09-22 with a passing canonical independent-review
 record. The current evidence host is Windows 11 Pro build 26200 x64 and has UI
 Automation Core plus Windows Desktop runtimes 8.0.28, 9.0.17, and 10.0.9. It
 does not currently have a .NET SDK, `rustc`, or `cargo`. This is environment
-preflight only and does not authorize toolchain installation.
+preflight only; the accepted decision below provides the separate, narrowly
+scoped SDK-installation authorization.
 
-## Proposed decision
+## Decision
 
 1. Build the controlled Windows test subject as a minimal WPF application after
-   P4.1 approval and explicit acceptance of this ADR.
+   P4.1 approval. The maintainer explicitly authorized P4.2 implementation and
+   the required .NET SDK installation on 2026-09-22.
 2. WPF is selected only as the fixture's accessibility provider because it
    exposes mature Windows UI Automation peers and control patterns. This does
    not select .NET for the adapter, daemon, protocol client, or product runtime.
@@ -65,8 +66,8 @@ packaging, signing, and maintenance evidence.
 
 ## Consequences
 
-- P4.2 needs a reviewed .NET SDK installation or an isolated build environment
-  after its entry gate passes.
+- P4.2 may install a reviewed .NET SDK or use an isolated build environment;
+  the accepted boundary does not authorize unrelated workloads or tools.
 - Windows adapter implementation remains free to use Rust if the later decision
   gate accepts it.
 - Golden evidence distinguishes raw provider output, expected normalized

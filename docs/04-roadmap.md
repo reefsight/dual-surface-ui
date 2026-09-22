@@ -153,9 +153,9 @@ details in the core schema.
 
 P4.2 fixture planning is complete in
 [the controlled Windows fixture work item](work-items/P4.2-native-fixture-application.md)
-and proposed [ADR 0016](adr/0016-native-fixture-application-boundary.md).
-P4.1 is accepted; P4.2 runtime implementation remains separately gated on
-acceptance of ADR 0016.
+and accepted [ADR 0016](adr/0016-native-fixture-application-boundary.md).
+P4.1 and the P4.2 entry gate are accepted; P4.2 runtime implementation is
+authorized as of 2026-09-22.
 P4.3 Windows adapter planning is complete in
 [the Windows UIA adapter work item](work-items/P4.3-windows-uia-adapter.md) and
 proposed [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md); runtime work

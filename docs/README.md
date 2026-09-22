@@ -73,9 +73,9 @@ approved by `Pitchayut586` on 2026-09-22 and is recorded in the canonical
 [P4.1 review disposition](reviews/p4.1-independent-review.json).
 P4.2 planning is recorded in the
 [controlled Windows fixture work item](work-items/P4.2-native-fixture-application.md)
-and proposed [ADR 0016](adr/0016-native-fixture-application-boundary.md).
-P4.1 is accepted; P4.2 implementation remains blocked until ADR 0016 is
-accepted. The fixture technology does not select the future bridge language.
+and accepted [ADR 0016](adr/0016-native-fixture-application-boundary.md).
+P4.1 and the P4.2 entry gate are accepted, so fixture implementation is
+authorized. The fixture technology does not select the future bridge language.
 P4.3 is specified in the
 [Windows UI Automation adapter work item](work-items/P4.3-windows-uia-adapter.md)
 and proposed [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md). Its
