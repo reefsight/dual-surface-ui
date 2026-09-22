@@ -1,0 +1,643 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "native-protocol-fixture-corpus",
+  "cases": [
+    {
+      "id": "action-request",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-request\",\"requestId\":\"request-action\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"revision\":\"revision-1\",\"elementId\":\"button-1\",\"action\":\"click\",\"input\":{\"confirmed\":true},\"idempotencyKey\":\"idem-1\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-request"
+      }
+    },
+    {
+      "id": "action-response-failure-action-not-found",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-0\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"action_not_found\",\"message\":\"The requested action is unavailable\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "action_not_found"
+      }
+    },
+    {
+      "id": "action-response-failure-authorization-required",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-1\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"authorization_required\",\"message\":\"The action is not authorized\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "authorization_required"
+      }
+    },
+    {
+      "id": "action-response-failure-confirmation-required",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-2\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"confirmation_required\",\"message\":\"The action requires trusted confirmation\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "confirmation_required"
+      }
+    },
+    {
+      "id": "action-response-failure-duplicate-element-id",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-3\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"duplicate_element_id\",\"message\":\"The surface contains duplicate element identifiers\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "duplicate_element_id"
+      }
+    },
+    {
+      "id": "action-response-failure-element-not-found",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-4\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"element_not_found\",\"message\":\"The target element was not found\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "element_not_found"
+      }
+    },
+    {
+      "id": "action-response-failure-idempotency-conflict",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-5\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"idempotency_conflict\",\"message\":\"The idempotency key conflicts with an earlier request\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "idempotency_conflict"
+      }
+    },
+    {
+      "id": "action-response-failure-idempotency-key-required",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-6\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"idempotency_key_required\",\"message\":\"The action requires an idempotency key\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "idempotency_key_required"
+      }
+    },
+    {
+      "id": "action-response-failure-idempotency-unavailable",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-7\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"idempotency_unavailable\",\"message\":\"Secure idempotency protection is unavailable\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "idempotency_unavailable"
+      }
+    },
+    {
+      "id": "action-response-failure-internal-error",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-8\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"internal_error\",\"message\":\"The action failed unexpectedly\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "internal_error"
+      }
+    },
+    {
+      "id": "action-response-failure-invalid-idempotency-key",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-9\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"invalid_idempotency_key\",\"message\":\"The idempotency key is invalid\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "invalid_idempotency_key"
+      }
+    },
+    {
+      "id": "action-response-failure-invalid-input",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-10\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"invalid_input\",\"message\":\"The action input is invalid\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "invalid_input"
+      }
+    },
+    {
+      "id": "action-response-failure-invalid-output",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-11\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"invalid_output\",\"message\":\"The action output is invalid\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "invalid_output"
+      }
+    },
+    {
+      "id": "action-response-failure-invalid-policy-decision",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-12\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"invalid_policy_decision\",\"message\":\"The policy decision is invalid\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "invalid_policy_decision"
+      }
+    },
+    {
+      "id": "action-response-failure-precondition-failed",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-13\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"precondition_failed\",\"message\":\"An action precondition was not satisfied\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "precondition_failed"
+      }
+    },
+    {
+      "id": "action-response-failure-stale-revision",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-14\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"stale_revision\",\"message\":\"The observed surface revision is stale\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "stale_revision"
+      }
+    },
+    {
+      "id": "action-response-failure-surface-mismatch",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-15\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"surface_mismatch\",\"message\":\"The request targets a different surface\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "surface_mismatch"
+      }
+    },
+    {
+      "id": "action-response-failure-verification-failed",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-failure-16\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"status\":\"failed\",\"error\":{\"code\":\"verification_failed\",\"message\":\"The action effects could not be verified\"}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response",
+        "code": "verification_failed"
+      }
+    },
+    {
+      "id": "action-response-success",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-response\",\"requestId\":\"request-action\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"outcome\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"previousRevision\":\"revision-1\",\"revision\":\"revision-2\",\"status\":\"succeeded\",\"action\":\"click\",\"targetId\":\"button-1\",\"targetPresent\":true,\"node\":{\"id\":\"button-1\",\"role\":\"button\",\"name\":\"Save\",\"state\":{},\"actions\":[{\"name\":\"click\",\"risk\":\"write\",\"idempotency\":\"keyed\"}]},\"output\":{\"saved\":true}}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "action-response"
+      }
+    },
+    {
+      "id": "cancel-request",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"cancel-request\",\"requestId\":\"request-cancel\",\"sessionRef\":\"session-1\",\"targetRequestId\":\"request-action\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "cancel-request"
+      }
+    },
+    {
+      "id": "cancel-response",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"cancel-response\",\"requestId\":\"request-cancel\",\"sessionRef\":\"session-1\",\"targetRequestId\":\"request-action\",\"disposition\":\"accepted\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "cancel-response"
+      }
+    },
+    {
+      "id": "client-hello",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"client-hello\",\"requestId\":\"request-hello\",\"supportedVersions\":[\"0.1\"],\"capabilities\":[\"actions\",\"snapshots\",\"surface-catalog\"],\"requiredCapabilities\":[\"snapshots\"]}",
+      "expected": {
+        "status": "accepted",
+        "kind": "client-hello"
+      }
+    },
+    {
+      "id": "delta-request",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"delta-request\",\"requestId\":\"request-delta\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"baseRevision\":\"revision-1\",\"baseDigest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "delta-request"
+      }
+    },
+    {
+      "id": "delta-response",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"delta-response\",\"requestId\":\"request-delta\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"delta\":{\"schemaVersion\":\"0.1\",\"kind\":\"agent-snapshot-delta\",\"surfaceId\":\"surface-1\",\"baseRevision\":\"revision-1\",\"revision\":\"revision-2\",\"baseDigest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"targetDigest\":\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"target\":{\"title\":\"Fixture\",\"url\":\"app://fixture\",\"generatedAt\":\"2026-09-22T00:00:01.000Z\",\"focusedElementId\":null,\"capabilities\":[\"actions\"]},\"nodeUpserts\":[{\"id\":\"button-1\",\"role\":\"button\",\"name\":\"Save\",\"state\":{},\"actions\":[{\"name\":\"click\",\"risk\":\"write\",\"idempotency\":\"keyed\"}]}],\"removedNodeIds\":[]}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "delta-response"
+      }
+    },
+    {
+      "id": "event-catalog-changed",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"event\",\"sessionRef\":\"session-1\",\"sequence\":1,\"event\":\"catalog-changed\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "event"
+      }
+    },
+    {
+      "id": "event-session-invalidated",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"event\",\"sessionRef\":\"session-1\",\"sequence\":4,\"event\":\"session-invalidated\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "event"
+      }
+    },
+    {
+      "id": "event-surface-changed",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"event\",\"sessionRef\":\"session-1\",\"sequence\":2,\"event\":\"surface-changed\",\"surfaceRef\":\"surface-1\",\"revision\":\"revision-2\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "event"
+      }
+    },
+    {
+      "id": "event-surface-closed",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"event\",\"sessionRef\":\"session-1\",\"sequence\":3,\"event\":\"surface-closed\",\"surfaceRef\":\"surface-1\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "event"
+      }
+    },
+    {
+      "id": "protocol-error-invalid-message",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"protocol-error\",\"requestId\":\"request-error\",\"code\":\"invalid_message\",\"message\":\"Invalid native protocol message\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "protocol-error",
+        "code": "invalid_message"
+      }
+    },
+    {
+      "id": "protocol-error-missing-required-capability",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"protocol-error\",\"requestId\":\"request-error\",\"code\":\"missing_required_capability\",\"message\":\"Required native protocol capability is unavailable\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "protocol-error",
+        "code": "missing_required_capability"
+      }
+    },
+    {
+      "id": "protocol-error-no-compatible-version",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"protocol-error\",\"requestId\":\"request-error\",\"code\":\"no_compatible_version\",\"message\":\"No compatible native protocol version\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "protocol-error",
+        "code": "no_compatible_version"
+      }
+    },
+    {
+      "id": "reject-caller-authority",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-request\",\"requestId\":\"r1\",\"sessionRef\":\"s1\",\"surfaceRef\":\"surface-1\",\"revision\":\"1\",\"elementId\":\"e1\",\"action\":\"read\",\"risk\":\"destructive\",\"processId\":42}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-comment",
+      "encoding": "utf8",
+      "payload": "{/*comment*/\"schemaVersion\":\"0.1\"}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-delta-surface-substitution",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"delta-response\",\"requestId\":\"r1\",\"sessionRef\":\"s1\",\"surfaceRef\":\"surface-other\",\"delta\":{\"schemaVersion\":\"0.1\",\"kind\":\"agent-snapshot-delta\",\"surfaceId\":\"surface-1\",\"baseRevision\":\"revision-1\",\"revision\":\"revision-2\",\"baseDigest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"targetDigest\":\"sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"target\":{\"title\":\"Fixture\",\"url\":\"app://fixture\",\"generatedAt\":\"2026-09-22T00:00:01.000Z\",\"focusedElementId\":null,\"capabilities\":[\"actions\"]},\"nodeUpserts\":[{\"id\":\"button-1\",\"role\":\"button\",\"name\":\"Save\",\"state\":{},\"actions\":[{\"name\":\"click\",\"risk\":\"write\",\"idempotency\":\"keyed\"}]}],\"removedNodeIds\":[]}}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-duplicate-key",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"surface-list-request\",\"kind\":\"surface-list-request\",\"requestId\":\"r1\",\"sessionRef\":\"s1\"}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-escaped-duplicate-key",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"surface-list-request\",\"\\u006bind\":\"surface-list-request\",\"requestId\":\"r1\",\"sessionRef\":\"s1\"}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-event-extra-field",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"event\",\"sessionRef\":\"s1\",\"sequence\":1,\"event\":\"surface-closed\",\"surfaceRef\":\"surface-1\",\"revision\":\"not-allowed\"}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-excessive-depth",
+      "encoding": "utf8",
+      "payload": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[null]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-lone-surrogate",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-request\",\"requestId\":\"r1\",\"sessionRef\":\"s1\",\"surfaceRef\":\"s1\",\"revision\":\"1\",\"elementId\":\"e1\",\"action\":\"read\",\"input\":\"\\uD800\"}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-malformed-utf8",
+      "encoding": "hex",
+      "payload": "c328",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-non-finite",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"action-request\",\"requestId\":\"r1\",\"sessionRef\":\"s1\",\"surfaceRef\":\"s1\",\"revision\":\"1\",\"elementId\":\"e1\",\"action\":\"read\",\"input\":1e400}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-oversized-frame",
+      "encoding": "repeat-utf8",
+      "prefix": "",
+      "unit": "x",
+      "count": 1048577,
+      "suffix": "",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-required-capability-not-offered",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"client-hello\",\"requestId\":\"r1\",\"supportedVersions\":[\"0.1\"],\"capabilities\":[],\"requiredCapabilities\":[\"actions\"]}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-snapshot-surface-substitution",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"snapshot-response\",\"requestId\":\"r1\",\"sessionRef\":\"s1\",\"surfaceRef\":\"surface-other\",\"snapshot\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"title\":\"Fixture\",\"url\":\"app://fixture\",\"generatedAt\":\"2026-09-22T00:00:00.000Z\",\"capabilities\":[\"actions\"],\"nodes\":[{\"id\":\"button-1\",\"role\":\"button\",\"name\":\"Save\",\"state\":{},\"actions\":[{\"name\":\"click\",\"risk\":\"write\",\"idempotency\":\"keyed\"}]}]}}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-trailing-json",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\"}{}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-truncated",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\"",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-unknown-capability",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"client-hello\",\"requestId\":\"r1\",\"supportedVersions\":[\"0.1\"],\"capabilities\":[\"shell\"],\"requiredCapabilities\":[]}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-unknown-kind",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"shell-command\",\"requestId\":\"r1\",\"sessionRef\":\"s1\"}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-unknown-version",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"9.9\",\"kind\":\"surface-list-request\",\"requestId\":\"r1\",\"sessionRef\":\"s1\"}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-untrusted-error-text",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"r1\",\"sessionRef\":\"s1\",\"code\":\"internal_error\",\"message\":\"raw platform diagnostic\"}",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "reject-utf8-bom",
+      "encoding": "hex",
+      "payload": "efbbbf7b22736368656d6156657273696f6e223a22302e31222c226b696e64223a22737572666163652d6c6973742d72657175657374222c22726571756573744964223a227231222c2273657373696f6e526566223a227331227d",
+      "expected": {
+        "status": "rejected",
+        "error": "Invalid native protocol frame"
+      }
+    },
+    {
+      "id": "request-error-capability-not-negotiated",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"request-error\",\"sessionRef\":\"session-1\",\"code\":\"capability_not_negotiated\",\"message\":\"Capability was not negotiated for this session\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "request-error",
+        "code": "capability_not_negotiated"
+      }
+    },
+    {
+      "id": "request-error-internal-error",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"request-error\",\"sessionRef\":\"session-1\",\"code\":\"internal_error\",\"message\":\"Native protocol request failed\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "request-error",
+        "code": "internal_error"
+      }
+    },
+    {
+      "id": "request-error-invalid-message",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"request-error\",\"sessionRef\":\"session-1\",\"code\":\"invalid_message\",\"message\":\"Invalid native protocol message\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "request-error",
+        "code": "invalid_message"
+      }
+    },
+    {
+      "id": "request-error-invalid-session",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"request-error\",\"sessionRef\":\"session-1\",\"code\":\"invalid_session\",\"message\":\"Native protocol session is invalid\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "request-error",
+        "code": "invalid_session"
+      }
+    },
+    {
+      "id": "request-error-permission-denied",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"request-error\",\"sessionRef\":\"session-1\",\"code\":\"permission_denied\",\"message\":\"Native accessibility permission is unavailable\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "request-error",
+        "code": "permission_denied"
+      }
+    },
+    {
+      "id": "request-error-request-cancelled",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"request-error\",\"sessionRef\":\"session-1\",\"code\":\"request_cancelled\",\"message\":\"Native protocol request was cancelled\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "request-error",
+        "code": "request_cancelled"
+      }
+    },
+    {
+      "id": "request-error-request-conflict",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"request-error\",\"sessionRef\":\"session-1\",\"code\":\"request_conflict\",\"message\":\"Native protocol request conflicts with prior state\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "request-error",
+        "code": "request_conflict"
+      }
+    },
+    {
+      "id": "request-error-resource-limit",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"request-error\",\"sessionRef\":\"session-1\",\"code\":\"resource_limit\",\"message\":\"Native protocol resource limit exceeded\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "request-error",
+        "code": "resource_limit"
+      }
+    },
+    {
+      "id": "request-error-resync-required",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"request-error\",\"sessionRef\":\"session-1\",\"code\":\"resync_required\",\"message\":\"Native protocol state resynchronization is required\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "request-error",
+        "code": "resync_required"
+      }
+    },
+    {
+      "id": "request-error-stale-revision",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"request-error\",\"sessionRef\":\"session-1\",\"code\":\"stale_revision\",\"message\":\"Native surface revision is stale\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "request-error",
+        "code": "stale_revision"
+      }
+    },
+    {
+      "id": "request-error-surface-unavailable",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"request-error\",\"requestId\":\"request-error\",\"sessionRef\":\"session-1\",\"code\":\"surface_unavailable\",\"message\":\"Native surface is unavailable\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "request-error",
+        "code": "surface_unavailable"
+      }
+    },
+    {
+      "id": "server-hello",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"server-hello\",\"requestId\":\"request-hello\",\"sessionRef\":\"session-1\",\"protocolVersion\":\"0.1\",\"capabilities\":[\"actions\",\"snapshots\",\"surface-catalog\"],\"limits\":{\"frameBytes\":1048576,\"snapshotBytes\":1048576,\"deltaBytes\":524288,\"actionResultBytes\":262144,\"errorMessageCharacters\":500,\"surfaces\":128,\"actionsPerSurface\":128}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "server-hello"
+      }
+    },
+    {
+      "id": "snapshot-request",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"snapshot-request\",\"requestId\":\"request-snapshot\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "snapshot-request"
+      }
+    },
+    {
+      "id": "snapshot-response",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"snapshot-response\",\"requestId\":\"request-snapshot\",\"sessionRef\":\"session-1\",\"surfaceRef\":\"surface-1\",\"snapshot\":{\"schemaVersion\":\"0.1\",\"surfaceId\":\"surface-1\",\"revision\":\"revision-1\",\"title\":\"Fixture\",\"url\":\"app://fixture\",\"generatedAt\":\"2026-09-22T00:00:00.000Z\",\"capabilities\":[\"actions\"],\"nodes\":[{\"id\":\"button-1\",\"role\":\"button\",\"name\":\"Save\",\"state\":{},\"actions\":[{\"name\":\"click\",\"risk\":\"write\",\"idempotency\":\"keyed\"}]}]}}",
+      "expected": {
+        "status": "accepted",
+        "kind": "snapshot-response"
+      }
+    },
+    {
+      "id": "surface-list-request",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"surface-list-request\",\"requestId\":\"request-list\",\"sessionRef\":\"session-1\"}",
+      "expected": {
+        "status": "accepted",
+        "kind": "surface-list-request"
+      }
+    },
+    {
+      "id": "surface-list-response",
+      "encoding": "utf8",
+      "payload": "{\"schemaVersion\":\"0.1\",\"kind\":\"surface-list-response\",\"requestId\":\"request-list\",\"sessionRef\":\"session-1\",\"surfaces\":[{\"surfaceRef\":\"surface-1\",\"revision\":\"revision-1\",\"title\":\"Fixture\",\"application\":\"Fixture App\",\"capabilities\":[\"actions\",\"snapshots\"],\"actionCount\":1}]}",
+      "expected": {
+        "status": "accepted",
+        "kind": "surface-list-response"
+      }
+    }
+  ]
+}

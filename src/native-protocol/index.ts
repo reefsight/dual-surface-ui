@@ -15,6 +15,7 @@ export {
   NATIVE_PROTOCOL_EXECUTION_SCHEMA,
   NATIVE_PROTOCOL_REQUEST_ERROR_MESSAGES,
 } from "./execution-schema.js";
+export { NATIVE_PROTOCOL_FIXTURE_CORPUS_SCHEMA } from "./fixture-schema.js";
 export { negotiateNativeProtocol } from "./negotiation.js";
 export { captureAndValidateNativeProtocolDataMessage } from "./data-validation.js";
 export { captureAndValidateNativeProtocolExecutionMessage } from "./execution-validation.js";

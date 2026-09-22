@@ -260,3 +260,9 @@ An implementation is conformant only when it passes the same portable corpus:
    future Rust, .NET, Swift, or other implementation.
 
 Passing schema validation alone is not proof of protocol conformance.
+
+The checked-in
+[portable 0.1 corpus](../../fixtures/native-protocol/corpus-0.1.json) is the
+current cross-language fixture source. Its schema is
+`schemas/native/native-protocol-fixture-corpus-0.1.schema.json`; its accepted
+and rejected dispositions must remain identical in every implementation.

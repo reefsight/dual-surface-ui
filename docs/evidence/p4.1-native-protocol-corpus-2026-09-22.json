@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "native-protocol-corpus-evidence",
+  "recordedAt": "2026-09-22",
+  "status": "passed",
+  "corpus": "fixtures/native-protocol/corpus-0.1.json",
+  "schema": "schemas/native/native-protocol-fixture-corpus-0.1.schema.json",
+  "digest": "sha256:1e783a3be9098efc776ce8771e1ce9d44bf5c89eff9913e472fc686c5fa7b241",
+  "cases": {
+    "accepted": 47,
+    "rejected": 20,
+    "total": 67
+  },
+  "coverage": {
+    "messageKinds": 15,
+    "handshakeErrorCodes": 3,
+    "requestErrorCodes": 11,
+    "actionFailureCodes": 17,
+    "includesMalformedUtf8": true,
+    "includesDuplicateKeys": true,
+    "includesUnicodeEscapedDuplicateKeys": true,
+    "includesUnknownKindsVersionsCapabilities": true,
+    "includesAuthorityInjection": true,
+    "includesSurfaceSubstitution": true,
+    "includesDepthAndSizeLimits": true
+  },
+  "verification": {
+    "fixtureCommand": "npm run native:fixtures:check",
+    "focusedTest": "test/native-protocol-fixtures.test.ts",
+    "fullGate": "55 files, 590 tests",
+    "conformance": "2 files, 12 tests",
+    "contract": "32 runtime exports, 6 declaration files, 5 core schemas",
+    "dependencyAudit": "0 vulnerabilities",
+    "packageBoundary": "passed"
+  },
+  "limitations": [
+    "No session-sequence or replay-state verifier is claimed by this evidence.",
+    "No second-language implementation has executed the corpus yet.",
+    "No OS adapter, transport, daemon, permission, signing, or distribution evidence is claimed."
+  ]
+}

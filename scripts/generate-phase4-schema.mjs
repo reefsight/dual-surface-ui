@@ -11,6 +11,7 @@ import {
   NATIVE_PROTOCOL_MESSAGE_SCHEMA,
 } from "../dist/native-protocol/data-schema.js";
 import { NATIVE_PROTOCOL_EXECUTION_SCHEMA } from "../dist/native-protocol/execution-schema.js";
+import { NATIVE_PROTOCOL_FIXTURE_CORPUS_SCHEMA } from "../dist/native-protocol/fixture-schema.js";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputDirectory = resolve(projectRoot, "schemas", "native");
@@ -21,6 +22,7 @@ const schemas = [
   ["native-protocol-handshake-0.1.schema.json", NATIVE_PROTOCOL_HANDSHAKE_SCHEMA],
   ["native-protocol-data-0.1.schema.json", NATIVE_PROTOCOL_DATA_SCHEMA],
   ["native-protocol-execution-0.1.schema.json", NATIVE_PROTOCOL_EXECUTION_SCHEMA],
+  ["native-protocol-fixture-corpus-0.1.schema.json", NATIVE_PROTOCOL_FIXTURE_CORPUS_SCHEMA],
   ["native-protocol-message-0.1.schema.json", NATIVE_PROTOCOL_MESSAGE_SCHEMA],
 ];
 

@@ -54,10 +54,19 @@ try {
     "native-protocol-handshake-0.1.schema.json",
     "native-protocol-data-0.1.schema.json",
     "native-protocol-execution-0.1.schema.json",
+    "native-protocol-fixture-corpus-0.1.schema.json",
     "native-protocol-message-0.1.schema.json",
   ];
   for (const schemaName of schemaNames) {
     await access(join(packageRoot, "schemas", "native", schemaName));
+  }
+  const fixtureRelative = join("fixtures", "native-protocol", "corpus-0.1.json");
+  const [sourceFixture, installedFixture] = await Promise.all([
+    readFile(join(projectRoot, fixtureRelative), "utf8"),
+    readFile(join(packageRoot, fixtureRelative), "utf8"),
+  ]);
+  if (sourceFixture !== installedFixture) {
+    throw new Error("native protocol fixture corpus drifted in package");
   }
 
   const runtimeCheck = `
