@@ -1,6 +1,7 @@
 # ADR 0016: Controlled Windows Fixture Application Boundary
 
-Status: Proposed; blocked on P4.1 independent approval
+Status: Proposed; P4.1 accepted, awaiting explicit maintainer acceptance before
+P4.2 source implementation or SDK installation
 
 Date: 2026-09-22
 
@@ -12,7 +13,8 @@ provider behavior, control patterns, events, process/window replacement, or
 sensitive-control handling. The fixture must also avoid deciding the language
 of the future native bridge before the roadmap's Rust decision gate.
 
-The current evidence host is Windows 11 Pro build 26200 x64 and has UI
+P4.1 was accepted on 2026-09-22 with a passing canonical independent-review
+record. The current evidence host is Windows 11 Pro build 26200 x64 and has UI
 Automation Core plus Windows Desktop runtimes 8.0.28, 9.0.17, and 10.0.9. It
 does not currently have a .NET SDK, `rustc`, or `cargo`. This is environment
 preflight only and does not authorize toolchain installation.
