@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "native-protocol-session-corpus-evidence",
+  "recordedAt": "2026-09-22",
+  "status": "passed",
+  "corpus": {
+    "path": "fixtures/native-protocol/session-corpus-0.1.json",
+    "accepted": 7,
+    "rejected": 12,
+    "total": 19,
+    "digest": "sha256:97cae0d18be73d51f2a8404a02f0aa554771da334f8b67be5137b015e2a38753"
+  },
+  "verification": {
+    "focusedTests": "2 files, 14 tests",
+    "fullGate": "57 files, 604 tests",
+    "conformance": "2 files, 12 tests",
+    "contract": "32 runtime exports, 6 declaration files, 5 core schemas",
+    "dependencyAudit": "0 vulnerabilities",
+    "packageBoundary": "passed"
+  },
+  "limitations": [
+    "The corpus is implementation-neutral JSON but has not yet been executed by a second-language verifier.",
+    "Property and mutation campaigns remain open.",
+    "No native host, OS adapter, transport, authentication, signing, or distribution claim is made."
+  ]
+}

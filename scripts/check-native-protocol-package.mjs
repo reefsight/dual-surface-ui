@@ -56,6 +56,7 @@ try {
     "native-protocol-execution-0.1.schema.json",
     "native-protocol-fixture-corpus-0.1.schema.json",
     "native-protocol-message-0.1.schema.json",
+    "native-protocol-session-fixture-corpus-0.1.schema.json",
   ];
   for (const schemaName of schemaNames) {
     await access(join(packageRoot, "schemas", "native", schemaName));
@@ -67,6 +68,14 @@ try {
   ]);
   if (sourceFixture !== installedFixture) {
     throw new Error("native protocol fixture corpus drifted in package");
+  }
+  const sessionFixtureRelative = join("fixtures", "native-protocol", "session-corpus-0.1.json");
+  const [sourceSessionFixture, installedSessionFixture] = await Promise.all([
+    readFile(join(projectRoot, sessionFixtureRelative), "utf8"),
+    readFile(join(packageRoot, sessionFixtureRelative), "utf8"),
+  ]);
+  if (sourceSessionFixture !== installedSessionFixture) {
+    throw new Error("native protocol session fixture corpus drifted in package");
   }
 
   const runtimeCheck = `

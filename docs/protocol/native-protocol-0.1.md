@@ -281,3 +281,9 @@ The checked-in
 current cross-language fixture source. Its schema is
 `schemas/native/native-protocol-fixture-corpus-0.1.schema.json`; its accepted
 and rejected dispositions must remain identical in every implementation.
+The companion
+[portable session corpus](../../fixtures/native-protocol/session-corpus-0.1.json)
+freezes ordered transcript outcomes and final verifier state. Its schema is
+`schemas/native/native-protocol-session-fixture-corpus-0.1.schema.json`; every
+conforming session verifier must fail at the same message with the same stable
+code or reach the same final state.
