@@ -24,7 +24,10 @@ requires no system installer, PATH change, registry change, or administrator
 elevation. See [Microsoft's manual installation documentation](https://learn.microsoft.com/en-us/dotnet/core/install/windows#manual-install).
 
 The runner builds both projects and performs two clean launches under the
-ignored `.native-evidence/` directory. The application has a three-minute
+current user's temporary `dual-surface-ui-native-evidence` directory. Historical
+workspace runs remain in ignored `.native-evidence/`. This separation avoids
+writing active state into the repository; no access-control or security setting
+is changed. The application has a three-minute
 lifetime limit; the capture process owns its launch, teardown, and restart.
 Failed output remains available for diagnosis and is never treated as passing
 evidence.
@@ -66,6 +69,9 @@ Reset completion uses a separate bounded, atomic `reset-ack.json` sequence;
 revision zero alone cannot acknowledge an asynchronous Invoke. Reads allow
 delete-sharing for atomic replacement, and the writer retries only transient
 sharing/lock violations for at most two seconds.
+Unexpected dispatcher failures shut down the fixture and retain only a closed
+failure category (`io_sharing`, `io_other`, `access`, or `unexpected`), never a
+raw exception, stack, or file path.
 
 ## Proposed golden freeze
 

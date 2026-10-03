@@ -23,6 +23,10 @@ internal static class Program
             if (!Directory.Exists(directory) || (File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
                 return 65;
             var app = new Application { ShutdownMode = ShutdownMode.OnMainWindowClose };
+            app.DispatcherUnhandledException += (_, error) =>
+            {
+                RecordFailure(directory, error.Exception); error.Handled = true; app.Shutdown(70);
+            };
             return app.Run(new FixtureWindow(directory));
         }
         catch (Exception error)
@@ -30,6 +34,16 @@ internal static class Program
             Console.Error.WriteLine(error is IOException ? "fixture_failed:io" : error is UnauthorizedAccessException ? "fixture_failed:access" : "fixture_failed:unexpected");
             return 70;
         }
+    }
+    private static void RecordFailure(string directory, Exception error)
+    {
+        string category = error switch
+        {
+            IOException io when (io.HResult & 0xffff) is 32 or 33 => "io_sharing",
+            IOException => "io_other", UnauthorizedAccessException => "access", _ => "unexpected"
+        };
+        try { File.WriteAllBytes(Path.Combine(directory, "fixture-failure.json"), JsonSerializer.SerializeToUtf8Bytes(new
+            { schemaVersion = "0.1", kind = "p4.2-fixture-failure", category })); } catch { }
     }
 }
 

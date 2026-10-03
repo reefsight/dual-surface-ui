@@ -21,7 +21,7 @@ try {
         & $sdkExe build $project --configuration Release --nologo
         if ($LASTEXITCODE -ne 0) { throw 'P4.2 fixture build failed.' }
     }
-    $evidenceRoot = Join-Path $repoRoot '.native-evidence'
+    $evidenceRoot = Join-Path ([IO.Path]::GetTempPath()) 'dual-surface-ui-native-evidence'
     if ((Test-Path -LiteralPath $evidenceRoot) -and ((Get-Item -LiteralPath $evidenceRoot).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
         throw 'P4.2 evidence root must not be a reparse-point target.'
     }
@@ -49,7 +49,14 @@ try {
             Write-Output $stdout.GetAwaiter().GetResult()
             $errorOutput = $stderr.GetAwaiter().GetResult()
             if ($errorOutput) { Write-Output $errorOutput }
-            if ($capture.ExitCode -ne 0) { throw 'P4.2 real UI Automation capture failed; local evidence retained.' }
+            if ($capture.ExitCode -ne 0) {
+                $failurePath = Join-Path $outputRoot 'fixture-failure.json'
+                if ((Test-Path -LiteralPath $failurePath) -and (Get-Item -LiteralPath $failurePath).Length -le 256) {
+                    $failure = Get-Content -LiteralPath $failurePath -Raw | ConvertFrom-Json
+                    if ($failure.kind -eq 'p4.2-fixture-failure' -and $failure.category -in @('io_sharing', 'io_other', 'access', 'unexpected')) { Write-Output ('fixture-failure-category=' + $failure.category) }
+                }
+                throw 'P4.2 real UI Automation capture failed; local evidence retained.'
+            }
         } finally { $capture.Dispose() }
     }
     Write-Output ('evidence-directory=' + $runRoot)
