@@ -1,0 +1,29 @@
+test/p4.2-fixture.test.ts
+  s_142b4d269ec35e::t_66ba2c0fcde85c 23-24,44,49,56-59,63,73,76,163-194
+e2e/browser/lifecycle.spec.ts
+  s_142b4d269ec35e::t_66ba2c0fcde85c 21-37
+docs/reviews/phase4-agent-review-authorization-2026-10-03.md
+  s_142b4d269ec35e::t_5410de3eea7212 1-54
+scripts/p4.2-fixture-contracts.mjs
+  s_142b4d269ec35e::t_66ba2c0fcde85c 143,151-153,163-165,172,179,181,184,241-244,246
+fixtures/native/windows-app/Capture/Program.cs
+  s_142b4d269ec35e::t_db7da0522b85a2 195-197,200,202
+scripts/browser-fixture-server.mjs
+  s_142b4d269ec35e::t_66ba2c0fcde85c 43-44,93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5c6b80e34fa8dab9a83d8771e6ee52bde63da272",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
