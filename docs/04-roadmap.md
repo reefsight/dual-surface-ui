@@ -158,7 +158,8 @@ P4.1 and the P4.2 entry gate are accepted; P4.2 runtime implementation is
 authorized as of 2026-09-22.
 Continuation on 2026-10-03 resolved the SDK prerequisite without elevation and
 implemented the fixture/capture candidate with two passing real UIA runs of
-22 cases. Source-bound goldens and independent P4.2 acceptance remain gated;
+22 cases. Source-bound proposed goldens and automated gates are verified;
+independent P4.2 review/acceptance remains gated;
 see [continuation evidence](evidence/p4.2-continuation-2026-10-03.md).
 P4.3 Windows adapter planning is complete in
 [the Windows UIA adapter work item](work-items/P4.3-windows-uia-adapter.md) and
