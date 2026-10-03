@@ -7,8 +7,9 @@ import { evaluateP42Review, loadP42ReviewValidator, P42_REVIEW, readP42Review, v
 
 const root = process.cwd();
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
-let actual: any, pending: any, golden: any, validate: any, taskRoot: string, draftPath: string;
-const context = { canonicalPath: true, evidence: { verified: true, frozenAt: Date.parse("2026-10-03T11:17:27Z") }, now: Date.parse("2026-10-03T14:00:00Z") };
+let actual: any, pending: any, golden: any, validate: any, taskRoot: string, draftPath: string, cliApproved: any;
+const context = { canonicalPath: true, evidence: { verified: true, frozenAt: 0 }, now: 0 };
+const dateAt = (offset: number) => new Date(context.evidence.frozenAt + offset).toISOString();
 // Synthetic approval records exercise admission only; never persist these to
 // the canonical review file or claim a reviewer/maintainer actually approved.
 const approved = () => {
@@ -18,9 +19,9 @@ const approved = () => {
   for (const scope of Object.values(value.scopes) as any[]) {
     scope.status = "approved";
     scope.reviewer = { id: "test-independent-reviewer", independent: true, independenceBasis: "Synthetic admission test, not a real review" };
-    scope.reviewedAt = "2026-10-03T12:00:00Z";
+    scope.reviewedAt = dateAt(3600000);
   }
-  value.maintainer = { id: "test-maintainer", decision: "approved", decidedAt: "2026-10-03T13:00:00Z" };
+  value.maintainer = { id: "test-maintainer", decision: "approved", decidedAt: dateAt(7200000) };
   return value;
 };
 const run = (...args: string[]) => spawnSync(process.execPath, ["scripts/validate-p4.2-review.mjs", ...args], {
@@ -29,6 +30,11 @@ const run = (...args: string[]) => spawnSync(process.execPath, ["scripts/validat
 const evaluate = (value: any, changes = {}) => evaluateP42Review(value, validate, { ...context, ...changes });
 
 beforeAll(async () => {
+  const frozen = spawnSync("git", ["show", "-s", "--format=%cI", P42_REVIEW.evidenceCommit], { cwd: root, encoding: "utf8", timeout: 10000 });
+  if (frozen.status !== 0) throw new Error("frozen_commit_unavailable");
+  context.evidence.frozenAt = Date.parse(frozen.stdout.trim());
+  if (!Number.isFinite(context.evidence.frozenAt)) throw new Error("invalid_frozen_date");
+  context.now = context.evidence.frozenAt + 10800000;
   actual = JSON.parse(await readFile(resolve(root, P42_REVIEW.canonicalPath), "utf8"));
   pending = clone(actual);
   pending.status = "pending"; pending.disposition = "not_reviewed";
@@ -42,7 +48,11 @@ beforeAll(async () => {
   const drafts = resolve(root, ".phase4-preflight/drafts");
   await mkdir(drafts, { recursive: true });
   draftPath = resolve(drafts, `p42-test-approved-${process.pid}.json`);
-  await writeFile(draftPath, JSON.stringify(approved()));
+  cliApproved = approved();
+  // Real CLI isolation must not also fail future-date checks on a fresh freeze.
+  for (const scope of Object.values(cliApproved.scopes) as any[]) scope.reviewedAt = dateAt(0);
+  cliApproved.maintainer.decidedAt = dateAt(0);
+  await writeFile(draftPath, JSON.stringify(cliApproved));
 });
 afterAll(async () => {
   if (draftPath) await rm(draftPath, { force: true });
@@ -107,14 +117,14 @@ describe("P4.2 frozen independent review admission", () => {
   });
 
   it("rejects review dates before evidence freeze, in the future, null, or malformed", () => {
-    for (const date of ["2026-10-03T11:00:00Z", "2026-10-04T12:00:00Z", null, "not-a-date"]) {
+    for (const date of [dateAt(-1000), dateAt(10800001), null, "not-a-date"]) {
       const value = approved(); value.scopes.security.reviewedAt = date;
       expect(evaluate(value).gateReady).toBe(false);
     }
   });
 
   it("requires maintainer acceptance after all reviews", () => {
-    for (const change of [{ decision: "pending" }, { id: null }, { decidedAt: null }, { decidedAt: "2026-10-03T11:30:00Z" }, { decidedAt: "2026-10-04T13:00:00Z" }]) {
+    for (const change of [{ decision: "pending" }, { id: null }, { decidedAt: null }, { decidedAt: dateAt(1800000) }, { decidedAt: dateAt(10800001) }]) {
       const value = approved(); Object.assign(value.maintainer, change);
       expect(evaluate(value).gateReady).toBe(false);
     }
@@ -153,6 +163,7 @@ describe("P4.2 bounded read-only review entrypoint", () => {
   }, 120000);
 
   it("rejects a fully approved synthetic draft at the real CLI gate", () => {
+    expect(evaluateP42Review(cliApproved, validate, { ...context, now: Date.now() }).gateReady).toBe(true);
     const result = run(draftPath);
     expect(result.status).toBe(3);
     expect(JSON.parse(result.stdout)).toEqual({ status: "gate_not_ready", contractValid: true, evidenceValid: true, gateReady: false });

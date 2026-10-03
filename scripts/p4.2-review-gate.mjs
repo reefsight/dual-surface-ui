@@ -10,9 +10,9 @@ export const P42_REVIEW = Object.freeze({
   canonicalPath: "docs/reviews/p4.2-independent-review.json",
   schemaPath: "fixtures/phase4-exit/contracts/p4.2-independent-review-0.1.schema.json",
   goldenPath: "fixtures/native/windows-app/golden-0.1.json",
-  reviewedCommit: "0d1ed98d3aaa84bfaa83aed44c12761d8b592bfd",
-  evidenceCommit: "6d402f40280216dff34ad6f5d723edbcac9f69f8",
-  goldenDigest: "sha256:dab9b781886ad1750765453224b006f78eca6bd7e55674d6fa25d3369b916837",
+  reviewedCommit: "5c6b80e34fa8dab9a83d8771e6ee52bde63da272",
+  evidenceCommit: "2b1f3250b899ec8ba3375c462a1bdff73ed6f570",
+  goldenDigest: "sha256:1e25e1146108848c5dc14bb7b320a03c9a057402682c9585d8e6b1fda17a19d3",
   recordBudget: 32768,
 });
 
