@@ -84,8 +84,10 @@ remediation and source-bound real evidence now satisfy P4.2; see the separate
 failures and serial-run scope are explicit. P4.3 entry remains a separate decision.
 P4.3 is specified in the
 [Windows UI Automation adapter work item](work-items/P4.3-windows-uia-adapter.md)
-and proposed [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md). Its
-implementation remains blocked on accepted real-fixture evidence from P4.2.
+and accepted [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md).
+The separately dated [entry decision](reviews/p4.3-entry-2026-10-03.md) now
+authorizes its reviewed bounded slices; implementation/native proof is not
+yet complete.
 P4.4's evidence-gated language selection is specified in the
 [native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).

@@ -169,8 +169,10 @@ source/evidence-bound validator now return canonical `gate_ready`. Earlier
 historical pending-record evidence, not the current disposition.
 P4.3 Windows adapter planning is complete in
 [the Windows UIA adapter work item](work-items/P4.3-windows-uia-adapter.md) and
-proposed [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md); runtime work
-remains gated on accepted P4.2 real-fixture evidence.
+accepted [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md).
+The [separate P4.3 entry decision](reviews/p4.3-entry-2026-10-03.md) authorizes
+the independently reviewed bounded implementation slices after P4.2 acceptance;
+P4.3 runtime completion and Phase 4 Exit Gate remain open.
 P4.4's frozen language-decision method is planned in
 [the native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).

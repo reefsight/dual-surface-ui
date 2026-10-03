@@ -1,6 +1,9 @@
 # ADR 0017: Windows UI Automation Adapter Trust Boundary
 
-Status: Proposed; blocked on P4.2 acceptance
+Status: Accepted on 2026-10-03 under explicit maintainer delegation
+
+Decision record: [ADR 0017/P4.3 entry](../reviews/p4.3-entry-2026-10-03.md).
+This accepts the reviewed trust-boundary design, not a completed adapter.
 
 Date: 2026-09-22
 
