@@ -1,0 +1,32 @@
+docs/04-roadmap.md
+  s_142b4d269ec35e::t_aebf7cc6de7456 161-162
+docs/reviews/p4.2-fixture-review-pack.md
+  s_142b4d269ec35e::t_aebf7cc6de7456 18-24,92-94
+  s_142b4d269ec35e::t_b085c0d9b90d00 10
+  s_142b4d269ec35e::t_9929ba375a0d59 57-59
+  s_142b4d269ec35e::t_a2d503604f2012 87-90
+  s_142b4d269ec35e::t_9bb1d1652fdaea 1-9,11-17,25-56,60-86,91
+docs/evidence/p4.2-continuation-2026-10-03.md
+  s_142b4d269ec35e::t_b085c0d9b90d00 67-76,78,137-145
+  s_142b4d269ec35e::t_aebf7cc6de7456 3-4,77,79-122,151-153
+fixtures/native/windows-app/golden-0.1.json
+  s_142b4d269ec35e::t_d4582e8f1e0fb3 1-35647
+docs/work-items/P4.2-native-fixture-application.md
+  s_142b4d269ec35e::t_aebf7cc6de7456 6-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6d402f40280216dff34ad6f5d723edbcac9f69f8",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
