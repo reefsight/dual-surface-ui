@@ -17,11 +17,11 @@ must not be treated like ordinary application windows.
 1. Keep UIA behind an internal platform adapter. Public clients receive only protocol 0.1 and core semantic projections.
 2. Admit windows through trusted host policy and bind opaque references to OS user/session, desktop, process, window, and generation state.
 3. Treat every UIA property, pattern, runtime ID, event, and exception as untrusted input; bound and validate before normalization or logging.
-4. Use AutomationId, name, control type, and tree structure only as correlation signals; re-resolve and reject ambiguity before action.
+4. Use AutomationId, name, control type, and tree structure only as correlation signals; freshly resolve candidates within the current admitted window/container, qualify by reviewed control type and required patterns, and reject remaining ambiguity. Provider wrappers sharing an AutomationId are not automatically duplicate semantic targets.
 5. Support semantic UIA patterns explicitly. P4.3 has no generic input, mouse/keyboard injection, shell, memory, or raw selector fallback.
-6. Recheck policy, confirmation, revision, pattern availability, identity generation, and expected effects immediately before mutation.
+6. Recheck policy, confirmation, revision, pattern availability, identity generation, current tree membership/ancestry, and expected effects immediately before mutation. A removed/replaced element is invalid even if its retained provider peer remains callable. Trusted window liveness must also be checked when stale UIA metadata survives window destruction.
 7. Verify postconditions through fresh UIA state and the fixture's separate authoritative state; uncertain outcomes never become false success/failure.
-8. Fail closed on provider disconnect, replacement, desktop/session change, event gap, severe resource violation, or identity ambiguity.
+8. Fail closed on provider disconnect, replacement, desktop/session change, event gap, severe resource violation, or identity ambiguity. A local event counter is not proof that all provider notifications arrived; fresh authoritative reconciliation and explicit resynchronization are required to cover dropped/reordered notifications and request/event races.
 9. Password/sensitive controls expose classification and safe presence only; values and write actions are unavailable.
 10. Keep language types, COM layout, unsafe blocks, native handles, and serializer defaults outside schemas and fixtures.
 
