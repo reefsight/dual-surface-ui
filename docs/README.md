@@ -77,8 +77,11 @@ and accepted [ADR 0016](adr/0016-native-fixture-application-boundary.md).
 P4.1 and the P4.2 entry gate are accepted, so fixture implementation is
 authorized. The fixture technology does not select the future bridge language.
 The [2026-10-03 continuation](evidence/p4.2-continuation-2026-10-03.md) records
-the isolated SDK, real-provider fixture candidate, regression evidence, and
-remaining golden/review gate. It does not accept P4.2 or authorize P4.3.
+the historical isolated SDK/fixture implementation. Later independent review,
+remediation and source-bound real evidence now satisfy P4.2; see the separate
+[delegated acceptance](reviews/p4.2-acceptance-2026-10-03.md) and canonical
+[gate-ready review](reviews/p4.2-independent-review.json). The retained launch
+failures and serial-run scope are explicit. P4.3 entry remains a separate decision.
 P4.3 is specified in the
 [Windows UI Automation adapter work item](work-items/P4.3-windows-uia-adapter.md)
 and proposed [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md). Its

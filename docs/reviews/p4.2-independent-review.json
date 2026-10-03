@@ -1,7 +1,7 @@
 {
   "schemaVersion": "0.1",
   "kind": "p4.2-independent-fixture-review",
-  "status": "pending",
+  "status": "approved",
   "reviewedCommit": "5c6b80e34fa8dab9a83d8771e6ee52bde63da272",
   "evidenceCommit": "2b1f3250b899ec8ba3375c462a1bdff73ed6f570",
   "goldenDigest": "sha256:1e25e1146108848c5dc14bb7b320a03c9a057402682c9585d8e6b1fda17a19d3",
@@ -14,13 +14,19 @@
     "sha256:6b6b02aadb1a457a07a1e8811395decf02c1c8c73836222255c2e62bd9c5f681"
   ],
   "scopes": {
-    "accessibility": { "status": "pending", "reviewer": null, "reviewedAt": null },
-    "security": { "status": "pending", "reviewer": null, "reviewedAt": null },
-    "interoperability": { "status": "pending", "reviewer": null, "reviewedAt": null },
-    "package": { "status": "pending", "reviewer": null, "reviewedAt": null }
+    "accessibility": { "status": "approved", "reviewer": { "id": "codex-agent-p42-accessibility-interoperability-review", "independent": true, "independenceBasis": "Actual separate agent /root/p42_accessibility_interop_review; authored no target implementation. FINAL decision in docs/reviews/p4.2-accessibility-interoperability-agent-review.md under phase4-agent-review-authorization-2026-10-03.md; agent review, not human audit." }, "reviewedAt": "2026-10-03T15:16:35Z" },
+    "security": { "status": "approved", "reviewer": { "id": "p42_security_review", "independent": true, "independenceBasis": "Actual separate agent /root/p42_security_review; authored no target implementation. FINAL decision in docs/reviews/p4.2-security-agent-review.md under phase4-agent-review-authorization-2026-10-03.md; agent review, not human security-owner approval." }, "reviewedAt": "2026-10-03T15:17:14Z" },
+    "interoperability": { "status": "approved", "reviewer": { "id": "codex-agent-p42-accessibility-interoperability-review", "independent": true, "independenceBasis": "Actual separate agent /root/p42_accessibility_interop_review; authored no target implementation. FINAL protocol/core mapping decision in docs/reviews/p4.2-accessibility-interoperability-agent-review.md under phase4-agent-review-authorization-2026-10-03.md." }, "reviewedAt": "2026-10-03T15:16:35Z" },
+    "package": { "status": "approved", "reviewer": { "id": "codex-p42-package-gate-review", "independent": true, "independenceBasis": "Actual separate agent /root/p42_package_gate_review; authored no target implementation or gate. FINAL decision in docs/reviews/p4.2-package-gate-agent-review.md under phase4-agent-review-authorization-2026-10-03.md; actual archive and 33 admission tests independently verified." }, "reviewedAt": "2026-10-03T15:20:17Z" }
   },
-  "findings": [],
+  "findings": [
+    { "id": "AI-P42-AI-01", "scope": "accessibility", "severity": "medium", "status": "resolved", "summary": "Container selection and ComboBox state could contradict authoritative state without rejection.", "resolution": "Source 5c6b80e checks list/tab selection and collapsed ComboBox state. Final reviewer verified new evidence 2b1f325 and rejected corrupted selection/expansion variants; original finding retained in the actual accessibility/interoperability report." },
+    { "id": "AI-P42-AI-02", "scope": "accessibility", "severity": "medium", "status": "resolved", "summary": "Expanded evidence could omit the required visible descendant.", "resolution": "Source 5c6b80e requires the expanded child, current parent, non-offscreen and visible rectangle. Final reviewer rejected absent/offscreen/wrong-parent/empty variants against the new capture and verified unchanged accepted semantic mappings." },
+    { "id": "AI-P42-AI-03", "scope": "interoperability", "severity": "medium", "status": "resolved", "summary": "Root, modal lifecycle and per-case identity bindings were insufficiently cross-checked.", "resolution": "Source 5c6b80e binds roots to window references, enforces distinct modals and unchanged main identity outside replacement, and rejects restarted identity reuse. Independent final mapping/root/protocol checks passed on source-bound evidence 2b1f325." },
+    { "id": "P42-SEC-001", "scope": "security", "severity": "medium", "status": "resolved", "summary": "Loopback fixture server exposed native bin/obj build or debug metadata.", "resolution": "Source 5c6b80e denies decoded and filesystem native bin/obj/cache/evidence paths. Security reviewer independently verified 15 HEAD 403s and final committed/current source equality; complete browser regression passed 111/111 including direct, encoded, mixed-case and /@fs negatives." },
+    { "id": "AI-P42-L01", "scope": "accessibility", "severity": "low", "status": "accepted", "summary": "Launch readiness under concurrent host load is not established; two failed launches remain retained with unknown cause. Repeatability approval covers only the recorded serial-run condition, with unchanged deadlines and no retries. No general startup reliability claim.", "resolution": null }
+  ],
   "unresolvedCriticalHigh": 0,
-  "disposition": "not_reviewed",
-  "maintainer": { "id": null, "decision": "pending", "decidedAt": null }
+  "disposition": "no_unresolved_critical_high",
+  "maintainer": { "id": "codex-root-delegated-Pitchayut586", "decision": "approved", "decidedAt": "2026-10-03T15:28:52Z" }
 }
