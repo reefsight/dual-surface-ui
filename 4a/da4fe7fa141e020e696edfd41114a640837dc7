@@ -1,0 +1,40 @@
+docs/reviews/p4.3-identity-development-security-agent-review.md
+  s_142b4d269ec35e::t_562c72e5272c79 1-242,251-303
+  s_142b4d269ec35e::t_2bb0e53d3c8362 243-250
+docs/work-items/P4.3-windows-uia-adapter.md
+  s_142b4d269ec35e::t_5b6f1183887bc6 9-15
+docs/04-roadmap.md
+  s_142b4d269ec35e::t_53e3629d1b9a5b 176-179
+docs/evidence/p4.3-identity-development-2026-10-03.md
+  s_142b4d269ec35e::t_84922c6ac806f7 70-81
+  s_142b4d269ec35e::t_46bcd018b98a33 151-155
+  s_142b4d269ec35e::t_53e3629d1b9a5b 65-69
+  s_142b4d269ec35e::t_834e7a476310bc 1-33,41-64,100-150,156-165
+  s_142b4d269ec35e::t_22ff0199dd6832 82-99
+  s_142b4d269ec35e::t_b2056bd0940340 34-40
+docs/reviews/p4.3-identity-development-accessibility-agent-review.md
+  s_142b4d269ec35e::t_d2b8b734b89aee 182-249
+  s_142b4d269ec35e::t_c6b9c0d0df632f 1-181
+docs/README.md
+  s_142b4d269ec35e::t_5b6f1183887bc6 91-97
+docs/reviews/p4.3-identity-development-package-agent-review.md
+  s_142b4d269ec35e::t_036aa3cd499f98 1-12,14-76
+  s_142b4d269ec35e::t_3e2b0c17ae24ed 101,107,109-110
+  s_142b4d269ec35e::t_0ce1cedba7be28 13,77-100,102-106,108,111-112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4ada4fe7fa141e020e696edfd41114a640837dc7",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
