@@ -1,0 +1,41 @@
+fixtures/phase4-exit/contracts/p4.2-independent-review-0.1.schema.json
+  s_142b4d269ec35e::t_be7bfaca1eac1b 11-13,16-18
+test/p4.2-review-validator.test.ts
+  s_142b4d269ec35e::t_29dd6b2f08a28c 11-12,22,24,33-37,120,127
+  s_142b4d269ec35e::t_7749ed947abe51 10,51-55,166
+docs/reviews/p4.2-fixture-review-pack.md
+  s_142b4d269ec35e::t_be7bfaca1eac1b 10,15-17,22,25-28,98-105
+docs/reviews/p4.2-package-gate-agent-review.md
+  s_142b4d269ec35e::t_65d11e1ed7df22 1-123
+  s_142b4d269ec35e::t_1c3de61aa52a81 124-229
+scripts/p4.2-review-gate.mjs
+  s_142b4d269ec35e::t_be7bfaca1eac1b 13-15
+docs/reviews/p4.2-security-agent-review.md
+  s_142b4d269ec35e::t_3f2a49814ce028 48,89-115,246-320,322
+  s_142b4d269ec35e::t_69226684bcf7af 9-11,415-417
+  s_142b4d269ec35e::t_d0d667b4856271 3-8,25,321,325-414,418-422
+  s_142b4d269ec35e::t_f649849caf8669 1-2,12-24,26-47,49-88,116-245,323-324
+docs/reviews/p4.2-accessibility-interoperability-agent-review.md
+  s_142b4d269ec35e::t_0380ebec066716 113,198-200
+  s_142b4d269ec35e::t_57d270309ce10e 1-24,26-112,114-197,201-255,324,402,415
+  s_142b4d269ec35e::t_82e24c61e5a10a 333-389
+  s_142b4d269ec35e::t_ea00d567023995 25,256-323,325-332,390-401,403-414,416-501
+docs/reviews/p4.2-independent-review.json
+  s_142b4d269ec35e::t_be7bfaca1eac1b 5-7,10-11,13-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d9141dc527a2c2b83c652ae3368fceed92e236f6",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
