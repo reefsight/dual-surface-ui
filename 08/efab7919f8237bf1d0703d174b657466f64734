@@ -1,0 +1,29 @@
+docs/README.md
+  s_142b4d269ec35e::t_7ae47dc1e35116 87-90
+docs/adr/0017-windows-uia-adapter-trust-boundary.md
+  s_142b4d269ec35e::t_7ae47dc1e35116 3-6
+docs/04-roadmap.md
+  s_142b4d269ec35e::t_7ae47dc1e35116 172-175
+docs/work-items/P4.3-implementation-slices.md
+  s_142b4d269ec35e::t_7ae47dc1e35116 3-5
+docs/reviews/p4.3-entry-2026-10-03.md
+  s_142b4d269ec35e::t_7ae47dc1e35116 1-74
+docs/work-items/P4.3-windows-uia-adapter.md
+  s_142b4d269ec35e::t_7ae47dc1e35116 3-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "08efab7919f8237bf1d0703d174b657466f64734",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
