@@ -35,6 +35,22 @@ test("fixture server denies native build/debug metadata over direct, encoded and
   }
 });
 
+test("fixture server denies internal Windows UIA experiment build outputs", async ({ request }) => {
+  const experiment = "/experiments/windows-uia/managed-reference/IdentityHarness/";
+  for (const path of [
+    experiment + "bin/Release/net10.0-windows/DualSurface.UiaIdentityHarness.dll",
+    experiment + "bin/Release/net10.0-windows/DualSurface.UiaIdentityHarness.pdb",
+    experiment + "obj/project.assets.json", experiment + "obj/project.assets.json?raw",
+    experiment + "%62in/Release/net10.0-windows/DualSurface.UiaIdentityHarness.dll",
+    experiment + "%6fbj/project.assets.json", experiment.toUpperCase() + "BIN/Release/a.dll",
+    "/@fs/" + process.cwd().replaceAll("\\", "/") + experiment + "bin/Release/net10.0-windows/DualSurface.UiaIdentityHarness.dll",
+  ]) {
+    const response = await request.get(path);
+    expect(response.status()).toBe(403);
+    expect(await response.text()).toBe("Forbidden");
+  }
+});
+
 test("native evidence codec preserves the Chrome 155 input transition", async ({
   page,
 }) => {

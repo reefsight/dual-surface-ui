@@ -12,6 +12,8 @@ test-results/
 .native-evidence/
 fixtures/native/**/bin/
 fixtures/native/**/obj/
+experiments/**/bin/
+experiments/**/obj/
 *.log
 .env
 .env*.local
