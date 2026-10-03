@@ -134,7 +134,11 @@ internal sealed class CaptureRun : IDisposable
         Stage = "control-replacement-stale-probe";
         var staleProbeBefore = State();
         bool stale = false;
-        try { ((InvokePattern)old.GetCurrentPattern(InvokePattern.Pattern)).Invoke(); }
+        try
+        {
+            if (old.TryGetCurrentPattern(InvokePattern.Pattern, out object? retainedPattern)) ((InvokePattern)retainedPattern).Invoke();
+            else stale = true;
+        }
         catch (ElementNotAvailableException) { stale = true; }
         if (!stale) WaitState(state => state.GetProperty("count").GetInt32() == 1);
         else if (State().GetProperty("count").GetInt32() != 0) throw new InvalidOperationException();
@@ -204,7 +208,7 @@ internal sealed class CaptureRun : IDisposable
     }
     private int ResetSequence()
     {
-        string path = Path.Combine(output, "reset-ack.json");
+        string path = LatestRecord("reset-ack");
         byte[] bytes = ReadBoundedFile(path, 256);
         using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 2 });
         var ack = document.RootElement;
@@ -363,7 +367,7 @@ internal sealed class CaptureRun : IDisposable
     }
     private JsonElement State()
     {
-        string path = Path.Combine(output, "state.json");
+        string path = LatestRecord("state");
         byte[] bytes = ReadBoundedFile(path, 4096);
         using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 4 });
         return document.RootElement.Clone();
@@ -371,12 +375,19 @@ internal sealed class CaptureRun : IDisposable
     private static byte[] ReadBoundedFile(string path, int maximum)
     {
         if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0) throw new InvalidOperationException();
-        // Allow atomic replacement while this handle reads the previous complete
-        // record. File.ReadAllBytes denies delete-sharing on Windows and races
-        // the independent writer's File.Move(overwrite: true).
+        // Immutable published records remain complete while being read. Retain
+        // delete-sharing so eventual host-owned cleanup cannot race the reader.
         using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
         if (file.Length > maximum) throw new InvalidOperationException();
         byte[] bytes = new byte[(int)file.Length]; file.ReadExactly(bytes); return bytes;
+    }
+    private string LatestRecord(string prefix)
+    {
+        var files = Directory.EnumerateFiles(output, prefix + "-????.json").Where(path =>
+            System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(path), "^" + prefix + "-[0-9]{4}\\.json$")).Take(513).ToArray();
+        if (files.Length > 512) throw new InvalidOperationException();
+        if (files.Length == 0) throw new FileNotFoundException();
+        return files.OrderBy(path => Path.GetFileName(path), StringComparer.Ordinal).Last();
     }
     private void WaitState(Func<JsonElement, bool> condition) => Wait(() =>
     {

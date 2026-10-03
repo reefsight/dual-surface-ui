@@ -193,6 +193,11 @@ describe("P4.2 controlled fixture contract", () => {
     const first = captureModel(); const repeat = repeatModel(first);
     expect(verifyRepeatedCaptures([first, repeat], manifest, validators)[0].semanticsDigest).toBe(verifyCapture(first, manifest, validators).semanticsDigest);
     expect(() => verifyRepeatedCaptures([first, clone(first)], manifest, validators)).toThrow("fixture_repeat_run_not_independent");
+    const lifetime = repeatModel(first);
+    const detached = lifetime.cases.find((entry: any) => entry.id === "control-replacement");
+    detached.staleProviderOutcome = "unavailable"; detached.staleProbeAfter = clone(detached.staleProbeBefore);
+    lifetime.cases.find((entry: any) => entry.id === "window-replacement").oldWindowProviderOutcome = "unavailable";
+    expect(() => verifyRepeatedCaptures([first, lifetime], manifest, validators)).not.toThrow();
     repeat.fixtureBinaryDigest = "sha256:" + "0".repeat(64);
     expect(() => verifyRepeatedCaptures([first, repeat], manifest, validators)).toThrow("fixture_repeatability_mismatch");
   });

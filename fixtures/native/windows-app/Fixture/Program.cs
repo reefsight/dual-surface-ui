@@ -1,5 +1,4 @@
 using System.IO;
-using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Windows;
@@ -22,6 +21,7 @@ internal static class Program
             string directory = Path.GetFullPath(args[1]);
             if (!Directory.Exists(directory) || (File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
                 return 65;
+            FixtureWindow.InitializeRecorder(directory);
             var app = new Application { ShutdownMode = ShutdownMode.OnMainWindowClose };
             app.DispatcherUnhandledException += (_, error) =>
             {
@@ -49,6 +49,15 @@ internal static class Program
 
 internal sealed class FixtureWindow : Window
 {
+    private static int recordSequence;
+    public static void InitializeRecorder(string directory)
+    {
+        var records = Directory.EnumerateFiles(directory, "*.json").Where(path =>
+            System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(path), "^(state|reset-ack)-[0-9]{4}\\.json$")).Take(513).ToArray();
+        if (records.Length > 512) throw new InvalidOperationException();
+        recordSequence = records.Select(path => int.Parse(Path.GetFileName(path).AsSpan(Path.GetFileName(path).Length - 9, 4),
+            System.Globalization.CultureInfo.InvariantCulture)).DefaultIfEmpty(0).Max();
+    }
     private readonly string directory;
     private readonly TextBox value = new() { Text = "initial", MaxLength = 64 };
     private readonly TextBox readOnly = new() { Text = "read only", IsReadOnly = true };
@@ -200,15 +209,15 @@ internal sealed class FixtureWindow : Window
         byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(state);
         if (bytes.Length > 4096) throw new InvalidOperationException("Fixture state budget exceeded.");
         string temporary = Path.Combine(directory, "state-" + Guid.NewGuid().ToString("N") + ".tmp");
-        string target = Path.Combine(directory, name);
+        if (++recordSequence > 512) throw new InvalidOperationException("Fixture record budget exceeded.");
+        string target = Path.Combine(directory, Path.GetFileNameWithoutExtension(name) + "-" +
+            recordSequence.ToString("D4", System.Globalization.CultureInfo.InvariantCulture) + ".json");
         using (var file = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             file.Write(bytes);
-        var timer = Stopwatch.StartNew();
-        while (true)
-        {
-            try { File.Move(temporary, target, true); break; }
-            catch (IOException error) when ((error.HResult & 0xffff) is 32 or 33 && timer.Elapsed < TimeSpan.FromSeconds(2)) { Thread.Sleep(40); }
-        }
+        // Publish a new immutable version atomically. Never overwrite an open
+        // destination: Windows can reject replacement even for delete-shared
+        // readers. Only complete renamed records are visible to the capture.
+        File.Move(temporary, target);
     }
 }
 

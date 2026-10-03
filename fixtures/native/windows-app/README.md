@@ -37,7 +37,7 @@ evidence.
 - `manifest-0.1.json` fixes control identity, inert names, expected types,
   required provider patterns, semantic actions, and resource budgets.
 - `Fixture` writes its synthetic state independently of the UIA reader with
-  bounded atomic file replacement. It generates a sensitive challenge in
+  bounded atomic publication of immutable versioned records. It generates a sensitive challenge in
   memory and records presence only.
 - `Capture` records a bounded projection of provider properties and real
   pattern operations. Password values and event payload values are never read.
@@ -48,7 +48,8 @@ evidence.
 
 Normalized snapshot timestamps are fixed to `2000-01-01T00:00:00.000Z` solely
 for golden comparison. Process/window/element hashes, focus, display metadata,
-and asynchronous event timing are retained in raw captures and excluded from
+asynchronous event timing, old-provider availability, and its diagnostic probe
+are retained and verified in raw captures and excluded from
 the semantics digest. Provider identity changes must still be verified within
 each real run.
 
@@ -65,10 +66,14 @@ persisting the handle), records the metadata outcome, and requires a distinct
 current window identity. The clipped button uses the framework's documented
 `IsOffscreenBehavior.FromClip`, not a hard-coded off-screen flag.
 
-Reset completion uses a separate bounded, atomic `reset-ack.json` sequence;
+Reset completion uses a separate bounded, atomic `reset-ack-0000.json` sequence;
 revision zero alone cannot acknowledge an asynchronous Invoke. Reads allow
-delete-sharing for atomic replacement, and the writer retries only transient
-sharing/lock violations for at most two seconds.
+delete-sharing. A writer publishes each new `state-0000.json` / reset record
+under a new monotonic filename, never replacing an open destination. Readers
+choose the latest complete published version. A run holds at most 512 records,
+each at most 4096 bytes; acknowledgement reads have a 256-byte limit. The
+private file sequence survives window/process restart but is never a public
+control ID or protocol revision.
 Unexpected dispatcher failures shut down the fixture and retain only a closed
 failure category (`io_sharing`, `io_other`, `access`, or `unexpected`), never a
 raw exception, stack, or file path.

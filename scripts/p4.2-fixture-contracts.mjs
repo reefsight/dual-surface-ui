@@ -176,9 +176,9 @@ export function verifyCapture(capture, manifest, validators) {
       if (!validators.snapshot(record.modalSnapshot)) throw new Error("fixture_core_snapshot_invalid");
     }
     if (entry.observed) record.observed = entry.observed;
-    if (entry.staleProviderOutcome) record.staleProviderOutcome = entry.staleProviderOutcome;
-    if (entry.staleProbeBefore) { record.staleProbeBefore = entry.staleProbeBefore; record.staleProbeAfter = entry.staleProbeAfter; }
-    if (entry.oldWindowProviderOutcome) record.oldWindowProviderOutcome = entry.oldWindowProviderOutcome;
+    // Old-provider availability and its synthetic diagnostic probe are retained
+    // and verified in raw evidence, not current-tree semantic state. GC/provider
+    // lifetime can vary while current binding invalidation stays deterministic.
     return record;
   });
   const known = new Set(manifest.controls.map(entry => entry.id));
