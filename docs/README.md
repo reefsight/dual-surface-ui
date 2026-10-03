@@ -88,6 +88,13 @@ and accepted [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md).
 The separately dated [entry decision](reviews/p4.3-entry-2026-10-03.md) now
 authorizes its reviewed bounded slices; implementation/native proof is not
 yet complete.
+The [identity development checkpoint](evidence/p4.3-identity-development-2026-10-03.md)
+records the source-only reference, independent
+[accessibility](reviews/p4.3-identity-development-accessibility-agent-review.md),
+[security](reviews/p4.3-identity-development-security-agent-review.md) and
+[package](reviews/p4.3-identity-development-package-agent-review.md) reviews,
+and the current input-desktop blocker. Unit/browser/package proof is not native
+slice or P4.3 acceptance.
 P4.4's evidence-gated language selection is specified in the
 [native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
