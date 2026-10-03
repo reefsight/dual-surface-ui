@@ -20,7 +20,8 @@ const providerNode = (id: string, extra = {}) => {
     rectangle: "visible", patterns: definition.patterns, values: {}, instanceRef: "sha256:" + "a".repeat(64), ...extra };
 };
 const tree = (nodes: any[]) => ({ processRef: "sha256:" + "b".repeat(64), windowRef: "sha256:" + "c".repeat(64),
-  nodes: nodes.map(node => ({ ...node, parentId: nodes.some(parent => parent.id === node.parentId) ? node.parentId : null })) });
+  nodes: nodes.map(node => ({ ...node, ...(node.id === "fixture-window" ? { instanceRef: "sha256:" + "c".repeat(64) } : {}),
+    parentId: nodes.some(parent => parent.id === node.parentId) ? node.parentId : null })) });
 
 // Negative/admission unit-test input only, never claimed as real OS evidence.
 function captureModel(): any {
@@ -40,22 +41,26 @@ function captureModel(): any {
       if (c.id === "toggle" || c.id === "disabled-toggle") values.checked = c.id === "toggle" && state.toggle;
       if (c.id === "range") Object.assign(values, { range: state.range, minimum: 0, maximum: 10, readOnly: false });
       if (c.id === "expand") values.expanded = state.expanded;
-      if (c.id === "combo") values.selection = [state.combo];
+      if (c.id === "combo") Object.assign(values, { selection: [state.combo], expanded: false });
       if (c.id === "selection") values.selection = [state.selection];
       if (c.id === "tabs") values.selection = [state.tab];
       for (const key of ["selection", "combo", "radio", "tab"]) if (c.id === `${key}-a` || c.id === `${key}-b`) values.selected = state[key] === c.id;
       const offscreen = c.id === "offscreen" || c.id.startsWith("combo-");
-      return providerNode(c.id, { values, parentId: c.id === "fixture-window" ? null : "fixture-window",
+      return providerNode(c.id, { values, parentId: c.id === "fixture-window" ? null : c.id === "expanded-child" ? "expand" : "fixture-window",
         enabled: !["disabled", "disabled-toggle"].includes(c.id), offscreen, rectangle: offscreen ? "offscreen" : "visible" });
     }));
   const cases = CASE_IDS.map(id => {
     const after = { ...INITIAL_FIXTURE_STATE, ...(transitions[id] ? { revision: 1, ...transitions[id] } : {}) };
     const entry: any = { id, disposition: dispositions[id] ?? "succeeded", before: clone(INITIAL_FIXTURE_STATE), after, raw: rawFor(after) };
     if (id === "toggle-repeat") entry.observed = [true, false, true, false, true, false];
-    if (id.startsWith("modal-")) entry.modalRaw = { ...tree([providerNode("modal-window", { parentId: null }), providerNode("modal-confirm", { parentId: "modal-window" }), providerNode("modal-cancel", { parentId: "modal-window" })]), windowRef: "sha256:" + "2".repeat(64) };
+    if (id.startsWith("modal-")) {
+      const windowRef = "sha256:" + (id === "modal-cancel" ? "2" : "6").repeat(64);
+      entry.modalRaw = { ...tree([providerNode("modal-window", { parentId: null, instanceRef: windowRef }), providerNode("modal-confirm", { parentId: "modal-window" }), providerNode("modal-cancel", { parentId: "modal-window" })]), windowRef };
+    }
     if (id === "control-replacement") Object.assign(entry, { staleProviderOutcome: "retained_callable", staleProbeBefore: clone(after), staleProbeAfter: { ...after, count: 1, revision: 2 } });
     if (id === "window-replacement") { entry.raw.windowRef = "sha256:" + "d".repeat(64); entry.oldWindowProviderOutcome = "retained_metadata"; }
     if (id === "process-restart") { entry.raw.processRef = "sha256:" + "e".repeat(64); entry.raw.windowRef = "sha256:" + "f".repeat(64); }
+    entry.raw.nodes.find((node: any) => node.id === "fixture-window").instanceRef = entry.raw.windowRef;
     return entry;
   });
   return { schemaVersion: "0.1", kind: "p4.2-real-uia-capture", captureToolVersion: "0.1", seed: "p4.2-seed-1",
@@ -65,10 +70,10 @@ function captureModel(): any {
 }
 function repeatModel(input: any): any {
   const repeat = clone(input);
-  const refs: Record<string, string> = { b: "8", e: "9", c: "3", d: "4", f: "5", "2": "6", a: "7" };
+  const refs: Record<string, string> = { b: "8", e: "9", c: "3", d: "4", f: "5", "2": "6", "6": "0", a: "7" };
   for (const entry of repeat.cases) for (const raw of [entry.raw, entry.modalRaw].filter(Boolean)) {
     for (const key of ["processRef", "windowRef"]) raw[key] = "sha256:" + refs[raw[key][7]].repeat(64);
-    for (const node of raw.nodes) node.instanceRef = "sha256:" + "7".repeat(64);
+    for (const node of raw.nodes) node.instanceRef = ["fixture-window", "modal-window"].includes(node.id) ? raw.windowRef : "sha256:" + "7".repeat(64);
   }
   return repeat;
 }
@@ -154,6 +159,38 @@ describe("P4.2 controlled fixture contract", () => {
     expect(() => verifyCapture(stale, manifest, validators)).toThrow("fixture_oracle_mismatch");
     const missing = captureModel(); missing.cases[0].raw.nodes = missing.cases[0].raw.nodes.filter((node: any) => node.id !== "invoke");
     expect(() => verifyCapture(missing, manifest, validators)).toThrow("fixture_oracle_mismatch");
+  });
+  it.each(["missing", "offscreen", "wrong-parent", "empty"])("rejects incomplete expanded-child evidence: %s", mutation => {
+    const capture = captureModel(); const expanded = capture.cases.find((entry: any) => entry.id === "expand");
+    const child = expanded.raw.nodes.find((node: any) => node.id === "expanded-child");
+    if (mutation === "missing") expanded.raw.nodes = expanded.raw.nodes.filter((node: any) => node !== child);
+    if (mutation === "offscreen") child.offscreen = true;
+    if (mutation === "wrong-parent") child.parentId = "fixture-window";
+    if (mutation === "empty") child.rectangle = "empty";
+    expect(() => verifyCapture(capture, manifest, validators)).toThrow("fixture_oracle_mismatch");
+  });
+  it.each(["selection", "tabs", "combo"])("requires the %s container to agree with authoritative selection", id => {
+    const capture = captureModel();
+    capture.cases[0].raw.nodes.find((node: any) => node.id === id).values.selection = [id === "tabs" ? "tab-b" : `${id}-b`];
+    expect(() => verifyCapture(capture, manifest, validators)).toThrow("fixture_oracle_mismatch");
+  });
+  it("requires ComboBox post-capture collapse and window-root identity", () => {
+    const expanded = captureModel(); expanded.cases[0].raw.nodes.find((node: any) => node.id === "combo").values.expanded = true;
+    expect(() => verifyCapture(expanded, manifest, validators)).toThrow("fixture_oracle_mismatch");
+    const wrongRoot = captureModel(); wrongRoot.cases[0].raw.nodes.find((node: any) => node.id === "fixture-window").instanceRef = "sha256:" + "0".repeat(64);
+    expect(() => verifyCapture(wrongRoot, manifest, validators)).toThrow("fixture_oracle_mismatch");
+  });
+  it("requires distinct modal lifecycle and matching modal-root identity", () => {
+    const reused = captureModel(); const modal = reused.cases.find((entry: any) => entry.id === "modal-confirm").modalRaw;
+    modal.windowRef = reused.cases.find((entry: any) => entry.id === "modal-cancel").modalRaw.windowRef;
+    modal.nodes.find((node: any) => node.id === "modal-window").instanceRef = modal.windowRef;
+    expect(() => verifyCapture(reused, manifest, validators)).toThrow("fixture_modal_binding_invalid");
+    const mismatch = captureModel(); mismatch.cases.find((entry: any) => entry.id === "modal-confirm").modalRaw.nodes[0].instanceRef = "sha256:" + "0".repeat(64);
+    expect(() => verifyCapture(mismatch, manifest, validators)).toThrow("fixture_modal_binding_invalid");
+  });
+  it("rejects per-case process/window drift outside replacement scenarios", () => {
+    const drift = captureModel(); drift.cases[1].raw.processRef = "sha256:" + "0".repeat(64);
+    expect(() => verifyCapture(drift, manifest, validators)).toThrow("fixture_case_identity_drift");
   });
   it("rejects altered case order, disposition, and an unreset initial state", () => {
     const reordered = captureModel(); [reordered.cases[0], reordered.cases[1]] = [reordered.cases[1], reordered.cases[0]];

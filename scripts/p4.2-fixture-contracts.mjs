@@ -140,6 +140,7 @@ function verifyOracle(raw, state) {
   for (const id of ["fixture-window", "invoke", "value", "readonly", "toggle", "disabled", "disabled-toggle", "sensitive",
     "selection", "selection-a", "selection-b", "combo", "radio-a", "radio-b", "tabs", "tab-a", "tab-b", "expand",
     "range", "replace", "modal", "replace-window", "unsupported", "injection", "offscreen", "reset", "status"]) check(!!get(id));
+  check(get("fixture-window").parentId === null && get("fixture-window").instanceRef === raw.windowRef);
   check(get("value")?.values.value === state.value);
   check(get("readonly")?.values.readOnly === true && get("readonly")?.values.value === "read only");
   check(get("toggle")?.values.checked === state.toggle);
@@ -147,6 +148,9 @@ function verifyOracle(raw, state) {
   check(get("range")?.values.minimum === 0 && get("range")?.values.maximum === 10 && get("range")?.values.readOnly === false);
   check(get("value")?.values.readOnly === false && get("disabled-toggle")?.values.checked === false);
   check(get("combo")?.values.selection?.[0] === state.combo);
+  check(canonical(get("selection").values.selection) === canonical([state.selection]));
+  check(canonical(get("tabs").values.selection) === canonical([state.tab]));
+  check(get("combo").values.expanded === false);
   check(get("expand")?.values.expanded === state.expanded);
   for (const [key, ids] of [["selection", ["selection-a", "selection-b"]], ["radio", ["radio-a", "radio-b"]], ["tab", ["tab-a", "tab-b"]]]) {
     for (const id of ids) check(get(id)?.values.selected === (state[key] === id));
@@ -156,22 +160,28 @@ function verifyOracle(raw, state) {
   check(get("unsupported")?.patterns.every(pattern => !["Invoke", "Value", "Toggle", "SelectionItem", "RangeValue"].includes(pattern)));
   check(!get("hidden") || get("hidden").offscreen);
   check(get("offscreen")?.offscreen === true);
-  check(state.expanded || !get("expanded-child") || get("expanded-child").offscreen);
+  check(state.expanded ? !!get("expanded-child") && get("expanded-child").parentId === "expand" &&
+    get("expanded-child").offscreen === false && get("expanded-child").rectangle === "visible" :
+    !get("expanded-child") || get("expanded-child").offscreen);
   check(!!get(state.generation === 1 ? "dynamic-a" : "dynamic-b"));
   check(!get(state.generation === 1 ? "dynamic-b" : "dynamic-a"));
 }
 export function verifyCapture(capture, manifest, validators) {
   validateManifest(manifest, validators);
   if (!validators.capture(capture) || canonical(capture.cases.map(entry => entry.id)) !== canonical(CASE_IDS)) throw new Error("fixture_capture_invalid");
+  const modalWindows = new Set();
   const normalized = capture.cases.map(entry => {
     verifyOracle(entry.raw, entry.after);
     const snapshot = normalizeTree(entry.raw, manifest, entry.after);
     if (!validators.snapshot(snapshot)) throw new Error("fixture_core_snapshot_invalid");
     const record = { id: entry.id, disposition: entry.disposition, before: entry.before, after: entry.after, snapshot };
     if (entry.modalRaw) {
+      const modalRoot = entry.modalRaw.nodes.find(node => node.id === "modal-window");
       if (entry.modalRaw.processRef !== entry.raw.processRef || entry.modalRaw.windowRef === entry.raw.windowRef ||
+        modalWindows.has(entry.modalRaw.windowRef) || modalRoot?.parentId !== null || modalRoot?.instanceRef !== entry.modalRaw.windowRef ||
         canonical(entry.modalRaw.nodes.map(node => node.id).sort()) !== canonical(["modal-cancel", "modal-confirm", "modal-window"]))
         throw new Error("fixture_modal_binding_invalid");
+      modalWindows.add(entry.modalRaw.windowRef);
       record.modalSnapshot = normalizeTree(entry.modalRaw, manifest, entry.before, "modal");
       if (!validators.snapshot(record.modalSnapshot)) throw new Error("fixture_core_snapshot_invalid");
     }
@@ -228,8 +238,12 @@ export function verifyCapture(capture, manifest, validators) {
   const initialRaw = capture.cases[0].raw;
   const replacedWindow = capture.cases.find(entry => entry.id === "window-replacement").raw;
   const restarted = capture.cases.find(entry => entry.id === "process-restart").raw;
+  for (const entry of capture.cases.filter(entry => !["window-replacement", "process-restart"].includes(entry.id))) {
+    if (entry.raw.processRef !== initialRaw.processRef || entry.raw.windowRef !== initialRaw.windowRef)
+      throw new Error("fixture_case_identity_drift");
+  }
   if (initialRaw.processRef !== replacedWindow.processRef || initialRaw.windowRef === replacedWindow.windowRef ||
-    initialRaw.processRef === restarted.processRef || replacedWindow.windowRef === restarted.windowRef)
+    initialRaw.processRef === restarted.processRef || initialRaw.windowRef === restarted.windowRef || replacedWindow.windowRef === restarted.windowRef)
     throw new Error("fixture_identity_not_invalidated");
   return { cases: normalized, semanticsDigest: sha256(normalized), manifestDigest: sha256(manifest) };
 }

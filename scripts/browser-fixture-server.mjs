@@ -40,7 +40,8 @@ function healthPlugin() {
         let decodedPath;
         try { decodedPath = decodeURIComponent(pathname).replaceAll("\\", "/"); }
         catch { decodedPath = "/.tools/invalid-path"; }
-        if (/^\/(?:\.webmcp-[^/]*-profile|\.tools|\.native-evidence)(?:\/|$)/.test(decodedPath)) {
+        if (/(?:^|\/)(?:\.webmcp-[^/]*-profile|\.tools|\.native-evidence)(?:\/|$)/i.test(decodedPath) ||
+            /(?:^|\/)fixtures\/native\/.*\/(?:bin|obj)(?:\/|$)/i.test(decodedPath)) {
           response.writeHead(403, {
             "cache-control": "no-store",
             "content-type": "text/plain; charset=utf-8",
@@ -89,7 +90,7 @@ for (const port of ports) {
       host: "127.0.0.1",
       port,
       strictPort: true,
-      fs: { deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "**/.tools/**", "**/.native-evidence/**"] },
+      fs: { deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "**/.tools/**", "**/.native-evidence/**", "**/fixtures/native/**/bin/**", "**/fixtures/native/**/obj/**"] },
       watch: { ignored: ["**/.tools/**", "**/.native-evidence/**", "**/fixtures/native/**/bin/**", "**/fixtures/native/**/obj/**"] },
     },
   });

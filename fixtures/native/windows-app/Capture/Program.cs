@@ -192,10 +192,14 @@ internal sealed class CaptureRun : IDisposable
         start.ArgumentList.Add(fixture); start.ArgumentList.Add("--evidence-directory"); start.ArgumentList.Add(output);
         start.ArgumentList.Add("--seed"); start.ArgumentList.Add("p4.2-seed-1");
         process = Process.Start(start) ?? throw new InvalidOperationException();
-        Wait(() => { process.Refresh(); return !process.HasExited && process.MainWindowHandle != IntPtr.Zero; });
+        Stage = "launch-window";
+        Wait(() => { process.Refresh(); if (process.HasExited) throw new InvalidOperationException(); return process.MainWindowHandle != IntPtr.Zero; });
+        Stage = "launch-identity";
         root = AutomationElement.FromHandle(process.MainWindowHandle);
         if (root.Current.ProcessId != process.Id || root.Current.AutomationId != "fixture-window") throw new InvalidOperationException();
+        Stage = "launch-state";
         WaitState(state => state.GetProperty("revision").GetInt32() == 0);
+        Stage = "launch-reset-ack";
         Wait(() => { try { return ResetSequence() == 0; } catch (IOException) { return false; } });
     }
     private void Reset()

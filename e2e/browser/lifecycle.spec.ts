@@ -18,6 +18,23 @@ test("fixture server denies SDK caches and native run evidence including encoded
   }
 });
 
+test("fixture server denies native build/debug metadata over direct, encoded and fs routes", async ({ request }) => {
+  const fixture = "/fixtures/native/windows-app/Fixture/";
+  for (const path of [
+    fixture + "bin/Release/net10.0-windows/DualSurface.Fixture.dll",
+    fixture + "bin/Release/net10.0-windows/DualSurface.Fixture.pdb",
+    fixture + "obj/project.assets.json", fixture + "obj/project.assets.json?raw",
+    fixture + "%62in/Release/net10.0-windows/DualSurface.Fixture.dll",
+    fixture + "%6fbj/project.assets.json", fixture + "BIN/Release/net10.0-windows/DualSurface.Fixture.dll",
+    "/@fs/" + process.cwd().replaceAll("\\", "/") + fixture + "bin/Release/net10.0-windows/DualSurface.Fixture.dll",
+    "/@fs/" + process.cwd().replaceAll("\\", "/") + "/.tools/dotnet/dotnet.exe",
+  ]) {
+    const response = await request.get(path);
+    expect(response.status()).toBe(403);
+    expect(await response.text()).toBe("Forbidden");
+  }
+});
+
 test("native evidence codec preserves the Chrome 155 input transition", async ({
   page,
 }) => {
