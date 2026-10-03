@@ -1,0 +1,135 @@
+fixtures/native/windows-app/Fixture/Fixture.csproj
+  s_142b4d269ec35e::t_aabcae889a7462 1-12
+scripts/browser-fixture-server.mjs
+  s_142b4d269ec35e::t_92387de1916a34 92
+  s_142b4d269ec35e::t_cc9012e695a8d6 40-43,93
+test/p4.2-fixture.test.ts
+  s_142b4d269ec35e::t_0de632ae7ab92e 1,3,134-145
+  s_142b4d269ec35e::t_fab7172ad93ee4 25-54,56,58-65,75,146-190
+  s_142b4d269ec35e::t_83432f22158587 55
+  s_142b4d269ec35e::t_57dfa169ce75e9 22-23
+  s_142b4d269ec35e::t_21834e4211ea21 57
+  s_142b4d269ec35e::t_e4f68127979dd2 5-6,66-74,191-213
+  s_142b4d269ec35e::t_38aa67b3fc1c28 2,4,8-10,12-21,24,76-78,80,82-86,88,90-128,214-215
+  s_142b4d269ec35e::t_941f44abe1020d 7,129-133
+  s_142b4d269ec35e::t_76eecabb2f26e4 11,79,81,87,89
+scripts/p4.2-golden-contracts.mjs
+  s_142b4d269ec35e::t_3fd2dfc1e6a1e9 1-32,35-43,49-65
+  s_142b4d269ec35e::t_e4f68127979dd2 33-34,44-48
+.gitignore
+  s_142b4d269ec35e::t_ecbe4cf9954ecf 11-14
+scripts/check-native-fixture-package.mjs
+  s_142b4d269ec35e::t_941f44abe1020d 1-14
+fixtures/native/windows-app/Capture/Capture.csproj
+  s_142b4d269ec35e::t_f84cb6e00e3f38 1-12
+fixtures/native/windows-app/global.json
+  s_142b4d269ec35e::t_aabcae889a7462 1-3
+scripts/run-p4.2-fixture.ps1
+  s_142b4d269ec35e::t_ad26238ec44378 9-10,34-53
+  s_142b4d269ec35e::t_3ded76e05d5111 1-4,7,11-24,28-33,54-57
+  s_142b4d269ec35e::t_f0643532693083 5-6,8
+  s_142b4d269ec35e::t_dd6fc548cbc0bb 25-27
+docs/evidence/p4.2-continuation-2026-10-03.md
+  s_142b4d269ec35e::t_6ecbf0d5ce7982 49,52-85
+  s_142b4d269ec35e::t_c29c799533ffca 1-48,50-51,86-91
+scripts/verify-p4.2-fixture.mjs
+  s_142b4d269ec35e::t_b2cea8036f9c7a 1-2,5-12,14-15
+  s_142b4d269ec35e::t_3fd2dfc1e6a1e9 3-4,13
+docs/work-items/P4.2-native-fixture-application.md
+  s_142b4d269ec35e::t_eb819d38981c75 105
+  s_142b4d269ec35e::t_6ecbf0d5ce7982 6-7
+  s_142b4d269ec35e::t_c29c799533ffca 3-5,53-59
+  s_5920a15617b95e::t_c6e206e85774d8 60
+docs/evidence/p4.2-windows-build-host-handoff-2026-09-22.md
+  s_142b4d269ec35e::t_c29c799533ffca 3-10
+fixtures/native/windows-app/Fixture/Program.cs
+  s_142b4d269ec35e::t_aabcae889a7462 1,3-27,33-50,52-99,106-111,115-117,119-160,162-180,186-187,198-217
+  s_142b4d269ec35e::t_f84cb6e00e3f38 100-105
+  s_142b4d269ec35e::t_fe886d90adb574 112-114
+  s_142b4d269ec35e::t_7711babbcff1df 2,28-32,192-197
+  s_142b4d269ec35e::t_0de632ae7ab92e 188,190-191
+  s_142b4d269ec35e::t_320a986f2fb83b 51,118,161,181-185,189
+scripts/setup-p4.2-dotnet.ps1
+  s_142b4d269ec35e::t_ecbe4cf9954ecf 1-3,5-12,14-20,23-41,58-63,65
+  s_142b4d269ec35e::t_5b564fc46b6a2f 42-57
+  s_142b4d269ec35e::t_f0643532693083 13,21,64
+  s_142b4d269ec35e::t_ad26238ec44378 22
+  s_142b4d269ec35e::t_aabcae889a7462 4
+fixtures/native/windows-app/README.md
+  s_142b4d269ec35e::t_f0643532693083 17-21
+  s_142b4d269ec35e::t_eb819d38981c75 52-58
+  s_142b4d269ec35e::t_6ecbf0d5ce7982 59-89
+  s_142b4d269ec35e::t_232fd0f1ab375f 1-16,22-51,90-91
+scripts/freeze-p4.2-goldens.mjs
+  s_142b4d269ec35e::t_3fd2dfc1e6a1e9 1-27
+scripts/verify-p4.2-goldens.mjs
+  s_142b4d269ec35e::t_3fd2dfc1e6a1e9 1-13
+docs/04-roadmap.md
+  s_142b4d269ec35e::t_6ecbf0d5ce7982 159-162
+docs/README.md
+  s_142b4d269ec35e::t_6ecbf0d5ce7982 79-81
+package.json
+  s_142b4d269ec35e::t_941f44abe1020d 89
+  s_142b4d269ec35e::t_38aa67b3fc1c28 129-131
+  s_142b4d269ec35e::t_3fd2dfc1e6a1e9 132-133
+fixtures/native/windows-app/manifest-0.1.json
+  s_142b4d269ec35e::t_3ded76e05d5111 1-44
+e2e/browser/lifecycle.spec.ts
+  s_142b4d269ec35e::t_92387de1916a34 13-20
+fixtures/native/windows-app/Capture/Program.cs
+  s_142b4d269ec35e::t_1c85c10523a465 218-220,222,339,345
+  s_142b4d269ec35e::t_f3878f98eccfa0 39,71,81,125,150,164,227,309-314
+  s_142b4d269ec35e::t_e0f47217021441 244,254,256-264
+  s_142b4d269ec35e::t_320a986f2fb83b 195,199-207,209-214
+  s_142b4d269ec35e::t_1f6dd8e31c5bdc 24-33,99,102,112-113
+  s_142b4d269ec35e::t_5ddc062e990d39 401-403,409,413-414
+  s_142b4d269ec35e::t_eb819d38981c75 129-134,139-141,143-145
+  s_142b4d269ec35e::t_d1d12c9f66dd9a 104-106,275-283
+  s_142b4d269ec35e::t_3881a14411a14f 135,142,146-147
+  s_142b4d269ec35e::t_21834e4211ea21 152,157-163,416-417
+  s_142b4d269ec35e::t_58e7f3a6655e86 208,367,371-380,388-392
+  s_142b4d269ec35e::t_ebe314119c3f62 103,107-111
+  s_142b4d269ec35e::t_f84cb6e00e3f38 1-23,34-38,40-55,58-59,61-70,72-80,82-98,100-101,114-124,126-128,136-138,148-149,151,153-156,165-194,196-198,215-217,221,223-226,228-237,239,241-243,245-246,248-249,252,255,265-274,284-308,315-338,340-344,346-365,368-370,381-387,393-400,404-408,410-412,415,418-419,422,428-433
+  s_142b4d269ec35e::t_dd6fc548cbc0bb 420-421,423-427
+  s_142b4d269ec35e::t_bae61de9c0dcf6 238,240,247,250-251,253
+  s_142b4d269ec35e::t_fc2f5f2897b664 56-57,60,366
+fixtures/native/windows-app/NuGet.Config
+  s_142b4d269ec35e::t_941f44abe1020d 1-4
+fixtures/native/windows-app/manifest-0.1.schema.json
+  s_142b4d269ec35e::t_3ded76e05d5111 1-27
+scripts/p4.2-fixture-contracts.mjs
+  s_142b4d269ec35e::t_a0ffa3f0674dd4 50-51,54,107
+  s_142b4d269ec35e::t_b2cea8036f9c7a 1-19,23-49,55-56,58,62-103,111-119,122-124,133-139,143-146,150-160,162-171,175-178,182-184,199-203,206-214,219,234-235
+  s_142b4d269ec35e::t_21834e4211ea21 61,181,196-197
+  s_142b4d269ec35e::t_83432f22158587 105-106,108-110,125-132,147-148,172-174
+  s_142b4d269ec35e::t_57dfa169ce75e9 104
+  s_142b4d269ec35e::t_5ddc062e990d39 52-53
+  s_142b4d269ec35e::t_3881a14411a14f 20-22,60,180,185-195,198,215-218,220-233
+  s_142b4d269ec35e::t_a08b023542140c 140-142,161
+  s_142b4d269ec35e::t_232fd0f1ab375f 120-121,149,204-205
+  s_142b4d269ec35e::t_eb819d38981c75 57,59,179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4446988e91f0ab566bfc42f467900c4da568dce7",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    },
+    "s_5920a15617b95e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10136-81f3-7823-a971-c301e1193331",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
