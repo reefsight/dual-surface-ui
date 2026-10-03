@@ -1,0 +1,39 @@
+docs/work-items/P4.3-implementation-slices.md
+  s_142b4d269ec35e::t_b2a4b9a55c9e0d 1-96
+docs/reviews/p4.3-implementation-slices-security-review.md
+  s_142b4d269ec35e::t_7488aa029064f9 33
+  s_142b4d269ec35e::t_b9eb2571500085 1-32,34-76
+docs/reviews/p4.3-implementation-slices-accessibility-review.md
+  s_142b4d269ec35e::t_3f7085404f77ae 126
+  s_142b4d269ec35e::t_7e19cbec5ee258 1-125,127-150
+docs/work-items/P4.3-windows-uia-adapter.md
+  s_142b4d269ec35e::t_e673c8b3b71044 62-66,89-90,93,96-101,107,110-111,117,132-134
+docs/adr/0017-windows-uia-adapter-trust-boundary.md
+  s_142b4d269ec35e::t_e673c8b3b71044 20,22,24
+docs/reviews/p4.3-package-protocol-entry-design-agent-review.md
+  s_247bcdcca79e72::t_8b15dc9c6f46f7 1-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "30e6427c5d7b0ac7378f04c789b17b3621b7a84f",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    },
+    "s_247bcdcca79e72": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10232-ca28-7d51-9056-1d333909cf64",
+        "model": "unknown"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
