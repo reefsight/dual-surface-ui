@@ -8,6 +8,10 @@ test-results/
 .benchmark-evidence/
 .phase3-preflight/
 .phase4-preflight/
+.tools/
+.native-evidence/
+fixtures/native/**/bin/
+fixtures/native/**/obj/
 *.log
 .env
 .env*.local

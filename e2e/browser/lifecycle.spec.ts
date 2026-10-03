@@ -10,6 +10,14 @@ test("fixture server denies any workspace-local WebMCP browser profile", async (
   expect(await response.text()).toBe("Forbidden");
 });
 
+test("fixture server denies SDK caches and native run evidence including encoded paths", async ({ request }) => {
+  for (const path of ["/.tools/dotnet/dotnet.exe", "/%2etools/dotnet/dotnet.exe", "/.native-evidence/capture.json", "/%2enative-evidence/capture.json"]) {
+    const response = await request.get(path);
+    expect(response.status()).toBe(403);
+    expect(await response.text()).toBe("Forbidden");
+  }
+});
+
 test("native evidence codec preserves the Chrome 155 input transition", async ({
   page,
 }) => {
