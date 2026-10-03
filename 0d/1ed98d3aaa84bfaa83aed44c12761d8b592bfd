@@ -1,0 +1,33 @@
+test/p4.2-fixture.test.ts
+  s_142b4d269ec35e::t_b513e2c91ef372 196-200
+docs/work-items/P4.2-native-fixture-application.md
+  s_142b4d269ec35e::t_a2d503604f2012 157
+  s_142b4d269ec35e::t_9929ba375a0d59 116
+fixtures/native/windows-app/README.md
+  s_142b4d269ec35e::t_9929ba375a0d59 40,69,71-76
+  s_142b4d269ec35e::t_a2d503604f2012 51-52
+fixtures/native/windows-app/Fixture/Program.cs
+  s_142b4d269ec35e::t_3db14d7f623c27 24,52-60,212-214,217-220
+fixtures/native/windows-app/Capture/Program.cs
+  s_142b4d269ec35e::t_3db14d7f623c27 211,370,384-390
+  s_142b4d269ec35e::t_b513e2c91ef372 137-141,378-379
+  s_142b4d269ec35e::t_4e64d7caddb477 391
+scripts/p4.2-fixture-contracts.mjs
+  s_142b4d269ec35e::t_b513e2c91ef372 179-181
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0d1ed98d3aaa84bfaa83aed44c12761d8b592bfd",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
