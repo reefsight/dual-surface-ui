@@ -1,0 +1,43 @@
+docs/04-roadmap.md
+  s_142b4d269ec35e::t_484d0639d7abf9 164-166
+docs/reviews/p4.2-independent-review.json
+  s_142b4d269ec35e::t_68f16032a251fa 1-26
+scripts/validate-p4.2-review.mjs
+  s_142b4d269ec35e::t_68f16032a251fa 1-36
+docs/evidence/p4.2-review-contract-2026-10-03.md
+  s_142b4d269ec35e::t_5db49cc35723f6 1-50,55-59,62-78
+  s_142b4d269ec35e::t_251ef585dc6f51 51-54,60-61
+fixtures/phase4-exit/contracts/p4.2-independent-review-0.1.schema.json
+  s_142b4d269ec35e::t_68f16032a251fa 1-79
+docs/reviews/p4.2-fixture-review-pack.md
+  s_142b4d269ec35e::t_990ebfa8ae4c8d 22,81-126
+  s_142b4d269ec35e::t_251ef585dc6f51 26-28
+  s_142b4d269ec35e::t_a49d345fe16805 127
+package.json
+  s_142b4d269ec35e::t_68f16032a251fa 129-130
+scripts/p4.2-review-gate.mjs
+  s_142b4d269ec35e::t_68f16032a251fa 1-108
+docs/work-items/P4.2-native-fixture-application.md
+  s_142b4d269ec35e::t_990ebfa8ae4c8d 181-182,194-200
+  s_142b4d269ec35e::t_8301b1521537f9 201
+test/p4.2-review-validator.test.ts
+  s_142b4d269ec35e::t_9d93ef9c30af3a 10,42-45,47-50,152-159
+  s_142b4d269ec35e::t_990ebfa8ae4c8d 32-37,53,58-59,147,149-151
+  s_142b4d269ec35e::t_178e07ecdb7730 1-9,11-31,38-41,46,51-52,54-57,60-146,148,160-195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "21a0935e6915c9a6cf7e17e4275ff1394ce942c2",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
