@@ -1,0 +1,25 @@
+scripts/run-p4.2-fixture.ps1
+  s_142b4d269ec35e::t_0c9e97740153fc 52-59
+  s_142b4d269ec35e::t_3dc92af8dcc20a 24
+fixtures/native/windows-app/Fixture/Program.cs
+  s_142b4d269ec35e::t_0c9e97740153fc 26-29,38-46
+  s_142b4d269ec35e::t_9c469329f5a309 47
+fixtures/native/windows-app/README.md
+  s_142b4d269ec35e::t_3dc92af8dcc20a 27-30,72-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4904be7dfff60ae31dd7dd930feccecc5e18e142",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
