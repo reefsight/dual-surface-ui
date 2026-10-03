@@ -126,6 +126,8 @@
     "phase3:contracts": "node scripts/generate-phase3-gate-contracts.mjs",
     "phase3:evidence:validate": "node scripts/validate-phase3-evidence.mjs",
     "phase4:p4.1-review:validate": "node scripts/validate-p4.1-review.mjs",
+    "phase4:p4.2-review:validate": "node scripts/validate-p4.2-review.mjs",
+    "phase4:p4.2-review:contract-check": "node scripts/validate-p4.2-review.mjs --contract-only",
     "native:fixture:setup": "pwsh -NoProfile -File scripts/setup-p4.2-dotnet.ps1",
     "native:fixture:run": "pwsh -NoProfile -File scripts/run-p4.2-fixture.ps1",
     "native:fixture:verify": "node scripts/verify-p4.2-fixture.mjs",

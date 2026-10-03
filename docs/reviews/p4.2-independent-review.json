@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "p4.2-independent-fixture-review",
+  "status": "pending",
+  "reviewedCommit": "0d1ed98d3aaa84bfaa83aed44c12761d8b592bfd",
+  "evidenceCommit": "6d402f40280216dff34ad6f5d723edbcac9f69f8",
+  "goldenDigest": "sha256:dab9b781886ad1750765453224b006f78eca6bd7e55674d6fa25d3369b916837",
+  "manifestDigest": "sha256:c39e9f2b6a2d771cc5db5b41322c5bab2319c749df22328757faa1eeade6dd03",
+  "semanticsDigest": "sha256:03a4913cf1a09bc3bc3ea65ab68793a64545cb8eb7c4fe0fd9cd8d0c9a7df290",
+  "sourceBindingDigest": "sha256:31794d9fb85e6275cadaf2a73ea7178bb90c46ee968a8d010a08c964ed6bb019",
+  "captureBinaryDigest": "sha256:56ef6c2f3b9023e8e86c72d6d46ea5650123956e3d319ffdeb9af8b11a539363",
+  "captureDigests": [
+    "sha256:a54aefb343779cf453aba9fea14e1e02d2ef4872b25baf195e56963ce7022f2d",
+    "sha256:9abf45251b88891b1bdcf96fbc6af52685f47a89e6a06bb46576a0b75c6ebbd5"
+  ],
+  "scopes": {
+    "accessibility": { "status": "pending", "reviewer": null, "reviewedAt": null },
+    "security": { "status": "pending", "reviewer": null, "reviewedAt": null },
+    "interoperability": { "status": "pending", "reviewer": null, "reviewedAt": null },
+    "package": { "status": "pending", "reviewer": null, "reviewedAt": null }
+  },
+  "findings": [],
+  "unresolvedCriticalHigh": 0,
+  "disposition": "not_reviewed",
+  "maintainer": { "id": null, "decision": "pending", "decidedAt": null }
+}

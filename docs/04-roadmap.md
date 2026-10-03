@@ -161,6 +161,9 @@ implemented the fixture/capture candidate with two passing real UIA runs of
 22 cases. Source-bound proposed goldens and automated gates are verified;
 independent P4.2 review/acceptance remains gated;
 see [continuation evidence](evidence/p4.2-continuation-2026-10-03.md).
+The closed 0.1 [review record](reviews/p4.2-independent-review.json) and
+source/evidence-bound validator are now present; the record remains `pending`,
+not acceptance. See the [review-contract evidence](evidence/p4.2-review-contract-2026-10-03.md).
 P4.3 Windows adapter planning is complete in
 [the Windows UIA adapter work item](work-items/P4.3-windows-uia-adapter.md) and
 proposed [ADR 0017](adr/0017-windows-uia-adapter-trust-boundary.md); runtime work

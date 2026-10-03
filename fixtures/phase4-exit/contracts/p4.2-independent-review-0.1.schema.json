@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dual-surface-ui:p4.2-independent-review:0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "kind", "status", "reviewedCommit", "evidenceCommit", "goldenDigest", "manifestDigest", "semanticsDigest", "sourceBindingDigest", "captureBinaryDigest", "captureDigests", "scopes", "findings", "unresolvedCriticalHigh", "disposition", "maintainer"],
+  "properties": {
+    "schemaVersion": { "const": "0.1" },
+    "kind": { "const": "p4.2-independent-fixture-review" },
+    "status": { "enum": ["pending", "approved", "changes_required"] },
+    "reviewedCommit": { "const": "0d1ed98d3aaa84bfaa83aed44c12761d8b592bfd" },
+    "evidenceCommit": { "const": "6d402f40280216dff34ad6f5d723edbcac9f69f8" },
+    "goldenDigest": { "const": "sha256:dab9b781886ad1750765453224b006f78eca6bd7e55674d6fa25d3369b916837" },
+    "manifestDigest": { "const": "sha256:c39e9f2b6a2d771cc5db5b41322c5bab2319c749df22328757faa1eeade6dd03" },
+    "semanticsDigest": { "const": "sha256:03a4913cf1a09bc3bc3ea65ab68793a64545cb8eb7c4fe0fd9cd8d0c9a7df290" },
+    "sourceBindingDigest": { "const": "sha256:31794d9fb85e6275cadaf2a73ea7178bb90c46ee968a8d010a08c964ed6bb019" },
+    "captureBinaryDigest": { "const": "sha256:56ef6c2f3b9023e8e86c72d6d46ea5650123956e3d319ffdeb9af8b11a539363" },
+    "captureDigests": { "const": ["sha256:a54aefb343779cf453aba9fea14e1e02d2ef4872b25baf195e56963ce7022f2d", "sha256:9abf45251b88891b1bdcf96fbc6af52685f47a89e6a06bb46576a0b75c6ebbd5"] },
+    "scopes": {
+      "type": "object", "additionalProperties": false,
+      "required": ["accessibility", "security", "interoperability", "package"],
+      "properties": {
+        "accessibility": { "$ref": "#/$defs/scope" },
+        "security": { "$ref": "#/$defs/scope" },
+        "interoperability": { "$ref": "#/$defs/scope" },
+        "package": { "$ref": "#/$defs/scope" }
+      }
+    },
+    "findings": {
+      "type": "array", "maxItems": 128,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "scope", "severity", "status", "summary", "resolution"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "scope": { "enum": ["accessibility", "security", "interoperability", "package"] },
+          "severity": { "enum": ["critical", "high", "medium", "low", "info"] },
+          "status": { "enum": ["open", "resolved", "accepted"] },
+          "summary": { "type": "string", "pattern": "\\S", "maxLength": 512 },
+          "resolution": { "anyOf": [{ "type": "string", "pattern": "\\S", "maxLength": 1024 }, { "type": "null" }] }
+        }
+      }
+    },
+    "unresolvedCriticalHigh": { "type": "integer", "minimum": 0, "maximum": 128 },
+    "disposition": { "enum": ["not_reviewed", "no_unresolved_critical_high", "blocked"] },
+    "maintainer": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "decision", "decidedAt"],
+      "properties": {
+        "id": { "anyOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+        "decision": { "enum": ["pending", "approved", "changes_required"] },
+        "decidedAt": { "$ref": "#/$defs/date" }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$" },
+    "date": { "anyOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }] },
+    "scope": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "reviewer", "reviewedAt"],
+      "properties": {
+        "status": { "enum": ["pending", "approved", "changes_required"] },
+        "reviewer": {
+          "anyOf": [{
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "independent", "independenceBasis"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "independent": { "type": "boolean" },
+              "independenceBasis": { "type": "string", "pattern": "\\S", "maxLength": 512 }
+            }
+          }, { "type": "null" }]
+        },
+        "reviewedAt": { "$ref": "#/$defs/date" }
+      }
+    }
+  }
+}
