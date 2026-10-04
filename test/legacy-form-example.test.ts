@@ -87,8 +87,9 @@ async function invokeRegistrationTool(
 
 async function prepareAgentForm(
   fixtureValue: Awaited<ReturnType<typeof fixture>>,
+  pin = "4821",
 ) {
-  fixtureValue.adapter.controls.pin.value = "4821";
+  fixtureValue.adapter.controls.pin.value = pin;
   const initial = fixtureValue.adapter.surface.snapshot();
   let revision = initial.revision;
   for (const [elementId, action, input] of [
@@ -317,7 +318,10 @@ describe("migrated legacy-form example", () => {
 
   it("keeps aggregate secrets out of snapshot, result, tool metadata, and audit", async () => {
     const value = await fixture();
-    await prepareAgentForm(value);
+    // A short numeric PIN can coincide with UUIDs, timestamps or durations.
+    // Use a valid distinctive secret without filtering any aggregate output.
+    const secretPin = "4821_LEGACY_PIN_SECRET_SENTINEL";
+    await prepareAgentForm(value, secretPin);
     const snapshot = value.adapter.surface.snapshot();
     const result = await invokeRegistrationTool(
       value,
@@ -334,7 +338,11 @@ describe("migrated legacy-form example", () => {
 
     expect(result.status).toBe("succeeded");
     expect(serialized).not.toContain("LEGACY_SECRET_SENTINEL");
-    expect(serialized).not.toContain("4821");
+    expect(serialized).not.toContain(secretPin);
+    expect(snapshot.nodes.find((node) => node.id === "legacy-pin")?.state).toEqual(
+      expect.objectContaining({ sensitive: true, valuePresent: true }),
+    );
+    expect(snapshot.nodes.find((node) => node.id === "legacy-pin")?.state).not.toHaveProperty("value");
   });
 
   it("keeps credential values redacted and denies credential mutation", async () => {
