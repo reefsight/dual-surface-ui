@@ -4,6 +4,11 @@ Status: Proposed; measurements blocked on P4.3 acceptance
 
 Date: 2026-09-22
 
+Proposed method detail added on 2026-10-04:
+[P4.4 measurement method design](../work-items/P4.4-measurement-method-design.md).
+This is preparation, not ADR acceptance, a frozen candidate campaign or runtime
+selection. Original P4.3 entry/measurement dependencies remain unchanged.
+
 ## Context
 
 The project needs a native host after proving Windows semantics. Rust is the

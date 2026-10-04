@@ -236,6 +236,13 @@ independent artifact reviews and S2 runtime acceptance still come first.
 P4.4's frozen language-decision method is planned in
 [the native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
+The [detailed proposed measurement method](work-items/P4.4-measurement-method-design.md)
+now has three actual independent final design approvals and a separate
+[design-preparation decision](reviews/p4.4-measurement-method-design-decision-2026-10-04.md).
+It specifies clock/counter authority, full-cycle timing, planned recovery and
+complete/negative evidence admission without changing the original criteria.
+ADR 0018 remains Proposed; no candidate/source/runner entry, measurement,
+language selection or P4.4 acceptance follows before original prerequisites.
 P4.5's authenticated local host is planned in
 [the native host work item](work-items/P4.5-authenticated-native-host.md) and
 proposed [ADR 0019](adr/0019-authenticated-local-native-host.md). P4.6 macOS
