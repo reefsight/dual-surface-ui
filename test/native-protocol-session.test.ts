@@ -320,6 +320,123 @@ describe("native protocol session verifier", () => {
     expectSessionError(() => verifier.accept(actionRequest({ input: { confirmed: false } })), "request_conflict");
   });
 
+  it("rejects historical keyed replay after an event advanced the surface", () => {
+    const verifier = activate();
+    catalog(verifier);
+    verifier.accept(actionRequest());
+    verifier.accept(actionResponse());
+    verifier.accept({
+      schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1,
+      event: "surface-changed", surfaceRef: "surface-1", revision: "revision-3",
+    });
+    verifier.accept(actionRequest());
+    expectSessionError(() => verifier.accept(actionResponse()), "resync_required");
+    expect(verifier.state).toMatchObject({
+      phase: "closed", sessionRef: null, activeRequests: 0, completedRequests: 0,
+      surfaces: 0,
+    });
+  });
+
+  it("rejects historical keyed replay after another completed action advanced the surface", () => {
+    const verifier = activate();
+    catalog(verifier);
+    verifier.accept(actionRequest());
+    verifier.accept(actionResponse());
+    verifier.accept(actionRequest({
+      requestId: "action-2", revision: "revision-2", idempotencyKey: "idem-2",
+    }));
+    verifier.accept(actionResponse({
+      requestId: "action-2",
+      outcome: {
+        ...actionResponse().outcome,
+        previousRevision: "revision-2", revision: "revision-3",
+      },
+    }));
+    verifier.accept(actionRequest());
+    expectSessionError(() => verifier.accept(actionResponse()), "resync_required");
+    expect(verifier.state.phase).toBe("closed");
+  });
+
+  it("rejects historical keyed replay after a catalog refresh advanced the surface", () => {
+    const verifier = activate();
+    catalog(verifier);
+    verifier.accept(actionRequest());
+    verifier.accept(actionResponse());
+    verifier.accept({
+      schemaVersion: "0.1", kind: "surface-list-request", requestId: "list-2",
+      sessionRef: "session-1",
+    });
+    verifier.accept({
+      schemaVersion: "0.1", kind: "surface-list-response", requestId: "list-2",
+      sessionRef: "session-1",
+      surfaces: [{
+        surfaceRef: "surface-1", revision: "revision-3", title: "Fixture",
+        application: "Fixture App", capabilities: ["actions"], actionCount: 1,
+      }],
+    });
+    verifier.accept(actionRequest());
+    expectSessionError(() => verifier.accept(actionResponse()), "resync_required");
+    expect(verifier.state.phase).toBe("closed");
+  });
+
+  it.each([false, true])("preserves only current-revision failed-outcome replay (advanced=%s)", (advanced) => {
+    const verifier = activate();
+    catalog(verifier);
+    const response = actionResponse({
+      outcome: {
+        schemaVersion: "0.1", surfaceId: "surface-1", revision: "revision-2",
+        status: "failed", error: {
+          code: "verification_failed", message: "The action effects could not be verified",
+        },
+      },
+    });
+    verifier.accept(actionRequest());
+    verifier.accept(response);
+    if (advanced) {
+      verifier.accept({
+        schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1,
+        event: "surface-changed", surfaceRef: "surface-1", revision: "revision-3",
+      });
+    }
+    verifier.accept(actionRequest());
+    if (advanced) {
+      expectSessionError(() => verifier.accept(response), "resync_required");
+      expect(verifier.state.phase).toBe("closed");
+    } else {
+      verifier.accept(response);
+      verifier.accept(actionRequest({ requestId: "action-current", revision: "revision-2" }));
+      expect(verifier.state.phase).toBe("active");
+    }
+  });
+
+  it("rejects a third revision arriving while exact replay is pending", () => {
+    const verifier = activate();
+    catalog(verifier);
+    verifier.accept(actionRequest());
+    verifier.accept(actionResponse());
+    verifier.accept(actionRequest());
+    verifier.accept({
+      schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1,
+      event: "surface-changed", surfaceRef: "surface-1", revision: "revision-3",
+    });
+    expectSessionError(() => verifier.accept(actionResponse()), "resync_required");
+    expect(verifier.state.phase).toBe("closed");
+  });
+
+  it("does not resurrect a surface closed before the replayed response", () => {
+    const verifier = activate();
+    catalog(verifier);
+    verifier.accept(actionRequest());
+    verifier.accept(actionResponse());
+    verifier.accept(actionRequest());
+    verifier.accept({
+      schemaVersion: "0.1", kind: "event", sessionRef: "session-1", sequence: 1,
+      event: "surface-closed", surfaceRef: "surface-1",
+    });
+    expectSessionError(() => verifier.accept(actionResponse()), "resync_required");
+    expect(verifier.state).toMatchObject({ phase: "closed", surfaces: 0 });
+  });
+
   it("rejects a changed outcome during keyed replay", () => {
     const verifier = activate();
     catalog(verifier);

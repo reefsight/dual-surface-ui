@@ -303,6 +303,11 @@ export class NativeProtocolSessionVerifier {
         this.#fail("invalid_message");
       }
       const currentRevision = this.#surfaces.get(message.surfaceRef);
+      // A completed replay is historical, not a new revision transition.
+      if (
+        pending.replayResponseFingerprint !== undefined &&
+        currentRevision !== message.outcome.revision
+      ) this.#fail("resync_required");
       if (
         currentRevision !== pending.surfaceRevision &&
         currentRevision !== message.outcome.revision
