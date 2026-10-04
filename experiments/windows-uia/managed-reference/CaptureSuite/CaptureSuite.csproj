@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>DualSurface.UiaCaptureSuite</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../CaptureHarness/CopiedObservation.cs" Link="Foundation/CopiedObservation.cs" />
+    <Compile Include="../CaptureHarness/FixtureSubjects.cs" Link="Foundation/FixtureSubjects.cs" />
+    <Compile Include="../CaptureHarness/SemanticProjection.cs" Link="Foundation/SemanticProjection.cs" />
+    <Compile Include="../NativeCaptureHarness/OwnedWindowTopology.cs" Link="Collector/OwnedWindowTopology.cs" />
+    <Compile Include="../NativeCaptureHarness/OwnedWindowsAdmission.cs" Link="Collector/OwnedWindowsAdmission.cs" />
+    <Compile Include="../NativeCaptureHarness/ReadOnlyCollector.cs" Link="Collector/ReadOnlyCollector.cs" />
+  </ItemGroup>
+</Project>
