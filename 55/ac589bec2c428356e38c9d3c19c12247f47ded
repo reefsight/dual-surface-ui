@@ -1,0 +1,45 @@
+experiments/windows-uia/managed-reference/IdentityHarness/NativeObservation.cs
+  s_142b4d269ec35e::t_ca59045e53138a 23,37,41,45-48,62,75,80,86,113,132
+  s_142b4d269ec35e::t_9dcb995bf0e09e 51-53,58,68-69,71,73,112,117-119,127-131
+  s_142b4d269ec35e::t_b2104f280e5890 54,65-66,120-126
+  s_142b4d269ec35e::t_9a314aa523c19b 114-116,133-134
+experiments/windows-uia/managed-reference/IdentityHarness/IdentityCatalog.cs
+  s_142b4d269ec35e::t_ca59045e53138a 46,48,72,76,91-93
+  s_142b4d269ec35e::t_9dcb995bf0e09e 22,103-104,139-140,189-196,203-206,209
+experiments/windows-uia/managed-reference/IdentityHarness/UnitCases.cs
+  s_142b4d269ec35e::t_acd541ef77b1c6 160-166,176-272
+  s_142b4d269ec35e::t_b2104f280e5890 167-175
+  s_142b4d269ec35e::t_9a314aa523c19b 146-153,347-350
+  s_142b4d269ec35e::t_9dcb995bf0e09e 6,96,319
+  s_142b4d269ec35e::t_a7c4d307b9a5bf 351
+experiments/windows-uia/managed-reference/IdentityHarness/Program.cs
+  s_142b4d269ec35e::t_86af801c38403a 14,22,51,80,88,90,94,97,107,113,115,117,119,121,123,125,127,140,152-153,170
+  s_31912cf7d88f1e::t_c72194676be31d 171
+docs/work-items/P4.3-implementation-slices.md
+  s_142b4d269ec35e::t_610e2f46ffbe93 118-127,130-133
+  s_142b4d269ec35e::t_bf70c9f345863f 92-117,128-129,134-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "55ac589bec2c428356e38c9d3c19c12247f47ded",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    },
+    "s_31912cf7d88f1e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0fc3f-a52f-7412-8c33-654bb55e7469",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
