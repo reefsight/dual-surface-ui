@@ -1,0 +1,35 @@
+docs/work-items/P4.3-semantic-action-design.md
+  s_142b4d269ec35e::t_ae9605af3744f9 1-52,57-78,80-81,85-89,126-173,178-181,184-188,192-202,206-223,225-233,239-243,253-260,293-308,313,317-322,327-337,343-347,355-372,374-403
+  s_142b4d269ec35e::t_794b234ad49262 53-56,79,82-84,90-125,182-183,203-205,224,234-238,244-252,261-292,309-312,314-316,323-326,338-342,348-354,373
+  s_142b4d269ec35e::t_4b26ed2e6abf11 174-177,189-191
+docs/reviews/p4.3-semantic-action-design-package-review-2026-10-04.md
+  s_142b4d269ec35e::t_1f52e3fb619e52 191-275
+  s_142b4d269ec35e::t_6853fc15ba2a95 1-190
+docs/reviews/p4.3-s3-design-decision-2026-10-04.md
+  s_142b4d269ec35e::t_9df98634559ab8 24,33-42
+  s_142b4d269ec35e::t_96e5effdf8c21c 1-23,25-32,43-79
+docs/04-roadmap.md
+  s_142b4d269ec35e::t_514f13fda131ae 225-235
+docs/reviews/p4.3-semantic-action-design-accessibility-review-2026-10-04.md
+  s_142b4d269ec35e::t_22f9f31a3429a0 202-322
+  s_142b4d269ec35e::t_ffb85058f83835 1-201
+docs/reviews/p4.3-semantic-action-design-security-review-2026-10-04.md
+  s_142b4d269ec35e::t_6e54d17a4a438d 265-420
+  s_142b4d269ec35e::t_7f758d67c44b68 1-264
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c569a4daa398aca71c8023a621f55b84fb23b17f",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
