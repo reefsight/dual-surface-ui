@@ -96,9 +96,14 @@ records the source-only reference, independent
 and the historical October 3 input-desktop blocker. The
 [October 4 continuation](evidence/p4.3-identity-continuation-2026-10-04.md)
 records independently reviewed unknown-safety handling and an actual successful
-15-case native first run; its planned repeat failed fixture startup. The serial
-identity gate and all later slices remain open. Unit/browser/package proof is
-not native slice or P4.3 acceptance.
+15-case native first run; its planned repeat failed fixture startup. That
+historical pair remains failed. The later [exact serial pair and fresh gates](evidence/p4.3-startup-diagnostics-serial-2026-10-04.md)
+now support [limited S1 identity-decision acceptance](reviews/p4.3-s1-acceptance-2026-10-04.md)
+after three actual independent final reviews. The separate
+[S2 design entry](reviews/p4.3-s2-entry-2026-10-04.md) authorizes only the reviewed
+[read-only capture/projection brief](work-items/P4.3-read-only-capture-projection.md);
+S2 runtime and all full P4.3/Phase 4 criteria remain open. Earlier failures and
+unproved startup causality/reliability and OS boundaries are not waived.
 P4.4's evidence-gated language selection is specified in the
 [native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).

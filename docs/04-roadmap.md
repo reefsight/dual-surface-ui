@@ -177,9 +177,16 @@ The [2026-10-03 identity development checkpoint](evidence/p4.3-identity-developm
 records the independently reviewed decision-only reference and retained native
 admission failures. The [October 4 continuation](evidence/p4.3-identity-continuation-2026-10-04.md)
 adds actual 15-case first-run success on the normal input desktop, followed by
-a failed planned repeat at fixture startup. No successful serial pair or
-identity-slice acceptance exists; later slices cannot substitute unit proof
-for that native gate.
+a failed planned repeat at fixture startup; that checkpoint remains incomplete.
+The later [October 4 serial evidence](evidence/p4.3-startup-diagnostics-serial-2026-10-04.md)
+has actual 15/15 first and repeat reports plus fresh 679 full/114 browser/12
+conformance tests, zero audit vulnerabilities and other current gates.
+Three actual independent final reviews support the separate
+[limited S1 identity-decision acceptance](reviews/p4.3-s1-acceptance-2026-10-04.md).
+The independently revised [read-only S2 design](work-items/P4.3-read-only-capture-projection.md)
+has a separate [implementation entry](reviews/p4.3-s2-entry-2026-10-04.md);
+S2 runtime, full P4.3 and Phase 4 completion remain open. Earlier failed runs,
+startup cause/reliability, real OS negatives and all later criteria are retained.
 P4.4's frozen language-decision method is planned in
 [the native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
