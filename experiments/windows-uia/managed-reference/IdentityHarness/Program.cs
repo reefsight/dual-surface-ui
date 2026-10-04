@@ -85,9 +85,8 @@ internal sealed class OwnedFixture : IDisposable
     public IReadOnlyList<NativeCase> Execute()
     {
         var cases = new List<NativeCase>();
-        Scenario("launch-window");
-        Wait(() => { process.Refresh(); return process.MainWindowHandle != 0; });
-        Scenario("launch-state"); Wait(() => Records("state").Length > 0 && Records("reset-ack").Length > 0);
+        StartupWait("launch-window", () => { process.Refresh(); return process.MainWindowHandle != 0; });
+        StartupWait("launch-state", () => Records("state").Length > 0 && Records("reset-ack").Length > 0);
         var native = new NativeObservation(process, ResetEpoch);
         using var catalog = new IdentityCatalog(native.Capture);
         var target = new HostTarget("dynamic-a", "Button", "Invoke", "fixture-window");
@@ -128,10 +127,13 @@ internal sealed class OwnedFixture : IDisposable
         receipt = catalog.Discover(invoke); process.Refresh(); nint oldWindow = process.MainWindowHandle;
         var oldRoot = AutomationElement.FromHandle(oldWindow);
         Setup(native, "replace-window");
+        Program.Stage = "wait-new-window";
         Wait(() => { process.Refresh(); return process.MainWindowHandle != 0 && process.MainWindowHandle != oldWindow; });
+        Program.Stage = "wait-former-window-destruction";
         Wait(() => WindowsAdmission.OwnedFormerWindowDestroyed(oldWindow));
         // New window writes a separate reset acknowledgement, with reset sequence
         // zero; catalog invalidation is not based solely on that fixture number.
+        Program.Stage = "wait-new-window-state";
         Wait(() => State().GetProperty("revision").GetInt32() == 0);
         try { probe = oldRoot.Current.AutomationId == "fixture-window" ? "metadata_readable" : "metadata_changed"; }
         catch (ElementNotAvailableException) { probe = "unavailable"; }
@@ -168,6 +170,25 @@ internal sealed class OwnedFixture : IDisposable
     }
 
     private static void Scenario(string category) => Program.Scenario = Program.Stage = category;
+
+    private void StartupWait(string stage, Func<bool> predicate)
+    {
+        Scenario(stage);
+        try { Wait(predicate); }
+        catch
+        {
+            // Only these explicit startup wait calls trigger optional context.
+            // Later admission/provider errors cannot be mistaken for startup.
+            _ = StartupDiagnostics.TryPublish(Output, () =>
+            {
+                return StartupDiagnostics.Collect(stage, () => { process.Refresh(); return !process.HasExited; },
+                    () => process.MainWindowHandle != 0, () => Records("state").Length > 0,
+                    () => Records("reset-ack").Length > 0, () => process.TotalProcessorTime.Ticks,
+                    () => process.WorkingSet64);
+            });
+            throw; // Preserve exact original exception, stage and failure decision.
+        }
+    }
 
     private static void Setup(NativeObservation native, string id) =>
         ((InvokePattern)native.SetupElement(id).GetCurrentPattern(InvokePattern.Pattern)).Invoke();

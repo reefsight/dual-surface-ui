@@ -151,6 +151,98 @@ internal static class UnitCases
             Check(NativeObservation.BooleanCategory("untrusted provider text") == "wrong-type");
             Check(NativeObservation.BooleanCategory(new DiagnosticTextMustNotBeRead()) == "wrong-type");
         });
+        Case("startup-diagnostic-cpu-boundaries", () =>
+        {
+            Check(StartupDiagnostics.Cpu(-1) == "unknown" && StartupDiagnostics.Cpu(0) == "zero");
+            Check(StartupDiagnostics.Cpu(1) == "under_100ms" && StartupDiagnostics.Cpu(999999) == "under_100ms");
+            Check(StartupDiagnostics.Cpu(1000000) == "under_1s" && StartupDiagnostics.Cpu(9999999) == "under_1s");
+            Check(StartupDiagnostics.Cpu(10000000) == "at_least_1s" && StartupDiagnostics.Cpu(long.MaxValue) == "at_least_1s");
+        });
+        Case("startup-diagnostic-resident-boundaries", () =>
+        {
+            const long lower = 64L * 1024 * 1024, upper = 256L * 1024 * 1024;
+            Check(StartupDiagnostics.Resident(-1) == "unknown");
+            Check(StartupDiagnostics.Resident(0) == "under_64mib" && StartupDiagnostics.Resident(lower - 1) == "under_64mib");
+            Check(StartupDiagnostics.Resident(lower) == "under_256mib" && StartupDiagnostics.Resident(upper - 1) == "under_256mib");
+            Check(StartupDiagnostics.Resident(upper) == "at_least_256mib" && StartupDiagnostics.Resident(long.MaxValue) == "at_least_256mib");
+        });
+        StartupSnapshot Diagnostic(string stage = "launch-window") => new(stage, "alive", "absent", "absent", "absent", "zero", "under_64mib");
+        Case("startup-diagnostic-closed-shape", () =>
+        {
+            byte[] bytes = StartupDiagnostics.Encode(Diagnostic());
+            Check(bytes.Length <= StartupDiagnostics.MaximumBytes);
+            using var doc = System.Text.Json.JsonDocument.Parse(bytes, new() { MaxDepth = 3 });
+            Check(doc.RootElement.EnumerateObject().Select(p => p.Name).SequenceEqual(new[]
+                { "schemaVersion", "kind", "stage", "process", "window", "stateRecords", "resetAckRecords", "cpu", "resident" }));
+            Check(doc.RootElement.GetProperty("schemaVersion").GetString() == "0.1" &&
+                doc.RootElement.GetProperty("kind").GetString() == "p4.3-owned-startup-diagnostic");
+            Check(doc.RootElement.EnumerateObject().All(p => p.Value.ValueKind == System.Text.Json.JsonValueKind.String));
+            _ = StartupDiagnostics.Encode(Diagnostic("launch-state"));
+        });
+        Case("startup-diagnostic-rejects-untrusted-categories", () =>
+        {
+            foreach (var malformed in new[] { Diagnostic("later-admission"), Diagnostic() with { Process = "provider text" },
+                Diagnostic() with { Window = "provider text" }, Diagnostic() with { StateRecords = "provider text" },
+                Diagnostic() with { ResetAckRecords = "provider text" }, Diagnostic() with { Cpu = "12345" },
+                Diagnostic() with { Resident = new string('x', 2048) } })
+                Denied(() => StartupDiagnostics.Encode(malformed), GuardCode.PreconditionFailed);
+            int queries = 0;
+            Denied(() => StartupDiagnostics.Collect("later-admission", () => { queries++; return true; },
+                () => false, () => false, () => false, () => 0, () => 0), GuardCode.PreconditionFailed);
+            Check(queries == 0);
+        });
+        Case("startup-diagnostic-once-and-query-faults-unknown", () =>
+        {
+            int[] calls = new int[6];
+            bool Flag(int index) { calls[index]++; throw new InvalidOperationException("untrusted error"); }
+            long Metric(int index) { calls[index]++; throw new InvalidOperationException("untrusted error"); }
+            var value = StartupDiagnostics.Collect("launch-state", () => Flag(0), () => Flag(1),
+                () => Flag(2), () => Flag(3), () => Metric(4), () => Metric(5));
+            Check(calls.All(count => count == 1));
+            Check(value.Process == "unknown" && value.Window == "unknown" && value.StateRecords == "unknown" &&
+                value.ResetAckRecords == "unknown" && value.Cpu == "unknown" && value.Resident == "unknown");
+            _ = StartupDiagnostics.Encode(value);
+            value = StartupDiagnostics.Collect("launch-window", () => false, () => true, () => true, () => true, () => -1, () => -1);
+            Check(value.Process == "exited" && value.Window == "present" && value.StateRecords == "present" &&
+                value.ResetAckRecords == "present" && value.Cpu == "unknown" && value.Resident == "unknown");
+        });
+        Case("startup-diagnostic-publish-once-and-preserve-failure", () =>
+        {
+            string root = System.IO.Path.GetFullPath(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "dual-surface-ui-native-evidence"));
+            string directory = System.IO.Path.Combine(root, "unit-startup-" + Guid.NewGuid().ToString("N"));
+            Check(directory.StartsWith(root + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+            if (System.IO.Directory.Exists(root))
+                Check((System.IO.File.GetAttributes(root) & System.IO.FileAttributes.ReparsePoint) == 0);
+            System.IO.Directory.CreateDirectory(directory);
+            string file = System.IO.Path.Combine(directory, StartupDiagnostics.FileName);
+            try
+            {
+                Check(StartupDiagnostics.TryPublish(directory, () => Diagnostic()));
+                byte[] original = System.IO.File.ReadAllBytes(file);
+                Check(!StartupDiagnostics.TryPublish(directory, () => Diagnostic("launch-state")));
+                Check(System.IO.File.ReadAllBytes(file).SequenceEqual(original));
+                var failure = new TimeoutException("original failure");
+                try
+                {
+                    try { throw failure; }
+                    catch
+                    {
+                        Check(!StartupDiagnostics.TryPublish(directory, () => throw new InvalidOperationException("optional fault")));
+                        throw;
+                    }
+                }
+                catch (TimeoutException actual) { Check(ReferenceEquals(actual, failure)); }
+            }
+            finally
+            {
+                // Exact test-created file and now-empty GUID directory only;
+                // no recursive removal or real native evidence is deleted.
+                Check((System.IO.File.GetAttributes(root) & System.IO.FileAttributes.ReparsePoint) == 0 &&
+                    (System.IO.File.GetAttributes(directory) & System.IO.FileAttributes.ReparsePoint) == 0);
+                if (System.IO.File.Exists(file)) System.IO.File.Delete(file);
+                System.IO.Directory.Delete(directory);
+            }
+        });
         Case("unknown-safety-flags", () =>
         {
             foreach (object? value in new object?[] { null, "false", 0, System.Windows.Automation.AutomationElement.NotSupported })
