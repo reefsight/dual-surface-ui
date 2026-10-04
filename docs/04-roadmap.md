@@ -187,6 +187,11 @@ The independently revised [read-only S2 design](work-items/P4.3-read-only-captur
 has a separate [implementation entry](reviews/p4.3-s2-entry-2026-10-04.md);
 S2 runtime, full P4.3 and Phase 4 completion remain open. Earlier failed runs,
 startup cause/reliability, real OS negatives and all later criteria are retained.
+The later [S2 deterministic foundation decision](reviews/p4.3-capture-foundation-decision-2026-10-04.md)
+accepts only reviewed pure projection/identity/comparison prerequisites and the
+bounded Window-family clarification. [Current development evidence](evidence/p4.3-capture-foundation-2026-10-04.md)
+is108 C# units,52 focused/731 full JS tests plus serialized11-subject admission,
+not any of the required22 real native capture scenarios or S2 runtime closure.
 P4.4's frozen language-decision method is planned in
 [the native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).

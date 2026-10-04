@@ -104,6 +104,11 @@ after three actual independent final reviews. The separate
 [read-only capture/projection brief](work-items/P4.3-read-only-capture-projection.md);
 S2 runtime and all full P4.3/Phase 4 criteria remain open. Earlier failures and
 unproved startup causality/reliability and OS boundaries are not waived.
+The later [deterministic S2 foundation checkpoint](reviews/p4.3-capture-foundation-decision-2026-10-04.md)
+accepts only copied projection/reference/comparator code and a separately reviewed
+Window-family clarification. [Executed foundation evidence](evidence/p4.3-capture-foundation-2026-10-04.md)
+has108 C# units,52 focused/731 full JS tests and actual11-subject serialized
+core/protocol admission; none is native collection or S2 runtime acceptance.
 P4.4's evidence-gated language selection is specified in the
 [native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
