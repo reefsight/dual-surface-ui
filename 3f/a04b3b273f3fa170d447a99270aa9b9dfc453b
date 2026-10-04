@@ -1,0 +1,102 @@
+docs/reviews/p4.3-native-collector-component-package-agent-review.md
+  s_142b4d269ec35e::t_a86c322cf7dce5 1-85
+experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowsAdmission.cs
+  s_142b4d269ec35e::t_9dc34b45526eb2 123-124
+  s_142b4d269ec35e::t_6dc6f926fc9f7d 1-63,79-122,125-189,191-194
+  s_142b4d269ec35e::t_851f8dd1c8a9b5 64-78,190
+scripts/p4.3-native-capture-source.mjs
+  s_142b4d269ec35e::t_c1bb7583ec3d93 1-35
+docs/reviews/p4.3-native-collector-component-decision-2026-10-04.md
+  s_142b4d269ec35e::t_cf4315c29bcd10 1-95
+scripts/run-p4.3-native-capture-unit.ps1
+  s_142b4d269ec35e::t_69041febe74ef7 1-30,35-47,55-57
+  s_142b4d269ec35e::t_541080890a311e 31-34
+  s_142b4d269ec35e::t_338b58a2ea49ed 48-50,52-54
+  s_6db0a5149dd194::t_82b328b82a2217 51
+experiments/windows-uia/managed-reference/NativeCaptureHarness/Program.cs
+  s_142b4d269ec35e::t_d6bd8df4e86670 105-112
+  s_142b4d269ec35e::t_0b1898a4967719 125-132
+  s_142b4d269ec35e::t_851f8dd1c8a9b5 117-124
+  s_142b4d269ec35e::t_4abdadd606c16e 96-104
+  s_142b4d269ec35e::t_eccf42f3921b38 1-37,58-59,61-62,65-67,69,72-95,152-155,158,160-163
+  s_142b4d269ec35e::t_53df5c7a833d4c 38-57,60,63-64,68,70-71,114-116,156-157,159
+  s_142b4d269ec35e::t_8ee4aca72d4206 133-151
+  s_142b4d269ec35e::t_520eb2eabe2153 113
+docs/reviews/p4.3-native-collector-component-checkpoint-audit-2026-10-04.md
+  s_142b4d269ec35e::t_306dbbad40f1d1 1-25
+docs/work-items/P4.3-native-collector-component.md
+  s_142b4d269ec35e::t_c1bb7583ec3d93 1-28,30-32,39-49,54,60-66,69-96
+  s_142b4d269ec35e::t_851f8dd1c8a9b5 33-38
+  s_142b4d269ec35e::t_3843449941dd42 57-59
+  s_142b4d269ec35e::t_0b1898a4967719 55-56
+  s_142b4d269ec35e::t_8ee4aca72d4206 50-53
+  s_142b4d269ec35e::t_52130b3e82102e 29,67-68
+docs/reviews/p4.3-native-collector-component-security-agent-review.md
+  s_142b4d269ec35e::t_43db1d8b94597d 34,139,142-143,186-187,197-198,201,219,221-222,253-258,262-264,266-268,286,293
+  s_142b4d269ec35e::t_6e10108f6c6b46 5,18,23-33,35,58,75,79-80,166-185,188-189,231-234,259,265,269,284-285
+  s_142b4d269ec35e::t_16a4941472afc8 1-4,6-17,19-22,36-57,59-74,76-78,81-138,140-141,144-165,190-196,199-200,202-218,220,223-230,235-252,260-261,270-283,287-292,294-309
+experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowTopology.cs
+  s_142b4d269ec35e::t_6dc6f926fc9f7d 1-27,33-43,49-72
+  s_142b4d269ec35e::t_4abdadd606c16e 28-32
+  s_142b4d269ec35e::t_851f8dd1c8a9b5 44-48
+experiments/windows-uia/managed-reference/NativeCaptureHarness/ReadOnlyCollector.cs
+  s_142b4d269ec35e::t_4abdadd606c16e 110,362-363,377-380,391
+  s_142b4d269ec35e::t_9dc34b45526eb2 395
+  s_142b4d269ec35e::t_3843449941dd42 13
+  s_142b4d269ec35e::t_a266c5220f7df1 1-12,14,16-17,19-25,27-33,35-55,57,59-64,66-75,77-86,88-94,96-99,101-109,123-185,187-213,215-218,223-254,256-258,260-282,284-289,308-325,331-332,338-347,357-361,365,367-372,374,376,392-394,396-420
+  s_142b4d269ec35e::t_0b1898a4967719 18,26,56
+  s_142b4d269ec35e::t_eccf42f3921b38 87,112-122
+  s_142b4d269ec35e::t_8ee4aca72d4206 348-356,386-390
+  s_142b4d269ec35e::t_851f8dd1c8a9b5 34,58,76,95,111,186,214,255,283,326,328-329,364
+  s_142b4d269ec35e::t_d6bd8df4e86670 290-307,381-385
+  s_142b4d269ec35e::t_ce554d570da8d1 15
+  s_142b4d269ec35e::t_9e8e82bd2ef888 65
+  s_142b4d269ec35e::t_d559e63b14a5e4 100
+  s_142b4d269ec35e::t_31c60a051f1448 219-222
+  s_142b4d269ec35e::t_30039f4fc8d3bc 259
+  s_142b4d269ec35e::t_85d1f368490309 327
+  s_142b4d269ec35e::t_b61a9be93cd563 330
+  s_142b4d269ec35e::t_c5123555e2d5e0 333-337
+  s_142b4d269ec35e::t_9fd8d42dae311d 366
+  s_142b4d269ec35e::t_25906ca43adad3 373
+  s_142b4d269ec35e::t_fb203aaf2ccfeb 375
+docs/evidence/p4.3-native-collector-component-2026-10-04.md
+  s_142b4d269ec35e::t_36dd9fdb985039 15,18-19,31,38-39,46,52,64-65,83-89
+  s_142b4d269ec35e::t_7e27bcebab7857 1-14,16-17,20-30,32,42-45,47-51,53-63,66-79,91-113,115-116
+  s_142b4d269ec35e::t_54f7332b30449c 33-37,40-41,80-82,90
+  s_142b4d269ec35e::t_47164a4286e5fd 114
+experiments/windows-uia/managed-reference/NativeCaptureHarness/NativeCaptureHarness.csproj
+  s_142b4d269ec35e::t_6dc6f926fc9f7d 1-17
+docs/README.md
+  s_142b4d269ec35e::t_cf4315c29bcd10 112-117
+docs/reviews/p4.3-native-collector-component-accessibility-agent-review.md
+  s_142b4d269ec35e::t_fd1886bd2fa869 1-235
+scripts/verify-p4.3-native-capture-unit.mjs
+  s_6db0a5149dd194::t_43f3bcc3044434 1-25
+test/p4.3-native-capture.test.ts
+  s_6db0a5149dd194::t_2874484f14d2ec 1-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3fa04b3b273f3fa170d447a99270aa9b9dfc453b",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    },
+    "s_6db0a5149dd194": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10231-e9ed-76a3-9d55-9247f45f5308",
+        "model": "unknown"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
