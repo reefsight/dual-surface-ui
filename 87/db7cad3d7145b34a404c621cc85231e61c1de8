@@ -1,0 +1,38 @@
+docs/work-items/P4.4-measurement-method-design.md
+  s_142b4d269ec35e::t_19baeb913fe341 43-44,62,79-92,103-123,134-145,154-175,177-181,186-188,194-198,201-213,271-272,279,285-307,311-313,317-318,322-331,356-357,359-372
+  s_142b4d269ec35e::t_9581d737b2c185 308-310,314-316,319-321
+  s_142b4d269ec35e::t_945ff78c25f35d 1-42,45-61,63-78,93-102,124-133,146-153,176,182-185,189-193,199-200,214-270,273-278,280-284,332-355,358,373-388
+docs/work-items/P4.4-native-language-decision.md
+  s_142b4d269ec35e::t_945ff78c25f35d 45-50
+docs/reviews/p4.4-measurement-method-accessibility-review-2026-10-04.md
+  s_142b4d269ec35e::t_f6f45af04fe1bc 120-213
+  s_142b4d269ec35e::t_609402185f902c 1-119
+docs/adr/0018-native-runtime-language-decision-method.md
+  s_142b4d269ec35e::t_945ff78c25f35d 7-11
+docs/reviews/p4.4-measurement-method-security-review-2026-10-04.md
+  s_142b4d269ec35e::t_71cdcab54533bc 255-422
+  s_142b4d269ec35e::t_2cd11c622ed0d0 1-254
+docs/04-roadmap.md
+  s_142b4d269ec35e::t_a9dd282493aea3 239-245
+docs/reviews/p4.4-measurement-method-design-decision-2026-10-04.md
+  s_142b4d269ec35e::t_a9dd282493aea3 1-142
+docs/reviews/p4.4-measurement-method-package-review-2026-10-04.md
+  s_142b4d269ec35e::t_7ee281209da1f7 1-156
+  s_142b4d269ec35e::t_f031cf79bead0a 157-274
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "87db7cad3d7145b34a404c621cc85231e61c1de8",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
