@@ -93,8 +93,12 @@ records the source-only reference, independent
 [accessibility](reviews/p4.3-identity-development-accessibility-agent-review.md),
 [security](reviews/p4.3-identity-development-security-agent-review.md) and
 [package](reviews/p4.3-identity-development-package-agent-review.md) reviews,
-and the current input-desktop blocker. Unit/browser/package proof is not native
-slice or P4.3 acceptance.
+and the historical October 3 input-desktop blocker. The
+[October 4 continuation](evidence/p4.3-identity-continuation-2026-10-04.md)
+records independently reviewed unknown-safety handling and an actual successful
+15-case native first run; its planned repeat failed fixture startup. The serial
+identity gate and all later slices remain open. Unit/browser/package proof is
+not native slice or P4.3 acceptance.
 P4.4's evidence-gated language selection is specified in the
 [native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).

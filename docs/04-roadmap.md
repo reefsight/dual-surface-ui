@@ -175,8 +175,11 @@ the independently reviewed bounded implementation slices after P4.2 acceptance;
 P4.3 runtime completion and Phase 4 Exit Gate remain open.
 The [2026-10-03 identity development checkpoint](evidence/p4.3-identity-development-2026-10-03.md)
 records the independently reviewed decision-only reference and retained native
-admission failures. Ordinary-input-desktop success and slice acceptance remain
-open; no later slice may substitute unit proof for that native gate.
+admission failures. The [October 4 continuation](evidence/p4.3-identity-continuation-2026-10-04.md)
+adds actual 15-case first-run success on the normal input desktop, followed by
+a failed planned repeat at fixture startup. No successful serial pair or
+identity-slice acceptance exists; later slices cannot substitute unit proof
+for that native gate.
 P4.4's frozen language-decision method is planned in
 [the native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
