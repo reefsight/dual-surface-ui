@@ -1,0 +1,33 @@
+docs/reviews/p4.3-native-diagnostics-design-security-agent-review-2026-10-04.md
+  s_142b4d269ec35e::t_0832cc694bdecd 1-161
+docs/reviews/p4.3-native-diagnostics-implementation-entry-2026-10-04.md
+  s_142b4d269ec35e::t_1d5b02e54435db 1-66
+docs/reviews/p4.3-native-diagnostics-design-package-agent-review-2026-10-04.md
+  s_142b4d269ec35e::t_910cc16b28a77a 1-66
+docs/work-items/P4.3-native-failure-diagnostics.md
+  s_142b4d269ec35e::t_81b571f254a137 111-113,115-120,157-158
+  s_142b4d269ec35e::t_306247fcbe9818 114,139-141,171-174
+  s_142b4d269ec35e::t_fd75e1cf204d62 54,56-82,90-101,103-110,121-138,142-149,161-170,175-176,187-199,209-212,218-221,227-229
+  s_142b4d269ec35e::t_e8ebb5e062f637 200-208,222-226
+  s_142b4d269ec35e::t_73434e6510d580 1-53,55,83-89,102,150-156,159-160,186,213-217,230-264
+  s_142b4d269ec35e::t_c1a449b5218662 177-185
+docs/reviews/p4.3-native-diagnostics-design-accessibility-agent-review-2026-10-04.md
+  s_142b4d269ec35e::t_9472c3cb357d58 1-15,17-156
+  s_142b4d269ec35e::t_6cd70a83ea8781 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "179e109f748763c5c2b812e18e85762c67dc9e17",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
