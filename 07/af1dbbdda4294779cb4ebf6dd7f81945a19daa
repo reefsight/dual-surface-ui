@@ -1,0 +1,61 @@
+docs/work-items/P4.3-windows-uia-adapter.md
+  s_142b4d269ec35e::t_420241c2850e27 12-17
+docs/04-roadmap.md
+  s_142b4d269ec35e::t_420241c2850e27 178-182
+docs/reviews/p4.3-unknown-safety-package-agent-review.md
+  s_142b4d269ec35e::t_de0417394c4316 153,220-245
+  s_142b4d269ec35e::t_167acbcb972d99 1-51
+  s_142b4d269ec35e::t_65487cda8c8af6 52-87,89-108
+  s_142b4d269ec35e::t_c9a64a8ad27d66 183-202
+  s_142b4d269ec35e::t_a48dd04aaacfda 88
+  s_142b4d269ec35e::t_2c2501687d4dab 109-140,170
+  s_142b4d269ec35e::t_36b1f28a4b206e 203-219
+  s_142b4d269ec35e::t_577cf4b1f092e9 141-152,154-169,171-182
+docs/work-items/P4.3-owned-startup-diagnostics.md
+  s_142b4d269ec35e::t_a5d108652cac3a 1-25,28-29,32-39,45,48-74
+  s_142b4d269ec35e::t_bbe2d8c0a765f8 26-27,30-31,40-44,46-47
+docs/README.md
+  s_142b4d269ec35e::t_420241c2850e27 96-101
+docs/evidence/p4.3-identity-first-incomplete-pair-2026-10-04.json
+  s_142b4d269ec35e::t_22f29d92f3411f 1
+docs/evidence/p4.3-identity-continuation-2026-10-04.md
+  s_142b4d269ec35e::t_6acbb8874500c2 135-136
+  s_142b4d269ec35e::t_22f29d92f3411f 1-30,36-102,108-129,140-154
+  s_142b4d269ec35e::t_420241c2850e27 103-107,130-134
+  s_142b4d269ec35e::t_1940e108411f0a 31-35
+  s_142b4d269ec35e::t_55ec4b3904c7f8 137-139
+docs/reviews/p4.3-unknown-safety-security-agent-review.md
+  s_142b4d269ec35e::t_b7e8a8649c614c 128-134
+  s_142b4d269ec35e::t_8ad10f435aa290 412-495
+  s_142b4d269ec35e::t_b143ac30828921 273-328
+  s_142b4d269ec35e::t_6433277fb5bb2a 11-14,165-272
+  s_142b4d269ec35e::t_e06003650156dd 1-10,15-127,135-164
+  s_142b4d269ec35e::t_db43732f22d706 329-411
+docs/reviews/p4.3-unknown-safety-accessibility-agent-review.md
+  s_142b4d269ec35e::t_5f662308efe964 263-303,308-311
+  s_142b4d269ec35e::t_0090b952db49a5 304-307
+  s_142b4d269ec35e::t_daafc1d7411049 430-488
+  s_142b4d269ec35e::t_1b733c08fae246 489-512
+  s_142b4d269ec35e::t_097997518e5f5d 312-429
+  s_142b4d269ec35e::t_8d48b1f855545e 155-262
+  s_142b4d269ec35e::t_937fb6d85b9b19 1-108
+  s_142b4d269ec35e::t_1f839f68216e8b 109-154
+docs/reviews/p4.3-owned-startup-diagnostics-entry-2026-10-04.md
+  s_142b4d269ec35e::t_5bdb6be66edaca 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "07af1dbbdda4294779cb4ebf6dd7f81945a19daa",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
