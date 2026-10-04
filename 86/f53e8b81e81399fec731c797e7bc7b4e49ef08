@@ -1,0 +1,75 @@
+experiments/windows-uia/managed-reference/CaptureSuite/UnitCases.cs
+  s_142b4d269ec35e::t_e1f691b7dfb3f5 50
+  s_142b4d269ec35e::t_01febc5723b8be 248,259-267
+  s_142b4d269ec35e::t_735708e3db42aa 191-194
+  s_142b4d269ec35e::t_f45fcd1739df90 157-190,195-247,249-258,281-286
+experiments/windows-uia/managed-reference/CaptureSuite/Program.cs
+  s_142b4d269ec35e::t_e1f691b7dfb3f5 169-170
+  s_142b4d269ec35e::t_49726dec597e0e 32-44,48-49,51,53,75,86-87,89,92,118,142,144-146,149,164,168,171-172,176-177,180,184,202,206,208-211,214-218,229,232,236-237,243,246,251-252,254-259,326-330,339,354
+  s_142b4d269ec35e::t_d62e0ff21103cc 47
+  s_142b4d269ec35e::t_91c746dfabe16b 340-350,352
+  s_142b4d269ec35e::t_8472a14900c4b5 45-46
+docs/evidence/p4.3-native-suite-d1-freeze.json
+  s_142b4d269ec35e::t_46538ec8d77ec6 1-26
+test/p4.3-native-failure-diagnostics.test.ts
+  s_142b4d269ec35e::t_d62e0ff21103cc 124-125
+  s_142b4d269ec35e::t_3767ec94f68513 2-12,14-24,33-123,126-203,205-239,241-274,276-291,293-304,306-316,318-333
+  s_142b4d269ec35e::t_c170e033f06559 1,13,25-32,204,240,275,292,305,317
+docs/reviews/p4.3-native-suite-d1-failure-accessibility-agent-review-2026-10-04.md
+  s_142b4d269ec35e::t_7e18d9c0d848d0 1-146,148-204
+  s_142b4d269ec35e::t_b84df0227bdfad 147
+docs/reviews/p4.3-native-suite-d1-failure-security-agent-review-2026-10-04.md
+  s_142b4d269ec35e::t_fb1b12946d64b7 1-186
+scripts/p4.3-native-suite-source.mjs
+  s_142b4d269ec35e::t_e1f691b7dfb3f5 11,13,21,24-25,28,137
+docs/reviews/p4.3-native-suite-d1-execution-entry-2026-10-04.md
+  s_142b4d269ec35e::t_2968cd07f5cec0 1-81
+docs/reviews/p4.3-native-suite-d1-package-agent-review.md
+  s_142b4d269ec35e::t_cc333cf6115637 1-238
+experiments/windows-uia/managed-reference/CaptureSuite/TrustedSetup.cs
+  s_142b4d269ec35e::t_e1f691b7dfb3f5 11,107,116-118,127,154-159,170,223-226,237,261-262,268,278-279,309,319-332
+  s_142b4d269ec35e::t_5bb8d2008e4471 131
+docs/evidence/p4.3-native-suite-d1-development-2026-10-04.md
+  s_142b4d269ec35e::t_1b015d891af620 101-103,115-132
+  s_142b4d269ec35e::t_2968cd07f5cec0 104-110,138
+  s_142b4d269ec35e::t_d56b5c86b1ae8e 1-100,111-114,139,232-235
+  s_142b4d269ec35e::t_668fa16a165527 140-151,231
+  s_142b4d269ec35e::t_c7993ff0fe5846 134-137,152-194
+  s_142b4d269ec35e::t_939bea8a22a0fe 195-230
+  s_142b4d269ec35e::t_d20e73f7e96963 133
+experiments/windows-uia/managed-reference/CaptureSuite/SuiteFreeze.cs
+  s_142b4d269ec35e::t_e1f691b7dfb3f5 14,16,24,29,32-34,53,73
+experiments/windows-uia/managed-reference/CaptureSuite/FailureDiagnostics.cs
+  s_142b4d269ec35e::t_d62e0ff21103cc 31
+  s_142b4d269ec35e::t_735708e3db42aa 178
+  s_142b4d269ec35e::t_91c746dfabe16b 88-96,109-110,114-120
+  s_142b4d269ec35e::t_0f7dcca16912a0 1-30,32-87,97-108,111-113,121-177,179-218
+scripts/p4.3-native-failure-diagnostics.mjs
+  s_142b4d269ec35e::t_d62e0ff21103cc 36
+  s_142b4d269ec35e::t_7be8af9d5a45ab 1-35,37-218
+docs/04-roadmap.md
+  s_142b4d269ec35e::t_939bea8a22a0fe 212-213
+  s_142b4d269ec35e::t_c7993ff0fe5846 205-211,214
+docs/reviews/p4.3-native-suite-d1-failure-package-agent-review-2026-10-04.md
+  s_142b4d269ec35e::t_6a13b358a7b925 1-219
+docs/reviews/p4.3-native-suite-d1-accessibility-agent-review.md
+  s_142b4d269ec35e::t_bd2132a611381a 1-207
+docs/reviews/p4.3-native-suite-d1-security-agent-review.md
+  s_142b4d269ec35e::t_87a1996ac1ea84 1-249
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "86f53e8b81e81399fec731c797e7bc7b4e49ef08",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
