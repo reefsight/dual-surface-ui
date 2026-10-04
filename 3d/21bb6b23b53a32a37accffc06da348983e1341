@@ -1,0 +1,26 @@
+experiments/windows-uia/managed-reference/IdentityHarness/StartupDiagnostics.cs
+  s_142b4d269ec35e::t_d6f3a122307a03 1-83
+experiments/windows-uia/managed-reference/IdentityHarness/Program.cs
+  s_142b4d269ec35e::t_b50afd6214884b 184
+  s_142b4d269ec35e::t_d6f3a122307a03 88-89,130,132,136,174-183,185-191
+  s_142b4d269ec35e::t_d98b4b41582c9e 192
+experiments/windows-uia/managed-reference/IdentityHarness/UnitCases.cs
+  s_142b4d269ec35e::t_d6f3a122307a03 154-212,216-239,242-245
+  s_142b4d269ec35e::t_b50afd6214884b 213-215,240-241
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3d21bb6b23b53a32a37accffc06da348983e1341",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
