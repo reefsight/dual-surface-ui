@@ -222,6 +222,17 @@ failed. No repeat or unchanged retry followed and no successful native scenario
 is claimed. Actual negative-artifact reviews remain distinct from native/S2
 acceptance. Human host-context coordination is required before a separately
 authorized controlled continuation; no desktop/security bypass is permitted.
+The separate [historical replay revision maintenance evidence](evidence/native-protocol-replay-revision-development-2026-10-04.md)
+and [scoped P4.1 corrective decision](reviews/native-protocol-replay-revision-decision-2026-10-04.md)
+record an independently reviewed five-line verifier correction,22 focused/1823
+canonical JS tests,114 managed-browser cases and remaining fresh gates. The
+supplemental batch's12 failures/unknown cause and criteria-after-correction SDLC
+ordering limitation remain explicit; no native or whole-goal acceptance follows.
+The [proposed S3 semantic-action design](work-items/P4.3-semantic-action-design.md)
+has three actual independent final design approvals and a separate
+[design-preparation decision](reviews/p4.3-s3-design-decision-2026-10-04.md).
+It supplies no S3 implementation entry: original positive S2 first/repeat proof,
+independent artifact reviews and S2 runtime acceptance still come first.
 P4.4's frozen language-decision method is planned in
 [the native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
