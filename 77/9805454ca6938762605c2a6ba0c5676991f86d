@@ -1,0 +1,29 @@
+docs/reviews/p4.3-admission-guard-design-accessibility-agent-review-2026-10-04.md
+  s_142b4d269ec35e::t_afb099e41b19fb 1-175
+docs/reviews/p4.3-admission-guard-design-package-agent-review-2026-10-04.md
+  s_142b4d269ec35e::t_cd3f71474c4828 1-221
+docs/work-items/P4.3-admission-guard-diagnostics.md
+  s_142b4d269ec35e::t_edb4b047457a05 106,108,110,119-124
+  s_142b4d269ec35e::t_8b3ee244bd9435 1-105,107,109,111-118,125-227
+docs/reviews/p4.3-admission-guard-design-security-agent-review-2026-10-04.md
+  s_142b4d269ec35e::t_77254065c91cb6 1-204
+docs/reviews/p4.3-admission-guard-implementation-entry-2026-10-04.md
+  s_142b4d269ec35e::t_41d02ab8e290fb 1-2,4-77
+  s_142b4d269ec35e::t_9b28b83cab7987 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "779805454ca6938762605c2a6ba0c5676991f86d",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
