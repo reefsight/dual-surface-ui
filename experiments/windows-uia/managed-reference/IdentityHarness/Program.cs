@@ -11,6 +11,7 @@ internal static class Program
 {
     private static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     internal static string Stage { get; set; } = "input";
+    internal static string Scenario { get; set; } = "input";
     [MTAThread]
     public static int Main(string[] args)
     {
@@ -18,7 +19,7 @@ internal static class Program
         {
             if (args.SequenceEqual(new[] { "--unit" }))
             {
-                Stage = "unit";
+                Scenario = Stage = "unit";
                 Console.WriteLine(JsonSerializer.Serialize(new { kind = "p4.3-identity-unit", cases = UnitCases.Run() }, Json));
                 return 0;
             }
@@ -47,7 +48,7 @@ internal static class Program
         {
             string code = error is GuardException guard ? guard.Code.ToString() : error is TimeoutException ? "Timeout" : "Unexpected";
             // Only closed local categories, never exception text, paths, IDs or stacks.
-            Console.Error.WriteLine("p4.3_identity_failed:" + Stage + ":" + code);
+            Console.Error.WriteLine("p4.3_identity_failed:" + Scenario + ":" + Stage + ":" + code);
             return 70;
         }
     }
@@ -76,7 +77,7 @@ internal sealed class OwnedFixture : IDisposable
         var start = new ProcessStartInfo(Environment.ProcessPath ?? throw new GuardException(GuardCode.NotAuthorized))
         { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
         foreach (string argument in new[] { fixture, "--evidence-directory", Output, "--seed", "p4.2-seed-1" }) start.ArgumentList.Add(argument);
-        Program.Stage = "launch";
+        Program.Scenario = Program.Stage = "launch";
         process = Process.Start(start) ?? throw new GuardException(GuardCode.SurfaceUnavailable);
         stdout = process.StandardOutput.ReadToEndAsync(); stderr = process.StandardError.ReadToEndAsync();
     }
@@ -84,16 +85,16 @@ internal sealed class OwnedFixture : IDisposable
     public IReadOnlyList<NativeCase> Execute()
     {
         var cases = new List<NativeCase>();
-        Program.Stage = "launch-window";
+        Scenario("launch-window");
         Wait(() => { process.Refresh(); return process.MainWindowHandle != 0; });
-        Program.Stage = "launch-state"; Wait(() => Records("state").Length > 0 && Records("reset-ack").Length > 0);
+        Scenario("launch-state"); Wait(() => Records("state").Length > 0 && Records("reset-ack").Length > 0);
         var native = new NativeObservation(process, ResetEpoch);
         using var catalog = new IdentityCatalog(native.Capture);
         var target = new HostTarget("dynamic-a", "Button", "Invoke", "fixture-window");
-        Program.Stage = "current";
+        Scenario("current");
         var receipt = catalog.Discover(target);
         CheckNoMutation("current-owned-target", () => catalog.Validate(receipt), GuardCode.None);
-        Program.Stage = "removed-peer";
+        Scenario("removed-peer");
         var retained = native.SetupElement("dynamic-a");
         Setup(native, "replace"); Wait(() => State().GetProperty("generation").GetInt32() == 2);
         string probe;
@@ -103,27 +104,27 @@ internal sealed class OwnedFixture : IDisposable
         // callability; this decision-only slice must not mutate through it.
         CheckNoMutation("removed-peer-receipt", () => catalog.Validate(receipt), GuardCode.StaleRevision, probe);
         HealthyRecovery("replacement-healthy-recovery", new("dynamic-b", "Button", "Invoke", "fixture-window"));
-        Program.Stage = "reset";
+        Scenario("reset");
         var invoke = new HostTarget("invoke", "Button", "Invoke", "fixture-window");
         receipt = catalog.Discover(invoke); long priorEpoch = ResetEpoch();
         Setup(native, "reset"); Wait(() => ResetEpoch() > priorEpoch);
         CheckNoMutation("reset-receipt", () => catalog.Validate(receipt), GuardCode.StaleRevision);
         HealthyRecovery("reset-healthy-recovery", invoke);
-        Program.Stage = "disabled";
+        Scenario("disabled");
         CheckDiscoveryDenied("disabled-target", new("disabled", "Button", "Invoke", "fixture-window"), GuardCode.PreconditionFailed);
-        Program.Stage = "readonly";
+        Scenario("readonly");
         CheckDiscoveryDenied("readonly-target", new("readonly", "Edit", "Value", "fixture-window"), GuardCode.PreconditionFailed);
-        Program.Stage = "sensitive";
+        Scenario("sensitive");
         CheckDiscoveryDenied("sensitive-target", new("sensitive", "Edit", "Value", "fixture-window"), GuardCode.UnsupportedAction);
-        Program.Stage = "missing";
+        Scenario("missing");
         CheckDiscoveryDenied("missing-target", new("missing", "Button", "Invoke", "fixture-window"), GuardCode.UnsupportedAction);
-        Program.Stage = "unsupported";
+        Scenario("unsupported");
         CheckDiscoveryDenied("unsupported-target", new("unsupported", "Custom", "Invoke", "fixture-window"), GuardCode.UnsupportedAction);
-        Program.Stage = "offscreen";
+        Scenario("offscreen");
         CheckDiscoveryDenied("offscreen-target", new("offscreen", "Button", "Invoke", "fixture-window"), GuardCode.PreconditionFailed);
-        Program.Stage = "combo-wrapper";
+        Scenario("combo-wrapper");
         HealthyRecovery("collapsed-combo-qualified", new("combo", "ComboBox", "ExpandCollapse", "fixture-window"));
-        Program.Stage = "window-replacement";
+        Scenario("window-replacement");
         receipt = catalog.Discover(invoke); process.Refresh(); nint oldWindow = process.MainWindowHandle;
         var oldRoot = AutomationElement.FromHandle(oldWindow);
         Setup(native, "replace-window");
@@ -136,7 +137,7 @@ internal sealed class OwnedFixture : IDisposable
         catch (ElementNotAvailableException) { probe = "unavailable"; }
         CheckNoMutation("destroyed-window-receipt", () => catalog.Validate(receipt), GuardCode.StaleRevision, probe);
         HealthyRecovery("window-healthy-recovery", invoke);
-        Program.Stage = "process-exit";
+        Scenario("process-exit");
         receipt = catalog.Discover(invoke);
         process.Kill(entireProcessTree: true);
         if (!process.WaitForExit(5000)) throw new TimeoutException();
@@ -148,6 +149,8 @@ internal sealed class OwnedFixture : IDisposable
             string before = State().GetRawText(); var result = decision();
             UnitCases.Check(result.Allowed == (expected == GuardCode.None) && result.Code == expected && State().GetRawText() == before);
             cases.Add(new(id, result.Code.ToString(), true, providerProbe));
+            // Fixed case IDs/codes only. Partial progress is not a success report.
+            Console.WriteLine("p4.3_identity_case_passed:" + id + ":" + result.Code);
         }
         void HealthyRecovery(string id, HostTarget definition)
         {
@@ -163,6 +166,8 @@ internal sealed class OwnedFixture : IDisposable
             }, expected);
         }
     }
+
+    private static void Scenario(string category) => Program.Scenario = Program.Stage = category;
 
     private static void Setup(NativeObservation native, string id) =>
         ((InvokePattern)native.SetupElement(id).GetCurrentPattern(InvokePattern.Pattern)).Invoke();

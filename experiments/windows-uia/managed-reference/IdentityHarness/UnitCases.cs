@@ -3,7 +3,7 @@ namespace DualSurface.UiaReference;
 internal static class UnitCases
 {
     private static ObservedElement Node(string id, string instance, string? parent = "root", string type = "Button", string[]? patterns = null) =>
-        new(id, type, instance, parent, patterns ?? ["Invoke"], true, false, false, false);
+        new(id, type, instance, parent, patterns ?? ["Invoke"], true, false, false, false, false);
     private static IdentityObservation Healthy() => new("window", 0, [
         Node("window", "root", null, "Window", []), Node("target", "target")]);
     private static readonly HostTarget Target = new("target", "Button", "Invoke", "window");
@@ -93,7 +93,7 @@ internal static class UnitCases
         Case("readonly-nonvalue-pattern", () =>
         {
             var value = Healthy() with { Elements = [Healthy().Elements[0],
-                Node("combo", "combo", type: "ComboBox", patterns: ["Value", "ExpandCollapse"]) with { ReadOnly = true }] };
+                Node("combo", "combo", type: "ComboBox", patterns: ["Value", "ExpandCollapse"]) with { ValueReadOnly = true }] };
             using var catalog = new IdentityCatalog(() => value);
             Check(catalog.Validate(catalog.Discover(new("combo", "ComboBox", "ExpandCollapse", "window"))).Allowed);
             Denied(() => catalog.Discover(new("combo", "ComboBox", "Value", "window")), GuardCode.PreconditionFailed);
@@ -143,11 +143,132 @@ internal static class UnitCases
             using var catalog = new IdentityCatalog(() => Healthy() with { WindowEpoch = "\ud83d\ude00" });
             Check(catalog.Validate(catalog.Discover(Target)).Allowed);
         });
+        Case("closed-boolean-diagnostic-categories", () =>
+        {
+            Check(NativeObservation.BooleanCategory(true) == "boolean" && NativeObservation.BooleanCategory(false) == "boolean");
+            Check(NativeObservation.BooleanCategory(System.Windows.Automation.AutomationElement.NotSupported) == "not-supported");
+            Check(NativeObservation.BooleanCategory(null) == "null");
+            Check(NativeObservation.BooleanCategory("untrusted provider text") == "wrong-type");
+            Check(NativeObservation.BooleanCategory(new DiagnosticTextMustNotBeRead()) == "wrong-type");
+        });
         Case("unknown-safety-flags", () =>
         {
             foreach (object? value in new object?[] { null, "false", 0, System.Windows.Automation.AutomationElement.NotSupported })
                 Denied(() => NativeObservation.RequireBoolean(value), GuardCode.PreconditionFailed);
             Check(NativeObservation.RequireBoolean(true) && !NativeObservation.RequireBoolean(false));
+        });
+        Case("unsupported-is-unknown-not-default", () =>
+        {
+            Check(NativeObservation.ObserveBoolean(System.Windows.Automation.AutomationElement.NotSupported) == null);
+            Check(NativeObservation.ObserveBoolean(false) is false && NativeObservation.ObserveBoolean(true) is true);
+            foreach (object? value in new object?[] { null, "false", 0, new DiagnosticTextMustNotBeRead() })
+                Denied(() => NativeObservation.ObserveBoolean(value), GuardCode.PreconditionFailed);
+        });
+        Case("supported-pattern-requires-typed-wrapper", () =>
+        {
+            foreach (string pattern in new[] { "Invoke", "Value", "Toggle", "Selection", "SelectionItem", "ExpandCollapse", "RangeValue" })
+            {
+                Check(!NativeObservation.PatternShapeMatches(pattern, null));
+                Check(!NativeObservation.PatternShapeMatches(pattern, new DiagnosticTextMustNotBeRead()));
+            }
+            Check(!NativeObservation.PatternShapeMatches("untrusted pattern text", new object()));
+        });
+        Case("unknown-or-sensitive-never-reads-patterns", () =>
+        {
+            foreach (var flags in new (bool? Sensitive, bool? Enabled, bool? Offscreen)[]
+                { (null, true, false), (false, null, false), (false, true, null), (true, true, false) })
+                NativeObservation.ObservePatterns(flags.Sensitive, flags.Enabled, flags.Offscreen,
+                    () => throw new InvalidOperationException("pattern_probe_must_not_run"));
+            int reads = 0;
+            NativeObservation.ObservePatterns(false, true, false, () => reads++);
+            NativeObservation.ObservePatterns(false, false, true, () => reads++);
+            Check(reads == 2); // known availability is not operability authority
+        });
+        Case("unknown-structural-ancestry-not-authority", () =>
+        {
+            var value = new IdentityObservation("window", 0, [
+                Node("window", "root", null, "Window", []) with { Sensitive = null, Enabled = null, Offscreen = null },
+                Node("wrapper", "wrapper", type: "Group", patterns: []) with { Sensitive = null },
+                Node("target", "target", "wrapper")]);
+            using var catalog = new IdentityCatalog(() => value);
+            Check(catalog.Validate(catalog.Discover(Target)).Allowed);
+            Denied(() => catalog.Discover(new("wrapper", "Group", "Invoke", "window")), GuardCode.PreconditionFailed);
+        });
+        Case("different-type-unknown-wrapper-coexists", () =>
+        {
+            var value = Healthy() with { Elements = [..Healthy().Elements,
+                Node("target", "wrapper", type: "Text", patterns: []) with { Sensitive = null }] };
+            using var catalog = new IdentityCatalog(() => value);
+            Check(catalog.Validate(catalog.Discover(Target)).Allowed);
+        });
+        ObservedElement Unknown(ObservedElement node, string flag) => flag switch
+        {
+            "password" => node with { Sensitive = null }, "enabled" => node with { Enabled = null },
+            "offscreen" => node with { Offscreen = null }, "value-readonly" => node with { ValueReadOnly = null },
+            _ => node with { RangeReadOnly = null }
+        };
+        foreach (string flag in new[] { "password", "enabled", "offscreen" })
+        {
+            Case("unknown-same-type-sibling-" + flag, () =>
+            {
+                var value = Healthy() with { Elements = [..Healthy().Elements,
+                    Unknown(Node("target", "unknown", patterns: []), flag)] };
+                using var catalog = new IdentityCatalog(() => value);
+                Denied(() => catalog.Discover(Target), GuardCode.PreconditionFailed);
+            });
+            Case("unknown-essential-pattern-forgery-" + flag, () =>
+            {
+                var value = Healthy() with { Elements = [Healthy().Elements[0], Unknown(Healthy().Elements[1], flag)] };
+                using var catalog = new IdentityCatalog(() => value);
+                Denied(() => catalog.Discover(Target), GuardCode.PreconditionFailed);
+            });
+        }
+        Case("per-pattern-readonly-unknown", () =>
+        {
+            var both = Node("both", "both", type: "ComboBox", patterns: ["Value", "RangeValue", "ExpandCollapse"]);
+            var value = Healthy() with { Elements = [Healthy().Elements[0], both with { RangeReadOnly = null }] };
+            using var catalog = new IdentityCatalog(() => value);
+            HostTarget TargetPattern(string pattern) => new("both", "ComboBox", pattern, "window");
+            Check(catalog.Validate(catalog.Discover(TargetPattern("Value"))).Allowed);
+            Denied(() => catalog.Discover(TargetPattern("RangeValue")), GuardCode.PreconditionFailed);
+            var old = catalog.Discover(TargetPattern("ExpandCollapse"));
+            value = value with { Elements = [value.Elements[0], both with { ValueReadOnly = null }] };
+            Check(catalog.Validate(old).Code == GuardCode.StaleRevision);
+            Denied(() => catalog.Discover(TargetPattern("Value")), GuardCode.PreconditionFailed);
+            Check(catalog.Validate(catalog.Discover(TargetPattern("RangeValue"))).Allowed);
+            Check(catalog.Validate(catalog.Discover(TargetPattern("ExpandCollapse"))).Allowed);
+        });
+        foreach (string flag in new[] { "password", "enabled", "offscreen", "value-readonly", "range-readonly" })
+        {
+            Case("independent-safety-transitions-" + flag, () =>
+            {
+                var wrapper = Node("wrapper", "wrapper", type: "Group", patterns: []);
+                var value = Healthy() with { Elements = [..Healthy().Elements, wrapper] };
+                using var catalog = new IdentityCatalog(() => value);
+                var old = catalog.Discover(Target);
+                foreach (bool? state in new bool?[] { null, false, true, null })
+                {
+                    wrapper = flag switch { "password" => wrapper with { Sensitive = state },
+                        "enabled" => wrapper with { Enabled = state }, "offscreen" => wrapper with { Offscreen = state },
+                        "value-readonly" => wrapper with { ValueReadOnly = state }, _ => wrapper with { RangeReadOnly = state } };
+                    value = value with { Elements = [..Healthy().Elements, wrapper] };
+                    Check(catalog.Validate(old).Code == GuardCode.StaleRevision);
+                    old = catalog.Discover(Target); Check(catalog.Validate(old).Allowed);
+                }
+            });
+        }
+        Case("malformed-safety-observation-invalidates", () =>
+        {
+            bool malformed = false;
+            using var catalog = new IdentityCatalog(() =>
+            {
+                if (malformed) NativeObservation.ObserveBoolean(null);
+                return Healthy();
+            });
+            var old = catalog.Discover(Target); malformed = true;
+            Check(catalog.Validate(old).Code == GuardCode.PreconditionFailed);
+            malformed = false; Check(!catalog.Validate(old).Allowed);
+            Check(catalog.Validate(catalog.Discover(Target)).Allowed);
         });
         Malformed("node-overflow", new("window", 0, Enumerable.Range(0, 257).Select(i => Node("n", "n" + i)).ToArray()), GuardCode.ResourceExceeded);
         Malformed("child-overflow", new("window", 0, [Healthy().Elements[0], ..Enumerable.Range(0, 65).Select(i => Node("n", "n" + i))]), GuardCode.ResourceExceeded);
@@ -195,7 +316,7 @@ internal static class UnitCases
             {
                 var value = Healthy(); var node = value.Elements[1];
                 node = flag switch { "disabled" => node with { Enabled = false }, "offscreen" => node with { Offscreen = true },
-                    "sensitive" => node with { Sensitive = true }, _ => node with { ReadOnly = true, ControlType = "Edit", Patterns = new[] { "Value" } } };
+                    "sensitive" => node with { Sensitive = true }, _ => node with { ValueReadOnly = true, ControlType = "Edit", Patterns = new[] { "Value" } } };
                 value = value with { Elements = [value.Elements[0], node] };
                 using var catalog = new IdentityCatalog(() => value);
                 var definition = flag == "readonly" ? new HostTarget("target", "Edit", "Value", "window") : Target;
@@ -222,6 +343,11 @@ internal static class UnitCases
         return passed.AsReadOnly();
     }
     public static void Check(bool value) { if (!value) throw new InvalidOperationException("identity_assertion_failed"); }
+
+    private sealed class DiagnosticTextMustNotBeRead
+    {
+        public override string ToString() => throw new InvalidOperationException("diagnostic_must_not_read_provider_text");
+    }
 
     private sealed class IndexedList<T>(IReadOnlyList<T> values, Action<int> onRead) : IReadOnlyList<T>
     {

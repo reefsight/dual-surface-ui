@@ -20,6 +20,7 @@ internal sealed class NativeObservation(Process owned, Func<long> resetEpoch)
     {
         var timer = Stopwatch.StartNew();
         nint window = admission.CurrentWindow();
+        Program.Stage = "capture-root";
         long epoch = resetEpoch();
         var root = AutomationElement.FromHandle(window);
         if (root.Current.NativeWindowHandle != window || root.Current.ControlType != ControlType.Window)
@@ -33,44 +34,56 @@ internal sealed class NativeObservation(Process owned, Func<long> resetEpoch)
             CheckTime();
             if (depth > IdentityLimits.Depth || nodes.Count >= IdentityLimits.Nodes)
                 throw new GuardException(GuardCode.ResourceExceeded);
+            Program.Stage = "capture-membership";
             var current = element.Current;
             if (current.ProcessId != owned.Id || (parent != null && !Automation.Compare(walker.GetParent(element), parent)))
                 throw new GuardException(GuardCode.NotAuthorized);
+            Program.Stage = "capture-instance";
             string instance = Instance(element);
             if (!instances.Add(instance)) throw new GuardException(GuardCode.PreconditionFailed);
             freshPeers.Add(instance, element);
-            string correlation = Text(current.AutomationId), type = Text(current.ControlType.ProgrammaticName);
+            Program.Stage = "capture-correlation";
+            string correlation = Text(current.AutomationId);
+            Program.Stage = "capture-control-type";
+            string type = Text(current.ControlType.ProgrammaticName);
             if (!type.StartsWith("ControlType.", StringComparison.Ordinal)) throw new GuardException(GuardCode.PreconditionFailed);
             type = type[12..];
-            bool sensitive = SafetyBoolean(element, AutomationElement.IsPasswordProperty);
-            bool enabled = SafetyBoolean(element, AutomationElement.IsEnabledProperty);
-            bool offscreen = SafetyBoolean(element, AutomationElement.IsOffscreenProperty), readOnly = false;
+            bool? sensitive = SafetyBoolean(element, AutomationElement.IsPasswordProperty, "capture-password", parent == null);
+            bool? enabled = SafetyBoolean(element, AutomationElement.IsEnabledProperty, "capture-enabled", parent == null);
+            bool? offscreen = SafetyBoolean(element, AutomationElement.IsOffscreenProperty, "capture-offscreen", parent == null);
+            bool? valueReadOnly = null, rangeReadOnly = null;
             var patterns = new List<string>();
             // Password classification is observed before pattern access; no Name,
             // help text, Value.Value or password content is read in this slice.
-            if (!sensitive)
+            ObservePatterns(sensitive, enabled, offscreen, () =>
             {
                 foreach (var supported in Supported)
                 {
+                    Program.Stage = "capture-pattern";
                     CheckTime();
                     if (!element.TryGetCurrentPattern(supported.Pattern, out object? pattern)) continue;
+                    Program.Stage = "capture-pattern-shape";
+                    if (!PatternShapeMatches(supported.Name, pattern)) throw new GuardException(GuardCode.PreconditionFailed);
                     patterns.Add(supported.Name);
-                    if (pattern is ValuePattern) readOnly |= SafetyBoolean(element, ValuePattern.IsReadOnlyProperty);
-                    if (pattern is RangeValuePattern) readOnly |= SafetyBoolean(element, RangeValuePattern.IsReadOnlyProperty);
+                    if (pattern is ValuePattern) valueReadOnly = SafetyBoolean(element, ValuePattern.IsReadOnlyProperty, "capture-value-readonly", parent == null);
+                    if (pattern is RangeValuePattern) rangeReadOnly = SafetyBoolean(element, RangeValuePattern.IsReadOnlyProperty, "capture-range-readonly", parent == null);
                 }
-            }
+            });
             nodes.Add(new(correlation, type, instance, parentId, patterns.AsReadOnly(),
-                enabled, offscreen, sensitive, readOnly));
+                enabled, offscreen, sensitive, valueReadOnly, rangeReadOnly));
             int children = 0;
+            Program.Stage = "capture-children";
             for (var child = walker.GetFirstChild(element); child != null; child = walker.GetNextSibling(child))
             {
                 if (++children > IdentityLimits.Children) throw new GuardException(GuardCode.ResourceExceeded);
                 Visit(child, element, instance, depth + 1);
+                Program.Stage = "capture-children";
                 CheckTime();
             }
         }
         Visit(root, null, null, 0);
         admission.RequireUnchanged(window);
+        Program.Stage = "capture-final-fence";
         if (resetEpoch() != epoch || Instance(AutomationElement.FromHandle(window)) != nodes[0].Instance)
             throw new GuardException(GuardCode.StaleRevision);
         CheckTime();
@@ -96,8 +109,29 @@ internal sealed class NativeObservation(Process owned, Func<long> resetEpoch)
         return Hash(string.Join(",", parts.Select(p => p.ToString(CultureInfo.InvariantCulture))));
     }
     private string Hash(string input) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(salt + ":" + input)));
-    private static bool SafetyBoolean(AutomationElement element, AutomationProperty property) =>
-        RequireBoolean(element.GetCurrentPropertyValue(property, ignoreDefaultValue: true));
+    private static bool? SafetyBoolean(AutomationElement element, AutomationProperty property, string stage, bool root)
+    {
+        Program.Stage = stage + (root ? "-root" : "-child"); // Fixed local categories only.
+        object? value = element.GetCurrentPropertyValue(property, ignoreDefaultValue: true);
+        if (value is not bool) Program.Stage += "-" + BooleanCategory(value);
+        return ObserveBoolean(value);
+    }
+    internal static bool? ObserveBoolean(object? value) => ReferenceEquals(value, AutomationElement.NotSupported) ? null : RequireBoolean(value);
+    internal static bool PatternShapeMatches(string expected, object? pattern) => expected switch
+    {
+        "Invoke" => pattern is InvokePattern, "Value" => pattern is ValuePattern, "Toggle" => pattern is TogglePattern,
+        "Selection" => pattern is SelectionPattern, "SelectionItem" => pattern is SelectionItemPattern,
+        "ExpandCollapse" => pattern is ExpandCollapsePattern, "RangeValue" => pattern is RangeValuePattern,
+        _ => false
+    };
+    internal static void ObservePatterns(bool? sensitive, bool? enabled, bool? offscreen, Action read)
+    {
+        // Availability reads are safe only with explicit basic classification.
+        // Known disabled/offscreen patterns may be inspected, never operated.
+        if (sensitive is false && enabled.HasValue && offscreen.HasValue) read();
+    }
+    internal static string BooleanCategory(object? value) => value is bool ? "boolean" :
+        ReferenceEquals(value, AutomationElement.NotSupported) ? "not-supported" : value == null ? "null" : "wrong-type";
     internal static bool RequireBoolean(object? value) => value is bool boolean ? boolean : throw new GuardException(GuardCode.PreconditionFailed);
     private static string Text(string? input) => IdentityCatalog.ValidText(input, allowEmpty: true)
         ? input! : throw new GuardException(GuardCode.ResourceExceeded);

@@ -19,7 +19,7 @@ internal static class IdentityLimits
 internal sealed record HostTarget(string Correlation, string ControlType, string Pattern, string? Container = null);
 internal sealed record ObservedElement(string Correlation, string ControlType, string Instance,
     string? Parent, IReadOnlyList<string> Patterns,
-    bool Enabled, bool Offscreen, bool Sensitive, bool ReadOnly);
+    bool? Enabled, bool? Offscreen, bool? Sensitive, bool? ValueReadOnly, bool? RangeReadOnly);
 internal sealed record IdentityObservation(string WindowEpoch, long FixtureEpoch, IReadOnlyList<ObservedElement> Elements);
 internal sealed record BindingReceipt(string SurfaceRef, string ElementRef, string IdentityRevision);
 internal sealed record GuardDecision(bool Allowed, GuardCode Code);
@@ -43,7 +43,9 @@ internal sealed class IdentityCatalog(Func<IdentityObservation> observe) : IDisp
                 !ValidText(target.Pattern) || (target.Container != null && !ValidText(target.Container)))
                 throw new GuardException(GuardCode.PreconditionFailed);
             var current = Fresh();
+            Program.Stage = "catalog-qualification";
             var candidate = Qualified(current, target);
+            Program.Stage = "catalog-operability";
             RequireOperable(candidate, target.Pattern);
             if (bindings.Count >= IdentityLimits.Bindings) throw new GuardException(GuardCode.ResourceExceeded);
             string reference = NewReference();
@@ -67,9 +69,11 @@ internal sealed class IdentityCatalog(Func<IdentityObservation> observe) : IDisp
                 var current = Fresh();
                 if (request.SurfaceRef != surface || request.IdentityRevision != revision ||
                     !bindings.ContainsKey(request.ElementRef)) throw new GuardException(GuardCode.StaleRevision);
+                Program.Stage = "catalog-qualification";
                 var candidate = Qualified(current, binding.Definition);
                 if (candidate.Instance != binding.Instance || candidate.Parent != binding.Parent)
                     throw new GuardException(GuardCode.StaleRevision);
+                Program.Stage = "catalog-operability";
                 RequireOperable(candidate, binding.Definition.Pattern);
                 // Decision only: no retained peer, callback or pattern escapes.
                 return new(true, GuardCode.None);
@@ -84,7 +88,9 @@ internal sealed class IdentityCatalog(Func<IdentityObservation> observe) : IDisp
         try
         {
             var deadline = Stopwatch.StartNew();
-            var current = CopyAndCheck(observe());
+            var observed = observe();
+            Program.Stage = "catalog-observation-validation";
+            var current = CopyAndCheck(observed);
             if (deadline.Elapsed > IdentityLimits.ObservationTime) throw new GuardException(GuardCode.ResourceExceeded);
             // Incremental hashing avoids a provider-shaped aggregate string.
             // Private identity/state fingerprint, not a semantic revision.
@@ -94,8 +100,8 @@ internal sealed class IdentityCatalog(Func<IdentityObservation> observe) : IDisp
             foreach (var element in current.Elements.OrderBy(e => e.Instance, StringComparer.Ordinal))
             {
                 Field(element.Instance); Field(element.Parent ?? ""); Field(element.Correlation); Field(element.ControlType);
-                Field(element.Enabled ? "1" : "0"); Field(element.Offscreen ? "1" : "0");
-                Field(element.Sensitive ? "1" : "0"); Field(element.ReadOnly ? "1" : "0");
+                Field(Flag(element.Enabled)); Field(Flag(element.Offscreen)); Field(Flag(element.Sensitive));
+                Field(Flag(element.ValueReadOnly)); Field(Flag(element.RangeReadOnly));
                 Field(element.Patterns.Count.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 foreach (string pattern in element.Patterns.Order(StringComparer.Ordinal)) Field(pattern);
             }
@@ -130,6 +136,8 @@ internal sealed class IdentityCatalog(Func<IdentityObservation> observe) : IDisp
                 patterns[pattern] = item; characters += item.Length;
             }
             if (patterns.Distinct(StringComparer.Ordinal).Count() != patterns.Length) throw new GuardException(GuardCode.PreconditionFailed);
+            if ((node.Enabled == null || node.Offscreen == null || node.Sensitive == null) && patterns.Length != 0)
+                throw new GuardException(GuardCode.PreconditionFailed);
             characters += node.Correlation.Length + node.ControlType.Length + node.Instance.Length + (node.Parent?.Length ?? 0);
             if (characters > IdentityLimits.TotalCharacters) throw new GuardException(GuardCode.ResourceExceeded);
             nodes.Add(node with { Patterns = Array.AsReadOnly(patterns) });
@@ -178,20 +186,27 @@ internal sealed class IdentityCatalog(Func<IdentityObservation> observe) : IDisp
             }
             return false;
         }
-        // Qualify wrappers first, then reject ambiguity; never first-ID match.
-        var candidates = observation.Elements.Where(element => element.Correlation == definition.Correlation &&
-            element.ControlType == definition.ControlType && element.Patterns.Contains(definition.Pattern, StringComparer.Ordinal) &&
-            InContainer(element)).Take(2).ToArray();
+        // Suppressed unknown pattern reads do not prove pattern absence. Never
+        // resolve same-type unknown qualification in favor of a safe sibling.
+        var typed = observation.Elements.Where(element => element.Correlation == definition.Correlation &&
+            element.ControlType == definition.ControlType && InContainer(element)).ToArray();
+        if (typed.Any(element => element.Enabled == null || element.Offscreen == null || element.Sensitive == null))
+            throw new GuardException(GuardCode.PreconditionFailed);
+        // Qualify known wrappers first, then reject ambiguity; never first-ID match.
+        var candidates = typed.Where(element => element.Patterns.Contains(definition.Pattern, StringComparer.Ordinal)).Take(2).ToArray();
         if (candidates.Length == 2) throw new GuardException(GuardCode.PreconditionFailed);
         if (candidates.Length == 0) throw new GuardException(GuardCode.UnsupportedAction);
         return candidates[0];
     }
     private static void RequireOperable(ObservedElement element, string pattern)
     {
-        if (element.Sensitive) throw new GuardException(GuardCode.NotAuthorized);
-        if (!element.Enabled || element.Offscreen || (element.ReadOnly && pattern is "Value" or "RangeValue"))
+        if (element.Sensitive is not false) throw new GuardException(GuardCode.NotAuthorized);
+        if (element.Enabled is not true || element.Offscreen is not false ||
+            (pattern == "Value" && element.ValueReadOnly is not false) ||
+            (pattern == "RangeValue" && element.RangeReadOnly is not false))
             throw new GuardException(GuardCode.PreconditionFailed);
     }
+    private static string Flag(bool? flag) => flag switch { true => "1", false => "0", null => "?" };
     private void Invalidate()
     {
         bindings.Clear(); surface = NewReference();
