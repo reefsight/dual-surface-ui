@@ -6,6 +6,7 @@ import { captureFoundationBinding } from "./p4.3-capture-source.mjs";
 
 export const NATIVE_COLLECTOR_PATHS = Object.freeze([
   "docs/work-items/P4.3-native-collector-component.md",
+  "docs/work-items/P4.3-admission-guard-diagnostics.md",
   "experiments/windows-uia/managed-reference/NativeCaptureHarness/NativeCaptureHarness.csproj",
   "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowTopology.cs",
   "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowsAdmission.cs",

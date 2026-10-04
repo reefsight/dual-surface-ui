@@ -12,6 +12,7 @@ internal static class SuiteFreeze
     internal static readonly string[] SourcePaths = [
         "docs/work-items/P4.3-native-capture-suite-integration.md",
         "docs/work-items/P4.3-native-failure-diagnostics.md",
+        "docs/work-items/P4.3-admission-guard-diagnostics.md",
         "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj",
         "experiments/windows-uia/managed-reference/CaptureSuite/FailureDiagnostics.cs",
         "experiments/windows-uia/managed-reference/CaptureSuite/FixtureRecords.cs",
@@ -29,9 +30,9 @@ internal static class SuiteFreeze
         "test/p4.3-native-failure-diagnostics.test.ts",
     ];
     private static readonly string[] ReviewPaths = [
-        "docs/reviews/p4.3-native-suite-d1-security-agent-review.md",
-        "docs/reviews/p4.3-native-suite-d1-accessibility-agent-review.md",
-        "docs/reviews/p4.3-native-suite-d1-package-agent-review.md",
+        "docs/reviews/p4.3-native-suite-d2-security-agent-review.md",
+        "docs/reviews/p4.3-native-suite-d2-accessibility-agent-review.md",
+        "docs/reviews/p4.3-native-suite-d2-package-agent-review.md",
     ];
     private static readonly string[] ReviewAgents = [
         "/root/p42_security_review", "/root/p42_accessibility_interop_review", "/root/p42_package_gate_review",
@@ -50,7 +51,7 @@ internal static class SuiteFreeze
     }
     public static SuitePins Admit(string repo)
     {
-        var value = Parse(OwnedFiles.Read(Path.Combine(repo, "docs/evidence/p4.3-native-suite-d1-freeze.json"), 32768));
+        var value = Parse(OwnedFiles.Read(Path.Combine(repo, "docs/evidence/p4.3-native-suite-d2-freeze.json"), 32768));
         Exact(value, ["schemaVersion", "kind", "status", "sourceDigest", "collectorBinaryDigest", "fixtureBinaryDigest", "reviewReports", "decision"]);
         if (Text(value, "schemaVersion") != "0.1" || Text(value, "kind") != "p4.3-native-capture-suite-freeze" ||
             Text(value, "status") != "source-approved" || Text(value, "fixtureBinaryDigest") != FixtureDigest) Refuse();
@@ -70,7 +71,7 @@ internal static class SuiteFreeze
             RequireApprovalMetadata(text, source, ReviewAgents[i]);
         }
         var decision = value.GetProperty("decision"); Exact(decision, ["path", "blob"]);
-        const string decisionPath = "docs/reviews/p4.3-native-suite-d1-execution-entry-2026-10-04.md";
+        const string decisionPath = "docs/reviews/p4.3-native-suite-d2-execution-entry-2026-10-04.md";
         if (Text(decision, "path") != decisionPath) Refuse();
         string entry = ReadNormalized(repo, decisionPath);
         if (GitBlob(entry) != Text(decision, "blob")) Refuse();
@@ -155,6 +156,7 @@ internal static class SuiteFreeze
         string foundationDigest = Digest(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(Files(foundation))));
         if (foundationDigest != "sha256:79d5777287b327e9c355263e915836577994e052c7e70282c8cf466fa4c27f67") Refuse();
         string[] component = ["docs/work-items/P4.3-native-collector-component.md",
+            "docs/work-items/P4.3-admission-guard-diagnostics.md",
             "experiments/windows-uia/managed-reference/NativeCaptureHarness/NativeCaptureHarness.csproj",
             "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowTopology.cs",
             "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowsAdmission.cs",
@@ -163,7 +165,7 @@ internal static class SuiteFreeze
             "scripts/p4.3-native-capture-source.mjs", "scripts/run-p4.3-native-capture-unit.ps1",
             "scripts/verify-p4.3-native-capture-unit.mjs", "test/p4.3-native-capture.test.ts"];
         string componentDigest = Digest(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { files = Files(component), foundation = foundationDigest })));
-        if (componentDigest != "sha256:af7a01ef530fcaaf1acbb08942670a7c37ba1e6339090a804fa1167d5461d605") Refuse();
+        if (componentDigest != "sha256:dc5b16aab0140d6d81cdff2366792a088fd2d9f249bad6aa1bb143115863185b") Refuse();
         return Digest(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { files = Files(SourcePaths), component = componentDigest })));
         object[] Files(string[] paths) => paths.Order(StringComparer.Ordinal).Select(path => (object)new
             { path, digest = Digest(Encoding.UTF8.GetBytes(ReadNormalized(repo, path))) }).ToArray();

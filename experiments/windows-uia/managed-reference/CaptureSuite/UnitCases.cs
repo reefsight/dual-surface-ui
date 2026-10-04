@@ -47,7 +47,7 @@ internal static class SuiteUnitCases
         Pass(() => Check(SuiteFreeze.GitBlob("hello\n") == "ce013625030ba8dba906f756967f9e9ca394464a"));
         Pass(() => Check(FixedCaptureSuite.CaseIds.Length == 22 && FixedCaptureSuite.CaseIds.Distinct().Count() == 22));
         Pass(() => Check(FixedCaptureSuite.CaptureIds.Length == 32 && FixedCaptureSuite.CaptureIds.Distinct().Count() == 32));
-        Pass(() => Check(SuiteFreeze.SourcePaths.Length == 17 && SuiteFreeze.SourcePaths.Distinct().Count() == 17));
+        Pass(() => Check(SuiteFreeze.SourcePaths.Length == 18 && SuiteFreeze.SourcePaths.Distinct().Count() == 18));
         Pass(() => Check(FixtureRecords.ParseState(Utf8(state)).Same(FixtureRecords.ParseState(Utf8(state)))));
         Pass(() => Check(!FixtureRecords.ParseState(Utf8(state)).Same(FixtureRecords.ParseState(Utf8(state.Replace("\"revision\":0", "\"revision\":1"))))));
         Pass(() => TrustedSetup.RequireRootProof(123, 123, "ControlType.Window", true));
@@ -264,6 +264,81 @@ internal static class SuiteUnitCases
                 try { context.At("is-password", () => throw (Exception)Activator.CreateInstance(fault)!); } catch (Exception) { }
                 Check(context.Primary?.Classification == (fault == typeof(TimeoutException) ? "timeout" : "sdk-fault"));
                 _ = FailureDiagnostics.Encode(diagnosticPins, context.Primary!, null, time);
+            });
+        int admissionPairs = 0;
+        foreach (var check in Enum.GetValues<AdmissionCheck>()) foreach (var guard in Enum.GetValues<AdmissionGuard>())
+        {
+            if (!ConstructorAdmissionTrace.TryLabels(check, guard, out var checkLabel, out var guardLabel)) continue;
+            admissionPairs++;
+            foreach (string caseId in new[] { "bootstrap", "process-restart", "window-replacement" })
+                Pass(() => FailureDiagnostics.EncodeD2(diagnosticPins,
+                    new(caseId, caseId == "window-replacement" ? "setup" : "startup", "setup-admission", "guard-refused", "Unavailable", checkLabel, guardLabel), null, time));
+        }
+        Check(admissionPairs == 40);
+        var d2Tuple = new FailureTuple("bootstrap", "startup", "setup-admission", "guard-refused", "Unavailable", "worker-desktop", "desktop-name-or-null");
+        byte[] d2Bytes = FailureDiagnostics.EncodeD2(diagnosticPins, d2Tuple, null, time);
+        string d2 = Encoding.UTF8.GetString(d2Bytes);
+        Pass(() => FailureDiagnostics.EncodeD2(diagnosticPins, tuple, null, time)); // ordinary coarse D2 has both null
+        Deny(() => FailureDiagnostics.Parse(d2Bytes, diagnosticPins));
+        Deny(() => FailureDiagnostics.ParseD2(Utf8(failure), diagnosticPins));
+        Deny(() => FailureDiagnostics.Encode(diagnosticPins, d2Tuple, null, time));
+        foreach (var invalid in new[]
+        {
+            d2Tuple with { AdmissionCheck = null }, d2Tuple with { AdmissionGuard = null },
+            d2Tuple with { AdmissionCheck = "unknown" }, d2Tuple with { AdmissionGuard = "name-value" },
+            d2Tuple with { AdmissionCheck = "window-station", AdmissionGuard = "desktop-input" },
+            d2Tuple with { Case = "initial", Stage = "setup" }, d2Tuple with { Case = "window-replacement" },
+            d2Tuple with { Case = "process-restart", Stage = "setup" }, d2Tuple with { Stage = "cleanup", Site = "owned-stop" },
+            d2Tuple with { Case = "initial", Stage = "capture", Site = "capture-call" },
+            d2Tuple with { Site = "fixture-ready" }, d2Tuple with { Classification = "unexpected", Code = "Unexpected" },
+            d2Tuple with { Code = "InvalidObservation" }, d2Tuple with { Classification = "timeout", Code = "Timeout" },
+        }) Deny(() => FailureDiagnostics.EncodeD2(diagnosticPins, invalid, null, time));
+        foreach (string malformed in new[]
+        {
+            d2 + "{}", d2[..^1], d2[..^1] + ",\"extra\":null}",
+            d2[..^1] + ",\"admissionCheck\":null}", d2[..^1] + ",\"admissionCh\\u0065ck\":null}",
+            d2.Replace("\"admissionCheck\":\"worker-desktop\"", "\"admissionCheck\":false"),
+            d2.Replace("\"admissionCheck\":\"worker-desktop\"", "\"admissionCheck\":{}"),
+            d2.Replace("\"admissionGuard\":\"desktop-name-or-null\"", "\"admissionGuard\":\"\\ud800\""),
+            d2.Replace(time, "2026-02-30T08:00:00.000Z"), d2.Replace(source, stale),
+        }) Deny(() => FailureDiagnostics.ParseD2(Utf8(malformed), diagnosticPins));
+        Deny(() => FailureDiagnostics.ParseD2([0xc0, 0xaf], diagnosticPins));
+        Deny(() => FailureDiagnostics.ParseD2(new byte[] { 0xef, 0xbb, 0xbf }.Concat(d2Bytes).ToArray(), diagnosticPins));
+        Pass(() => FailureDiagnostics.ParseD2(Utf8(d2 + new string(' ', 4096 - d2Bytes.Length)), diagnosticPins));
+        Deny(() => FailureDiagnostics.ParseD2(Utf8(d2 + new string(' ', 4097 - d2Bytes.Length)), diagnosticPins));
+        foreach (string caseId in new[] { "bootstrap", "process-restart", "window-replacement" })
+            Pass(() =>
+            {
+                var context = new FailureDiagnostics();
+                if (caseId != "bootstrap") context.SetCase(caseId);
+                if (caseId != "window-replacement") context.SetStage("startup");
+                var trace = new ConstructorAdmissionTrace(context.ObserveAdmissionRefusal); int after = 0;
+                try { context.At("setup-admission", () => { trace.SetCheck(AdmissionCheck.WorkerDesktop); trace.Refuse(AdmissionGuard.DesktopNameOrNull); after++; }); }
+                catch (CaptureException error) when (error.Code == CaptureCode.Unavailable) { }
+                finally { trace.Clear(); }
+                var first = context.Primary;
+                context.ObserveAdmissionRefusal(AdmissionCheck.SubjectToken, AdmissionGuard.TokenOpen);
+                context.Cleanup(() => throw new TimeoutException("withheld"));
+                Check(after == 0 && first == context.Primary && context.CleanupCode == "Timeout" &&
+                    first is { AdmissionCheck: "worker-desktop", AdmissionGuard: "desktop-name-or-null" });
+                _ = FailureDiagnostics.EncodeD2(diagnosticPins, first!, context.CleanupCode, time);
+            });
+        Pass(() =>
+        {
+            var context = new FailureDiagnostics(); context.SetCase("initial");
+            var trace = new ConstructorAdmissionTrace(context.ObserveAdmissionRefusal); trace.SetCheck(AdmissionCheck.SubjectToken);
+            try { context.At("setup-admission", () => trace.Refuse(AdmissionGuard.TokenOpen)); }
+            catch (CaptureException error) when (error.Code == CaptureCode.Unavailable) { }
+            Check(context.Primary is { Code: "Unavailable", AdmissionCheck: null, AdmissionGuard: null });
+        });
+        foreach (var invalid in new[] { ((AdmissionCheck)(-1), AdmissionGuard.TokenOpen),
+            (AdmissionCheck.WorkerDesktop, AdmissionGuard.NameValue), (AdmissionCheck.SubjectToken, (AdmissionGuard)int.MaxValue) })
+            Pass(() =>
+            {
+                var context = new FailureDiagnostics(); context.SetStage("startup"); bool refused = false;
+                try { context.ObserveAdmissionRefusal(invalid.Item1, invalid.Item2); }
+                catch (CaptureException error) when (error.Code == CaptureCode.InvalidObservation) { refused = true; }
+                Check(refused && context.Primary == null);
             });
         // No native admission, process, property getter, filesystem API or fixture
         // startup is called by these parsing/workload units.

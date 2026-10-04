@@ -167,7 +167,7 @@ internal sealed class FixedCaptureSuite : IDisposable
             Driver.Invoke("replace-window");
             Wait(() => !IsWindow(oldWindow) && Epoch() > oldEpoch && Int(State().Value, "revision") == 0);
             var retiredCollector = Collector; collector = null; retiredCollector.Dispose();
-            admission = diagnostics.At("setup-admission", () => new OwnedWindowsAdmission(Current, SetupBudget));
+            admission = diagnostics.At("setup-admission", () => new OwnedWindowsAdmission(Current, SetupBudget, diagnostics.ObserveAdmissionRefusal));
             setup = new(admission, () => SetupBudget, diagnostics);
             if (admission.Main == oldWindow) Refuse(); collector = diagnostics.At("collector-start", () => new ReadOnlyCollector(admission, Epoch));
         });
@@ -253,7 +253,7 @@ internal sealed class FixedCaptureSuite : IDisposable
             stdout = Drain(owned.StandardOutput); stderr = Drain(owned.StandardError);
             diagnostics.At("fixture-ready", () => Wait(() => { Current.Refresh(); return Current.MainWindowHandle != 0 &&
                 diagnostics.At("record-read", records.HasStartupRecords) && Epoch() > priorEpoch; }));
-            admission = diagnostics.At("setup-admission", () => new OwnedWindowsAdmission(Current, SetupBudget));
+            admission = diagnostics.At("setup-admission", () => new OwnedWindowsAdmission(Current, SetupBudget, diagnostics.ObserveAdmissionRefusal));
             setup = new(admission, () => SetupBudget, diagnostics);
             collector = diagnostics.At("collector-start", () => new ReadOnlyCollector(admission, Epoch));
             if (!Initial(State().Value)) Refuse();

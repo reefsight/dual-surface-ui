@@ -9,6 +9,7 @@ import { loadAcceptedCaptureOracle } from "./p4.3-capture-contracts.mjs";
 export const NATIVE_SUITE_PATHS = Object.freeze([
   "docs/work-items/P4.3-native-capture-suite-integration.md",
   "docs/work-items/P4.3-native-failure-diagnostics.md",
+  "docs/work-items/P4.3-admission-guard-diagnostics.md",
   "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj",
   "experiments/windows-uia/managed-reference/CaptureSuite/FailureDiagnostics.cs",
   "experiments/windows-uia/managed-reference/CaptureSuite/FixtureRecords.cs",
@@ -21,11 +22,11 @@ export const NATIVE_SUITE_PATHS = Object.freeze([
   "scripts/p4.3-native-failure-diagnostics.mjs", "test/p4.3-native-failure-diagnostics.test.ts",
   "scripts/run-p4.3-capture-suite.ps1", "scripts/verify-p4.3-native-suite.mjs", "test/p4.3-native-suite.test.ts",
 ].sort());
-const REVIEW_PATHS = Object.freeze(["docs/reviews/p4.3-native-suite-d1-security-agent-review.md",
-  "docs/reviews/p4.3-native-suite-d1-accessibility-agent-review.md", "docs/reviews/p4.3-native-suite-d1-package-agent-review.md"]);
+const REVIEW_PATHS = Object.freeze(["docs/reviews/p4.3-native-suite-d2-security-agent-review.md",
+  "docs/reviews/p4.3-native-suite-d2-accessibility-agent-review.md", "docs/reviews/p4.3-native-suite-d2-package-agent-review.md"]);
 const REVIEW_AGENTS = Object.freeze(["/root/p42_security_review", "/root/p42_accessibility_interop_review", "/root/p42_package_gate_review"]);
 const APPROVAL_LABELS = Object.freeze(["Reviewer agent", "Disposition", "Reviewed source", "Unresolved Critical/High/Medium", "Native execution"]);
-const ENTRY = "docs/reviews/p4.3-native-suite-d1-execution-entry-2026-10-04.md";
+const ENTRY = "docs/reviews/p4.3-native-suite-d2-execution-entry-2026-10-04.md";
 const DLL = "experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.dll";
 const FIXTURE = "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.dll";
 const FIXTURE_DIGEST = "sha256:05491f5a44d01e9a25f5098d86a4919abb9bb8d6f4d44a4050dcf2560107161d";
@@ -128,13 +129,13 @@ async function fixedRead(root, path, cap) {
 }
 export async function nativeSuiteBinding(root) {
   const component = (await nativeCollectorBinding(root)).digest;
-  if (component !== "sha256:af7a01ef530fcaaf1acbb08942670a7c37ba1e6339090a804fa1167d5461d605") refuse();
+  if (component !== "sha256:dc5b16aab0140d6d81cdff2366792a088fd2d9f249bad6aa1bb143115863185b") refuse();
   const files = [];
   for (const path of NATIVE_SUITE_PATHS) files.push({ path, digest: digest(text(await fixedRead(root, path, 1048576))) });
   return { files, component, digest: digest(JSON.stringify({ files, component })) };
 }
 export async function admitNativeSuiteFreeze(root) {
-  const freeze = parseCapturePublication(await fixedRead(root, "docs/evidence/p4.3-native-suite-d1-freeze.json", 32768));
+  const freeze = parseCapturePublication(await fixedRead(root, "docs/evidence/p4.3-native-suite-d2-freeze.json", 32768));
   if (!exact(freeze, ["schemaVersion", "kind", "status", "sourceDigest", "collectorBinaryDigest", "fixtureBinaryDigest", "reviewReports", "decision"]) ||
       freeze.schemaVersion !== "0.1" || freeze.kind !== "p4.3-native-capture-suite-freeze" || freeze.status !== "source-approved" ||
       freeze.fixtureBinaryDigest !== FIXTURE_DIGEST || (await nativeSuiteBinding(root)).digest !== freeze.sourceDigest ||

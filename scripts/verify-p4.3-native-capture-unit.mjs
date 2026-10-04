@@ -7,7 +7,7 @@ export function admitCollectorUnitSummary(bytes) {
   if (summary === null || typeof summary !== "object" || Array.isArray(summary) ||
       Object.keys(summary).sort().join(",") !== "cases,kind,nativeExecuted" ||
       summary.kind !== "p4.3-native-collector-unit" || !Number.isInteger(summary.cases) ||
-      summary.cases < 1 || summary.cases > 256 || summary.nativeExecuted !== false)
+      summary.cases < 1 || summary.cases > 512 || summary.nativeExecuted !== false)
     throw new TypeError("collector_unit_refused");
   return { kind: summary.kind, cases: summary.cases, nativeExecuted: false };
 }

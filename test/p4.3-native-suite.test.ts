@@ -6,7 +6,7 @@ import { CASE_IDS, INITIAL_FIXTURE_STATE, canonical } from "../scripts/p4.2-fixt
 import { loadAcceptedCaptureOracle } from "../scripts/p4.3-capture-contracts.mjs";
 import { SUITE_CAPTURE_IDS, SUITE_PROBE_IDS, SUITE_LIMITS, SUITE_ARTIFACT_NAMES, SUITE_SESSION_REF, suiteRequestId,
   rawSuiteDigest, admitSuiteReport, expandedComboExpectation, verifyNativeCaptureSuite, verifyNativeCapturePair,
-  admitSuiteDirectoryPath, admitSuiteRunRootPath, readNativeCaptureSuite } from "../scripts/p4.3-native-suite-contracts.mjs";
+  admitSuiteDirectoryPath, admitSuiteRunRootPath, readNativeCaptureSuite, admitSuiteUnitSummary } from "../scripts/p4.3-native-suite-contracts.mjs";
 import { admitSuiteReviewMetadata, admitSuiteDecisionMetadata } from "../scripts/p4.3-native-suite-source.mjs";
 
 // All fixtures in this file are SYNTHETIC verifier-negative/translation data.
@@ -16,6 +16,27 @@ let oracle: any;
 beforeAll(async () => { oracle = await loadAcceptedCaptureOracle(process.cwd()); }, 30_000);
 const encode = (value: any) => new TextEncoder().encode(JSON.stringify(value));
 const decode = (bytes: Uint8Array) => JSON.parse(new TextDecoder().decode(bytes));
+describe("D2 pure suite unit-count admission (not native coverage)", () => {
+  const summary = { kind: "p4.3-native-suite-unit", cases: 512, nativeExecuted: false };
+  it.each([1, 256, 257, 512])("admits reviewed deterministic count %s without changing native caps", cases => {
+    expect(admitSuiteUnitSummary(encode({ ...summary, cases }))).toEqual({ ...summary, cases });
+    expect(SUITE_CAPTURE_IDS).toHaveLength(32); expect(CASE_IDS).toHaveLength(22);
+    expect(SUITE_LIMITS.workerSeconds).toBe(240); expect(SUITE_LIMITS.observationSeconds).toBe(10);
+  });
+  it.each([0, 513, -1, 1.5, "512", null, Infinity])("rejects invalid/overflow pure count %s", cases => {
+    expect(() => admitSuiteUnitSummary(encode({ ...summary, cases }))).toThrow();
+  });
+  it.each([{ ...summary, nativeExecuted: true }, { ...summary, extra: "data" }, { ...summary, kind: "p4.3-native-capture-suite" },
+    [], null, {}, { ...summary, cases: undefined }])("rejects non-unit or unreviewed fields %#", value => {
+    expect(() => admitSuiteUnitSummary(encode(value))).toThrow();
+  });
+  it("retains original byte/UTF8/BOM/decoded duplicate admission", () => {
+    for (const bytes of [new Uint8Array(1025), new Uint8Array([0xc0, 0xaf]),
+      new TextEncoder().encode('\ufeff' + JSON.stringify(summary)),
+      new TextEncoder().encode(JSON.stringify(summary).slice(0, -1) + ',"cases":1}')])
+      expect(() => admitSuiteUnitSummary(bytes)).toThrow();
+  });
+});
 const trusted = { sourceDigest: "sha256:" + "1".repeat(64), collectorBinaryDigest: "sha256:" + "2".repeat(64),
   fixtureBinaryDigest: "sha256:" + "3".repeat(64) };
 const hex = (n: number) => n.toString(16).padStart(32, "0");

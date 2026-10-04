@@ -149,6 +149,58 @@ internal static class CollectorUnitCases
         }
         Assert(ReadOnlyCollector.CompareAfterProof(() => true, () => true, () => true));
         Assert(!ReadOnlyCollector.CompareAfterProof(() => true, () => true, () => false));
+        // Independent closed literal table, not an OS token/desktop observation.
+        string[] checkLabels = ["subject-token", "worker-token", "current-subject-token", "process-liveness", "token-context",
+            "session-active", "window-station", "worker-desktop", "input-desktop-open", "input-desktop", "anchored-main", "main-desktop"];
+        string[] guardLabels = ["token-open", "token-elevation-uiaccess", "token-buffer-bound", "token-buffer-result", "token-integer-shape",
+            "token-sid-size", "token-sid-pointer", "token-sid-body", "liveness", "identity-session", "session-query-state", "name-query",
+            "name-value", "desktop-name-or-null", "desktop-input", "input-open", "window-boundary"];
+        var allowed = new HashSet<string>(StringComparer.Ordinal);
+        foreach (string label in checkLabels.Take(3)) foreach (string guard in guardLabels.Take(8)) allowed.Add(label + "/" + guard);
+        foreach (string pair in new[] { "process-liveness/liveness", "token-context/identity-session", "session-active/session-query-state",
+            "window-station/name-query", "window-station/name-value", "input-desktop-open/input-open", "anchored-main/window-boundary" }) allowed.Add(pair);
+        foreach (string label in new[] { "worker-desktop", "input-desktop", "main-desktop" })
+            foreach (string guard in new[] { "name-query", "desktop-name-or-null", "desktop-input" }) allowed.Add(label + "/" + guard);
+        Assert(allowed.Count == 40 && Enum.GetValues<AdmissionCheck>().Length == 12 && Enum.GetValues<AdmissionGuard>().Length == 17);
+        foreach (var check in Enum.GetValues<AdmissionCheck>()) foreach (var guard in Enum.GetValues<AdmissionGuard>())
+        {
+            bool expected = allowed.Contains(checkLabels[(int)check] + "/" + guardLabels[(int)guard]);
+            bool admitted = ConstructorAdmissionTrace.TryLabels(check, guard, out var checkLabel, out var guardLabel);
+            Assert(admitted == expected && (expected || checkLabel == null && guardLabel == null));
+            if (!expected) continue;
+            Assert(checkLabel == checkLabels[(int)check] && guardLabel == guardLabels[(int)guard]);
+            int observed = 0, continued = 0;
+            var trace = new ConstructorAdmissionTrace((c, g) => { if (c != check || g != guard) throw new InvalidOperationException(); observed++; });
+            trace.SetCheck(check);
+            DenyWindow(() => { trace.Refuse(guard); continued++; });
+            Assert(observed == 1 && continued == 0);
+        }
+        foreach (var unknown in new[] { (AdmissionCheck)(-1), (AdmissionCheck)12, (AdmissionCheck)int.MaxValue })
+            Assert(!ConstructorAdmissionTrace.TryLabels(unknown, AdmissionGuard.TokenOpen, out _, out _));
+        foreach (var unknown in new[] { (AdmissionGuard)(-1), (AdmissionGuard)17, (AdmissionGuard)int.MaxValue })
+            Assert(!ConstructorAdmissionTrace.TryLabels(AdmissionCheck.SubjectToken, unknown, out _, out _));
+        DenyWindow(() => { var trace = new ConstructorAdmissionTrace(null); trace.SetCheck(AdmissionCheck.SubjectToken); trace.Refuse(AdmissionGuard.TokenOpen); });
+        DenyWindow(() => { var trace = new ConstructorAdmissionTrace((_, _) => throw new InvalidOperationException("withheld"));
+            trace.SetCheck(AdmissionCheck.SubjectToken); trace.Refuse(AdmissionGuard.TokenOpen); });
+        foreach (bool failed in new[] { false, true })
+            Pass(() =>
+            {
+                int observed = 0; var trace = new ConstructorAdmissionTrace((_, _) => observed++);
+                try { trace.SetCheck(AdmissionCheck.SubjectToken); if (failed) trace.Refuse(AdmissionGuard.TokenOpen); }
+                catch (CaptureException error) when (error.Code == CaptureCode.Unavailable) { }
+                finally { trace.Clear(); }
+                // Same actual expiry helper used by the production constructor.
+                trace.SetCheck(AdmissionCheck.SubjectToken);
+                try { trace.Refuse(AdmissionGuard.TokenOpen); } catch (CaptureException error) when (error.Code == CaptureCode.Unavailable) { }
+                if (observed != (failed ? 1 : 0)) throw new InvalidOperationException();
+            });
+        Pass(() =>
+        {
+            int observed = 0; var trace = new ConstructorAdmissionTrace((_, _) => observed++);
+            trace.SetCheck(AdmissionCheck.SubjectToken);
+            try { trace.Refuse<int>(AdmissionGuard.TokenIntegerShape); } catch (CaptureException error) when (error.Code == CaptureCode.Unavailable) { }
+            if (observed != 1) throw new InvalidOperationException();
+        });
         return cases;
 
         void Assert(bool condition) { if (!condition) throw new InvalidOperationException(); cases++; }

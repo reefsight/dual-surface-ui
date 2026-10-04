@@ -4,7 +4,7 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
 import { pathToFileURL } from "node:url";
 
-// Private D1 failure-only development evidence. This module neither launches a
+// Private D1/D2 failure-only development evidence. This module neither launches a
 // fixture nor reads partial capture, recorder or report contents. A failure
 // record can describe a frozen host callsite, never establish native success.
 export const FAILURE_LIMITS = Object.freeze({ bytes: 4096, depth: 2, tokens: 32, string: 128 });
@@ -27,6 +27,16 @@ export const FAILURE_STAGE_SITES = Object.freeze({ output: Object.freeze([]),
 export const FAILURE_CODES = Object.freeze(["InvalidObservation", "AmbiguousSubject", "ResourceExceeded", "Unavailable", "Timeout", "Unexpected"]);
 const GUARD_CODES = FAILURE_CODES.slice(0, 4);
 const CLASSES = Object.freeze(["guard-refused", "not-supported", "malformed-property", "sdk-fault", "timeout", "unexpected"]);
+const D2_KEYS = Object.freeze([...FAILURE_KEYS, "admissionCheck", "admissionGuard"]);
+const TOKEN_GUARDS = Object.freeze(["token-open", "token-elevation-uiaccess", "token-buffer-bound", "token-buffer-result",
+  "token-integer-shape", "token-sid-size", "token-sid-pointer", "token-sid-body"]);
+const DESKTOP_GUARDS = Object.freeze(["name-query", "desktop-name-or-null", "desktop-input"]);
+const ADMISSION_GUARDS = Object.freeze({ "subject-token": TOKEN_GUARDS, "worker-token": TOKEN_GUARDS,
+  "current-subject-token": TOKEN_GUARDS, "process-liveness": Object.freeze(["liveness"]),
+  "token-context": Object.freeze(["identity-session"]), "session-active": Object.freeze(["session-query-state"]),
+  "window-station": Object.freeze(["name-query", "name-value"]), "worker-desktop": DESKTOP_GUARDS,
+  "input-desktop-open": Object.freeze(["input-open"]), "input-desktop": DESKTOP_GUARDS,
+  "anchored-main": Object.freeze(["window-boundary"]), "main-desktop": DESKTOP_GUARDS });
 const DIGEST = /^sha256:[a-f0-9]{64}$/;
 const refuse = () => { throw new TypeError("native_suite_failure_refused"); };
 const exact = (value, keys) => value !== null && typeof value === "object" && !Array.isArray(value) &&
@@ -121,6 +131,41 @@ export function parseNativeSuiteFailure(bytes, pins) {
   } catch { refuse(); }
 }
 
+// D2 has its own kind and fourteen-key contract. Its null pair preserves every
+// original D1 cross-field rule; a closed pair describes only the three existing
+// constructor contexts, never an OS cause or a later admission/capture check.
+export function parseNativeSuiteD2Failure(bytes, pins) {
+  try {
+    const trusted = admitPins(pins), record = parseFlatRecord(bytes);
+    if (!exact(record, D2_KEYS) || record.schemaVersion !== "0.1" || record.kind !== "p4.3-native-capture-suite-d2-failure" ||
+        PIN_KEYS.some(key => record[key] !== trusted[key]) || !timestamp(record.recordedAt) ||
+        record.case !== "bootstrap" && !FAILURE_CASES.includes(record.case) ||
+        !Object.hasOwn(FAILURE_STAGE_SITES, record.stage) ||
+        record.site !== null && !FAILURE_STAGE_SITES[record.stage].includes(record.site) ||
+        !CLASSES.includes(record.classification) || !FAILURE_CODES.includes(record.code) ||
+        record.cleanupCode !== null && !FAILURE_CODES.includes(record.cleanupCode)) refuse();
+    if (record.stage === "output" && record.case !== "bootstrap" ||
+        record.stage === "startup" && !["bootstrap", "process-restart"].includes(record.case) ||
+        ["setup", "capture", "publication", "report"].includes(record.stage) && record.case === "bootstrap" ||
+        record.stage === "cleanup" && record.cleanupCode !== null) refuse();
+    switch (record.classification) {
+      case "guard-refused": if (!GUARD_CODES.includes(record.code)) refuse(); break;
+      case "not-supported": case "malformed-property":
+        if (record.code !== "InvalidObservation" || !FAILURE_PROPERTY_SITES.includes(record.site)) refuse(); break;
+      case "sdk-fault": case "unexpected": if (record.code !== "Unexpected") refuse(); break;
+      case "timeout": if (record.code !== "Timeout") refuse(); break;
+      default: refuse();
+    }
+    const check = record.admissionCheck, guard = record.admissionGuard;
+    if ((check === null) !== (guard === null)) refuse();
+    if (check !== null && (!Object.hasOwn(ADMISSION_GUARDS, check) || !ADMISSION_GUARDS[check].includes(guard) ||
+        record.classification !== "guard-refused" || record.code !== "Unavailable" || record.site !== "setup-admission" ||
+        !(["bootstrap", "process-restart"].includes(record.case) && record.stage === "startup" ||
+          record.case === "window-replacement" && record.stage === "setup"))) refuse();
+    return Object.freeze(record);
+  } catch { refuse(); }
+}
+
 const samePath = (left, right) => process.platform === "win32" ? left.toLowerCase() === right.toLowerCase() : left === right;
 const sameIdentity = (left, right) => left.dev === right.dev && left.ino === right.ino && left.mode === right.mode;
 const sameFile = (left, right) => sameIdentity(left, right) && left.size === right.size && left.nlink === right.nlink &&
@@ -195,7 +240,8 @@ async function readFailureFile(admission) {
 
 // temporaryRoot is a private isolated-unit seam, never a CLI parameter. Pins
 // supplied to this low-level reader do not grant production execution authority.
-// The production entry below admits the actual fixed D1 freeze first instead.
+// The production entry below admits the actual fixed D2 freeze first instead;
+// this separate D1 reader remains available only for its historical contract.
 export async function readNativeSuiteFailure(directory, pins, temporaryRoot = tmpdir()) {
   try {
     const trusted = admitPins(pins), admission = await admitDirectory(directory, temporaryRoot);
@@ -204,10 +250,18 @@ export async function readNativeSuiteFailure(directory, pins, temporaryRoot = tm
   } catch { refuse(); }
 }
 
+export async function readNativeSuiteD2Failure(directory, pins, temporaryRoot = tmpdir()) {
+  try {
+    const trusted = admitPins(pins), admission = await admitDirectory(directory, temporaryRoot);
+    const bytes = await readFailureFile(admission), record = parseNativeSuiteD2Failure(bytes, trusted);
+    return Object.freeze({ record, failureDigest: "sha256:" + createHash("sha256").update(bytes).digest("hex"), nativeAccepted: false });
+  } catch { refuse(); }
+}
+
 export async function inspectOwnedNativeSuiteFailure(root, directory) {
   const { admitNativeSuiteFreeze } = await import("./p4.3-native-suite-source.mjs");
   const trusted = await admitNativeSuiteFreeze(root);
-  return readNativeSuiteFailure(directory, trusted);
+  return readNativeSuiteD2Failure(directory, trusted);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

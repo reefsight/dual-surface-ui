@@ -212,6 +212,16 @@ OS cause or successful cleanup. No repeat or unchanged retry followed. New
 negative artifact reviews independently admit the same failed original bytes
 without accepting native/S2; complete22/32 native first/repeat proof,
 independent artifact approval and a separate S2 runtime decision stay mandatory.
+The later [D2 constructor-guard checkpoint](evidence/p4.3-native-suite-d2-development-2026-10-04.md)
+adds an independently source-reviewed passive observer,397 suite/447 component
+pure cases,1816 full JS tests,114 managed-browser cases and all remaining
+prerequisites. Its sole exact source/binary-admitted native first lane failed
+at bootstrap; the separately admitted original14-key record identifies only
+worker-desktop/desktop-input, not which query/size/flag operand or OS condition
+failed. No repeat or unchanged retry followed and no successful native scenario
+is claimed. Actual negative-artifact reviews remain distinct from native/S2
+acceptance. Human host-context coordination is required before a separately
+authorized controlled continuation; no desktop/security bypass is permitted.
 P4.4's frozen language-decision method is planned in
 [the native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).

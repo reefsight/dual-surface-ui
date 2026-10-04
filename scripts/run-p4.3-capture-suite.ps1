@@ -114,7 +114,7 @@ try {
                 Push-Location $taskRepo
                 try {
                     if ($Mode -eq 'unit') {
-                        $taskRaw | node --input-type=module -e 'import {parseCapturePublication} from "./scripts/p4.3-capture-contracts.mjs";let b=[];for await(const c of process.stdin){b.push(c);if(Buffer.concat(b).length>1024)throw Error("closed")}const v=parseCapturePublication(Buffer.concat(b));if(Object.keys(v).sort().join(",")!=="cases,kind,nativeExecuted"||v.kind!=="p4.3-native-suite-unit"||!Number.isInteger(v.cases)||v.cases<1||v.cases>256||v.nativeExecuted!==false)throw Error("closed");console.log(JSON.stringify(v));'
+                        $taskRaw | node --input-type=module -e 'import {admitSuiteUnitSummary} from "./scripts/p4.3-native-suite-contracts.mjs";let b=[];for await(const c of process.stdin){b.push(c);if(Buffer.concat(b).length>1024)throw Error("closed")}console.log(JSON.stringify(admitSuiteUnitSummary(Buffer.concat(b))));'
                     } else {
                         $taskRaw | node --input-type=module -e 'import {parseCapturePublication} from "./scripts/p4.3-capture-contracts.mjs";import {nativeSuiteBinding} from "./scripts/p4.3-native-suite-source.mjs";let b=[];for await(const c of process.stdin){b.push(c);if(Buffer.concat(b).length>1024)throw Error("closed")}const v=parseCapturePublication(Buffer.concat(b));if(Object.keys(v).join(",")!=="sourceDigest"||v.sourceDigest!==(await nativeSuiteBinding(process.cwd())).digest)throw Error("closed");console.log(JSON.stringify({kind:"p4.3-suite-binding-interop",sourceDigest:v.sourceDigest,nativeExecuted:false}));'
                     }

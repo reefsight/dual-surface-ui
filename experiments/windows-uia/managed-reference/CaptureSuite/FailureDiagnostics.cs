@@ -8,7 +8,8 @@ using System.Windows.Automation;
 namespace DualSurface.UiaCapture;
 
 // Private host-owned refusal metadata, never provider data or success evidence.
-internal sealed record FailureTuple(string Case, string Stage, string? Site, string Classification, string Code);
+internal sealed record FailureTuple(string Case, string Stage, string? Site, string Classification, string Code,
+    string? AdmissionCheck = null, string? AdmissionGuard = null);
 internal sealed class FailureDiagnostics
 {
     internal static readonly string[] PropertySites = ["process-id", "window-handle", "control-type", "automation-id",
@@ -19,6 +20,7 @@ internal sealed class FailureDiagnostics
     internal static readonly string[] Codes = ["InvalidObservation", "AmbiguousSubject", "ResourceExceeded", "Unavailable", "Timeout", "Unexpected"];
     private static readonly string[] Keys = ["schemaVersion", "kind", "sourceDigest", "collectorBinaryDigest", "fixtureBinaryDigest",
         "case", "stage", "site", "classification", "code", "cleanupCode", "recordedAt"];
+    private static readonly string[] D2Keys = [.. Keys, "admissionCheck", "admissionGuard"];
     private static readonly JsonSerializerOptions Encoding = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, MaxDepth = 2 };
     private const string UtcFormat = "yyyy-MM-dd'T'HH:mm:ss.fff'Z'";
     private string? output, site;
@@ -70,6 +72,15 @@ internal sealed class FailureDiagnostics
         RequireLocation(Case, Stage, site); RequireClassification(classification, code, site);
         Primary = new(Case, Stage, site, classification, code); // no exception/value retained
     }
+    // The constructor callback does only closed validation and one immutable
+    // assignment. No exception/value, IO, clock/deadline or native operation.
+    public void ObserveAdmissionRefusal(AdmissionCheck check, AdmissionGuard guard)
+    {
+        if (Primary != null) return;
+        if (!ConstructorAdmissionTrace.TryLabels(check, guard, out string? checkLabel, out string? guardLabel)) Refuse();
+        RequireAdmissionContext(Case, Stage, site);
+        Primary = new(Case, Stage, site, "guard-refused", "Unavailable", checkLabel, guardLabel);
+    }
     // Called only for already-required owned-resource closure, even after failure.
     // A fault must not prevent the next independent closure action.
     public bool Cleanup(Action operation)
@@ -109,7 +120,7 @@ internal sealed class FailureDiagnostics
         if (Primary == null || output == null || pins == null) return false;
         return PublishOnce(ref publicationAttempted, () =>
         {
-            byte[] bytes = Encode(pins, Primary, CleanupCode, DateTimeOffset.UtcNow.ToString(UtcFormat, CultureInfo.InvariantCulture));
+            byte[] bytes = EncodeD2(pins, Primary, CleanupCode, DateTimeOffset.UtcNow.ToString(UtcFormat, CultureInfo.InvariantCulture));
             OwnedFiles.WriteNew(Path.Combine(output, "failure.json"), bytes, 4096);
         });
     }
@@ -122,6 +133,7 @@ internal sealed class FailureDiagnostics
     }
     internal static byte[] Encode(SuitePins trusted, FailureTuple primary, string? cleanupCode, string recordedAt)
     {
+        if (primary.AdmissionCheck != null || primary.AdmissionGuard != null) Refuse(); // D1 cannot silently strip D2 detail
         byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(new
         {
             schemaVersion = "0.1", kind = "p4.3-native-capture-suite-failure",
@@ -131,7 +143,23 @@ internal sealed class FailureDiagnostics
         }, Encoding);
         _ = Parse(bytes, trusted); return bytes;
     }
+    internal static byte[] EncodeD2(SuitePins trusted, FailureTuple primary, string? cleanupCode, string recordedAt)
+    {
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            schemaVersion = "0.1", kind = "p4.3-native-capture-suite-d2-failure",
+            sourceDigest = trusted.SourceDigest, collectorBinaryDigest = trusted.CollectorBinaryDigest,
+            fixtureBinaryDigest = trusted.FixtureBinaryDigest, @case = primary.Case, stage = primary.Stage,
+            site = primary.Site, classification = primary.Classification, code = primary.Code, cleanupCode, recordedAt,
+            admissionCheck = primary.AdmissionCheck, admissionGuard = primary.AdmissionGuard,
+        }, Encoding);
+        _ = ParseD2(bytes, trusted); return bytes;
+    }
     internal static JsonElement Parse(byte[] bytes, SuitePins trusted)
+        => ParseCore(bytes, trusted, false);
+    internal static JsonElement ParseD2(byte[] bytes, SuitePins trusted)
+        => ParseCore(bytes, trusted, true);
+    private static JsonElement ParseCore(byte[] bytes, SuitePins trusted, bool d2)
     {
         RequirePins(trusted);
         if (bytes.Length is < 1 or > 4096 || bytes.AsSpan().StartsWith(new byte[] { 0xef, 0xbb, 0xbf })) Refuse();
@@ -154,14 +182,17 @@ internal sealed class FailureDiagnostics
             }
             using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 2 });
             var record = document.RootElement;
-            if (record.ValueKind != JsonValueKind.Object || keys.Count != Keys.Length || Keys.Any(k => !keys.Contains(k))) Refuse();
-            if (Text(record, "schemaVersion") != "0.1" || Text(record, "kind") != "p4.3-native-capture-suite-failure" ||
+            string[] expectedKeys = d2 ? D2Keys : Keys;
+            if (record.ValueKind != JsonValueKind.Object || keys.Count != expectedKeys.Length || expectedKeys.Any(k => !keys.Contains(k))) Refuse();
+            if (Text(record, "schemaVersion") != "0.1" || Text(record, "kind") != (d2 ? "p4.3-native-capture-suite-d2-failure" : "p4.3-native-capture-suite-failure") ||
                 Text(record, "sourceDigest") != trusted.SourceDigest || Text(record, "collectorBinaryDigest") != trusted.CollectorBinaryDigest ||
                 Text(record, "fixtureBinaryDigest") != trusted.FixtureBinaryDigest) Refuse();
             string caseId = Text(record, "case"), stage = Text(record, "stage");
             string? recordSite = NullableText(record, "site"), cleanup = NullableText(record, "cleanupCode");
             RequireLocation(caseId, stage, recordSite);
             RequireClassification(Text(record, "classification"), Text(record, "code"), recordSite);
+            if (d2) RequireAdmissionPair(NullableText(record, "admissionCheck"), NullableText(record, "admissionGuard"),
+                caseId, stage, recordSite, Text(record, "classification"), Text(record, "code"));
             if (cleanup != null && (!Codes.Contains(cleanup, StringComparer.Ordinal) || stage == "cleanup")) Refuse();
             string time = Text(record, "recordedAt");
             if (time.Length != 24 || !Regex.IsMatch(time, "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$", RegexOptions.CultureInvariant) ||
@@ -176,6 +207,22 @@ internal sealed class FailureDiagnostics
     {
         foreach (string value in new[] { trusted.SourceDigest, trusted.CollectorBinaryDigest, trusted.FixtureBinaryDigest })
             if (value == null || value.Length != 71 || !Regex.IsMatch(value, "^sha256:[a-f0-9]{64}$", RegexOptions.CultureInvariant)) Refuse();
+    }
+    private static void RequireAdmissionContext(string caseId, string stage, string? label)
+    {
+        if (label != "setup-admission" || !(stage == "startup" && (caseId is "bootstrap" or "process-restart") ||
+            stage == "setup" && caseId == "window-replacement")) Refuse();
+    }
+    private static void RequireAdmissionPair(string? check, string? guard, string caseId, string stage, string? label, string classification, string code)
+    {
+        if (check == null && guard == null) return;
+        if (check == null || guard == null || classification != "guard-refused" || code != "Unavailable") Refuse();
+        RequireAdmissionContext(caseId, stage, label);
+        foreach (var knownCheck in Enum.GetValues<AdmissionCheck>())
+            foreach (var knownGuard in Enum.GetValues<AdmissionGuard>())
+                if (ConstructorAdmissionTrace.TryLabels(knownCheck, knownGuard, out var checkLabel, out var guardLabel) &&
+                    check == checkLabel && guard == guardLabel) return;
+        Refuse();
     }
     private static void RequireLocation(string caseId, string stage, string? label)
     {

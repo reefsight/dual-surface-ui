@@ -9,8 +9,11 @@ describe("native collector unit-summary admission (not native execution)", () =>
   it("admits only exact bounded deterministic summary", () => {
     expect(admitCollectorUnitSummary(bytes(valid))).toEqual({ kind: "p4.3-native-collector-unit", cases: 55, nativeExecuted: false });
   });
+  it("admits the reviewed pure vector ceiling without claiming native execution", () => {
+    expect(admitCollectorUnitSummary(bytes(valid.replace('55', '512'))).cases).toBe(512);
+  });
   it.each([
-    "", "[]", "null", "{}", valid + "{}", valid.replace('55', '0'), valid.replace('55', '257'),
+    "", "[]", "null", "{}", valid + "{}", valid.replace('55', '0'), valid.replace('55', '513'),
     valid.replace('55', '1.5'), valid.replace('55', '1e999'), valid.replace('false', 'true'),
     valid.replace('false', '"false"'), valid.replace('"kind"', '"unexpected"'),
     valid.replace('"kind"', '"kind":"wrong","kind"'),

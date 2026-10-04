@@ -43,6 +43,17 @@ const digestPattern = /^sha256:[a-f0-9]{64}$/;
 const utcPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?(?:Z|\+00:00)$/;
 const culturePattern = /^(?:[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8}){0,3})?$/;
 const refuse = () => { throw new TypeError("native_capture_suite_refused"); };
+// Pure worker-count admission only. This is not the native report/coverage gate;
+// the launcher and boundary tests use this same implementation.
+export function admitSuiteUnitSummary(bytes) {
+  if (!(bytes instanceof Uint8Array) || bytes.byteLength < 1 || bytes.byteLength > 1024) refuse();
+  const value = parseCapturePublication(bytes);
+  if (!value || typeof value !== "object" || Array.isArray(value) ||
+      Object.keys(value).sort().join(",") !== "cases,kind,nativeExecuted" ||
+      value.kind !== "p4.3-native-suite-unit" || !Number.isInteger(value.cases) ||
+      value.cases < 1 || value.cases > 512 || value.nativeExecuted !== false) refuse();
+  return { kind: value.kind, cases: value.cases, nativeExecuted: false };
+}
 const equal = (left, right) => canonical(left) === canonical(right);
 const exact = (value, keys) => value !== null && typeof value === "object" && !Array.isArray(value) &&
   equal(Object.keys(value).sort(), [...keys].sort());
