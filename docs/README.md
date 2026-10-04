@@ -109,6 +109,12 @@ accepts only copied projection/reference/comparator code and a separately review
 Window-family clarification. [Executed foundation evidence](evidence/p4.3-capture-foundation-2026-10-04.md)
 has108 C# units,52 focused/731 full JS tests and actual11-subject serialized
 core/protocol admission; none is native collection or S2 runtime acceptance.
+The next [native collector component checkpoint](reviews/p4.3-native-collector-component-decision-2026-10-04.md)
+has three actual independent source approvals and
+[development evidence](evidence/p4.3-native-collector-component-2026-10-04.md):111 pure
+C# units,21 focused/752 full JS tests. It still has no native CLI or collection
+evidence; fixed22 setup/launcher/verifier integration and S2 runtime acceptance
+remain open.
 P4.4's evidence-gated language selection is specified in the
 [native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
