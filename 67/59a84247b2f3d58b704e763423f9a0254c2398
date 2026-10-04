@@ -1,0 +1,63 @@
+docs/work-items/P4.3-read-only-capture-projection.md
+  s_142b4d269ec35e::t_d4338df21ff478 1-2,7-44,60-90,96-103,111-119,137-167,175-176,180-195,199-202,204-233,238-245,254-256,264-310
+  s_142b4d269ec35e::t_7a9394cecf6780 168-174,177-179,257-263
+  s_142b4d269ec35e::t_51a7c0d7acba7e 3-6,45-59,91-95,104-110,120-136,196-198,203,234-237,246-253
+docs/reviews/p4.3-capture-design-package-agent-review.md
+  s_142b4d269ec35e::t_0ac8bba29759f5 1-57
+docs/evidence/p4.3-startup-diagnostics-serial-2026-10-04.md
+  s_142b4d269ec35e::t_a1dbe157e15e87 1-21,26-133,160-166
+  s_142b4d269ec35e::t_31f8d44e8ff7db 22-25,134-159
+docs/reviews/p4.3-startup-diagnostics-security-agent-review.md
+  s_142b4d269ec35e::t_3856b5aaf2035f 174-312
+  s_142b4d269ec35e::t_9ddb62b488550b 313-403
+  s_142b4d269ec35e::t_13200a0178abfd 1-173
+docs/work-items/P4.3-implementation-slices.md
+  s_142b4d269ec35e::t_2c4da46f8b4be4 5-10
+docs/reviews/p4.3-capture-design-accessibility-agent-review.md
+  s_142b4d269ec35e::t_ede4410d45a144 1-250
+docs/README.md
+  s_142b4d269ec35e::t_2c4da46f8b4be4 99-106
+docs/evidence/p4.3-identity-serial-repeat-2026-10-04.json
+  s_142b4d269ec35e::t_579b4c88113103 1
+docs/reviews/p4.3-startup-diagnostics-accessibility-agent-review.md
+  s_142b4d269ec35e::t_85a57ff491c61d 1-140
+  s_142b4d269ec35e::t_fb19670095469a 285
+  s_142b4d269ec35e::t_ce32ed25b913b3 141-284,286-287
+  s_142b4d269ec35e::t_992cad784042bc 288-348
+docs/reviews/p4.3-s1-s2-checkpoint-document-audit-2026-10-04.md
+  s_142b4d269ec35e::t_9f55ad47c4d0ba 1-59
+docs/work-items/P4.3-windows-uia-adapter.md
+  s_142b4d269ec35e::t_2c4da46f8b4be4 4-5,17-22
+docs/reviews/p4.3-startup-diagnostics-package-agent-review.md
+  s_142b4d269ec35e::t_e000bdd7cefc43 123-125,127-147
+  s_142b4d269ec35e::t_65af9114fc376b 98-122
+  s_142b4d269ec35e::t_6a1155473fe140 1-76
+  s_142b4d269ec35e::t_4bef5362f9dbce 126
+  s_142b4d269ec35e::t_51b85bbc62c000 77-97
+docs/reviews/p4.3-s2-entry-2026-10-04.md
+  s_142b4d269ec35e::t_2c4da46f8b4be4 1-83
+docs/04-roadmap.md
+  s_142b4d269ec35e::t_2c4da46f8b4be4 180-189
+docs/reviews/p4.3-s1-acceptance-2026-10-04.md
+  s_142b4d269ec35e::t_2c4da46f8b4be4 1-93
+docs/reviews/p4.3-capture-design-security-agent-review.md
+  s_142b4d269ec35e::t_067217313f01fb 1-239
+docs/evidence/p4.3-identity-serial-first-2026-10-04.json
+  s_142b4d269ec35e::t_c4480be8a7755b 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6759a84247b2f3d58b704e763423f9a0254c2398",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
