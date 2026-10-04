@@ -10,7 +10,6 @@ namespace DualSurface.UiaCapture;
 
 internal static class Program
 {
-    internal static string Stage = "entry", Case = "bootstrap";
     [MTAThread]
     public static int Main(string[] args)
     {
@@ -30,15 +29,28 @@ internal static class Program
             if (args.Length != 3 || args[0] != "--native" || args[1] != "--output") return 64;
             string repo = SuiteFreeze.Repository();
             SuitePins pins = SuiteFreeze.Admit(repo); // missing/unapproved freeze fails BEFORE launch
-            using var suite = new FixedCaptureSuite(repo, args[2], pins);
-            suite.Execute();
-            Console.WriteLine("p4.3_native_suite_captured"); // independent JS verification is still required
-            return 0;
+            var diagnostics = new FailureDiagnostics();
+            FixedCaptureSuite? suite = null;
+            try
+            {
+                suite = new FixedCaptureSuite(repo, args[2], pins, diagnostics);
+                suite.Execute();
+                Console.WriteLine("p4.3_native_suite_captured"); // independent JS verification is still required
+                return 0;
+            }
+            catch (Exception error)
+            {
+                diagnostics.Latch(error); // BEFORE cleanup, never using/Dispose masking
+                try { suite?.Stop(); } catch { /* Stop independently latches closed cleanup faults. */ }
+                bool published = diagnostics.TryPublish(); // worker only; one admitted CreateNew attempt
+                Console.Error.WriteLine(diagnostics.PublicationAttempted && !published
+                    ? "p4.3_native_suite_failed_metadata_withheld" : "p4.3_native_suite_failed");
+                return 70;
+            }
         }
-        catch (Exception error)
+        catch
         {
-            Console.Error.WriteLine("p4.3_native_suite_failed:" + Case + ":" + Stage + ":" +
-                (error is CaptureException capture ? capture.Code.ToString() : error is TimeoutException ? "Timeout" : "Unexpected"));
+            Console.Error.WriteLine("p4.3_native_suite_failed"); // early entry has no output capability
             return 70;
         }
     }
@@ -60,6 +72,7 @@ internal sealed class FixedCaptureSuite : IDisposable
         string ComparisonEnvelopeDigest, string OracleDigest, long ResetOrdinal, int Roots, string Auxiliary);
     private readonly string repo, output, recordsDirectory;
     private readonly SuitePins pins;
+    private readonly FailureDiagnostics diagnostics;
     private readonly FixtureRecords records;
     private readonly List<CaseEvidence> cases = [];
     private readonly List<CaptureEvidence> captures = [];
@@ -70,11 +83,13 @@ internal sealed class FixedCaptureSuite : IDisposable
     private TrustedSetup? setup;
     private ReadOnlyCollector? collector;
     private CaptureBudget? sharedSetupBudget;
-    public FixedCaptureSuite(string repo, string output, SuitePins pins)
+    private bool stopAttempted;
+    public FixedCaptureSuite(string repo, string output, SuitePins pins, FailureDiagnostics diagnostics)
     {
-        this.repo = repo; this.output = OwnedFiles.CanonicalDirectory(output); this.pins = pins;
+        this.repo = repo; this.output = OwnedFiles.CanonicalDirectory(output); this.pins = pins; this.diagnostics = diagnostics;
         AdmitOutput(this.output);
         if (Directory.EnumerateFileSystemEntries(this.output).Any()) Refuse();
+        diagnostics.AdmitOutput(this.output, pins);
         recordsDirectory = Path.Combine(this.output, "fixture-records");
         Directory.CreateDirectory(recordsDirectory); OwnedFiles.RequireDirectory(recordsDirectory);
         records = new(recordsDirectory);
@@ -100,7 +115,7 @@ internal sealed class FixedCaptureSuite : IDisposable
         foreach (bool expected in new[] { true, false, true, false, true, false })
         {
             ChangeAfterReset(() => Driver.Toggle("toggle"), state => Bool(state, "toggle") == expected);
-            toggleObserved.Add(records.State().Toggle);
+            toggleObserved.Add(State().Toggle);
         }
         Save("toggle-repeat"); AddCase("toggle-repeat");
         Change("selection", () => Driver.Select("selection-b"), state => Text(state, "selection") == "selection-b");
@@ -124,13 +139,14 @@ internal sealed class FixedCaptureSuite : IDisposable
         Save("combo"); AddCase("combo");
         foreach (string id in new[] { "disabled", "disabled-toggle", "readonly", "range-boundary" })
         {
-            SetCase(id); Reset(); var before = records.State();
+            SetCase(id); Reset(); var before = State();
             Within(() => { if (!Driver.ProviderProbe(id)) Refuse(); });
-            var after = records.State(); if (!before.Same(after)) Refuse();
-            OwnedFiles.WriteNew(Path.Combine(output, id + ".probe-before.json"), before.Bytes, 4096);
+            var after = State(); if (!before.Same(after)) Refuse();
+            diagnostics.SetStage("publication");
+            WriteArtifact(id + ".probe-before.json", before.Bytes, 4096);
             Save(id); AddCase(id, "provider_rejected_unchanged", SuiteFreeze.Digest(before.Bytes));
         }
-        SetCase("sensitive-unsupported-hidden-offscreen"); Reset(); Save(Program.Case); AddCase(Program.Case);
+        SetCase("sensitive-unsupported-hidden-offscreen"); Reset(); Save(diagnostics.Case); AddCase(diagnostics.Case);
         Change("injection", () => Driver.Invoke("injection"), state => Int(state, "count") == 1);
         SetCase("control-replacement"); Reset(); Save("replacement-before");
         ChangeAfterReset(() => Driver.Invoke("replace"), state => Int(state, "generation") == 2);
@@ -145,24 +161,27 @@ internal sealed class FixedCaptureSuite : IDisposable
             Save(id); AddCase(id);
         }
         SetCase("window-replacement"); Reset(); Save("window-before");
-        nint oldWindow = Admitted.Main; long oldEpoch = records.ResetOrdinal();
+        nint oldWindow = Admitted.Main; diagnostics.SetStage("setup"); long oldEpoch = Epoch();
         Within(() =>
         {
             Driver.Invoke("replace-window");
-            Wait(() => !IsWindow(oldWindow) && records.ResetOrdinal() > oldEpoch && Int(records.State().Value, "revision") == 0);
-            Collector.Dispose(); admission = new(Current, SetupBudget); setup = new(admission, () => SetupBudget);
-            if (admission.Main == oldWindow) Refuse(); collector = new(admission, records.ResetOrdinal);
+            Wait(() => !IsWindow(oldWindow) && Epoch() > oldEpoch && Int(State().Value, "revision") == 0);
+            var retiredCollector = Collector; collector = null; retiredCollector.Dispose();
+            admission = diagnostics.At("setup-admission", () => new OwnedWindowsAdmission(Current, SetupBudget));
+            setup = new(admission, () => SetupBudget, diagnostics);
+            if (admission.Main == oldWindow) Refuse(); collector = diagnostics.At("collector-start", () => new ReadOnlyCollector(admission, Epoch));
         });
         Save("window-replacement"); AddCase("window-replacement");
         SetCase("process-restart"); Reset(); Save("restart-before");
-        long oldBirth = Admitted.Birth, beforeRestartEpoch = records.ResetOrdinal();
+        diagnostics.SetStage("setup");
+        long oldBirth = Admitted.Birth, beforeRestartEpoch = Epoch();
         oldWindow = Admitted.Main; Stop(); if (IsWindow(oldWindow)) Refuse();
         Launch();
-        if (Admitted.Birth == oldBirth || records.ResetOrdinal() <= beforeRestartEpoch) Refuse();
+        if (Admitted.Birth == oldBirth || Epoch() <= beforeRestartEpoch) Refuse();
         Save("process-restart"); AddCase("process-restart");
         if (!cases.Select(c => c.Id).SequenceEqual(CaseIds) || !captures.Select(c => c.Id).SequenceEqual(CaptureIds)) Refuse();
         Stop(); // all owned processes/streams close before writing a complete report
-        Program.Stage = "report";
+        diagnostics.SetStage("report");
         var report = new
         {
             schemaVersion = "0.1", kind = "p4.3-native-capture-suite", sourceDigest = pins.SourceDigest,
@@ -180,22 +199,23 @@ internal sealed class FixedCaptureSuite : IDisposable
         // nullable semantic-state omission policy stays unchanged for snapshots.
         var complete = JsonSerializer.SerializeToElement(report, new JsonSerializerOptions
             { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, MaxDepth = 16 });
-        OwnedFiles.WriteNew(Path.Combine(output, "suite-report.json"), CaptureEncoding.Encode(complete, CaptureLimits.ReportBytes), CaptureLimits.ReportBytes);
+        diagnostics.At("report-write", () => OwnedFiles.WriteNew(Path.Combine(output, "suite-report.json"), CaptureEncoding.Encode(complete, CaptureLimits.ReportBytes), CaptureLimits.ReportBytes));
     }
     private void Save(string id, ExpectedAuxiliary auxiliary = ExpectedAuxiliary.None)
     {
-        Program.Stage = "capture";
+        diagnostics.SetStage("capture");
         if (captures.Count >= CaptureIds.Length || CaptureIds[captures.Count] != id) Refuse();
-        var before = records.State(); long epoch = records.ResetOrdinal();
-        CapturePublication publication = Collector.Capture(auxiliary);
-        var after = records.State();
-        if (!before.Same(after) || records.ResetOrdinal() != epoch) Refuse();
+        var before = State(); long epoch = Epoch();
+        CapturePublication publication = diagnostics.At("capture-call", () => Collector.Capture(auxiliary));
+        var after = State();
+        if (!before.Same(after) || Epoch() != epoch) Refuse();
         byte[] capture = CaptureEncoding.Encode(publication, CaptureLimits.ReportBytes);
         byte[] publicEnvelope = Envelope(publication.PublicSnapshot), comparisonEnvelope = Envelope(publication.ComparableSnapshot);
-        OwnedFiles.WriteNew(Path.Combine(output, id + ".capture.json"), capture, CaptureLimits.ReportBytes);
-        OwnedFiles.WriteNew(Path.Combine(output, id + ".public-response.json"), publicEnvelope, CaptureLimits.SnapshotBytes);
-        OwnedFiles.WriteNew(Path.Combine(output, id + ".comparison-response.json"), comparisonEnvelope, CaptureLimits.SnapshotBytes);
-        OwnedFiles.WriteNew(Path.Combine(output, id + ".oracle.json"), after.Bytes, 4096);
+        diagnostics.SetStage("publication");
+        WriteArtifact(id + ".capture.json", capture, CaptureLimits.ReportBytes);
+        WriteArtifact(id + ".public-response.json", publicEnvelope, CaptureLimits.SnapshotBytes);
+        WriteArtifact(id + ".comparison-response.json", comparisonEnvelope, CaptureLimits.SnapshotBytes);
+        WriteArtifact(id + ".oracle.json", after.Bytes, 4096);
         // Derived from successful collector's exact admission contract, not an
         // additional native enumeration pass or separately observed raw frame.
         captures.Add(new(id, SuiteFreeze.Digest(capture), SuiteFreeze.Digest(publicEnvelope), SuiteFreeze.Digest(comparisonEnvelope),
@@ -206,33 +226,37 @@ internal sealed class FixedCaptureSuite : IDisposable
     private void Change(string id, Action change, Func<JsonElement, bool> predicate)
     { SetCase(id); Reset(); ChangeAfterReset(change, predicate); Save(id); AddCase(id); }
     private void ChangeAfterReset(Action change, Func<JsonElement, bool> predicate)
-    { Within(() => { change(); Wait(() => predicate(records.State().Value)); }); }
+    { diagnostics.SetStage("setup"); Within(() => { change(); Wait(() => predicate(State().Value)); }); }
     private void Reset()
     {
-        Program.Stage = "setup";
+        diagnostics.SetStage("setup");
         Within(() =>
         {
             Driver.CollapseCombo(ExpectedAuxiliary.None);
-            long old = records.ResetOrdinal(); Driver.Invoke("reset");
-            Wait(() => records.ResetOrdinal() > old && Initial(records.State().Value));
+            long old = Epoch(); Driver.Invoke("reset");
+            Wait(() => Epoch() > old && Initial(State().Value));
             if (Driver.ComboExpanded(ExpectedAuxiliary.None)) Refuse();
         });
     }
     private void Launch()
     {
-        Program.Stage = "startup";
+        diagnostics.SetStage("startup");
         Within(() =>
         {
-            long priorEpoch = records.HasStartupRecords() ? records.ResetOrdinal() : 0;
+            long priorEpoch = diagnostics.At("record-read", records.HasStartupRecords) ? Epoch() : 0;
             var start = new ProcessStartInfo(Environment.ProcessPath ?? throw new CaptureException(CaptureCode.Unavailable))
                 { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
             foreach (string arg in new[] { Path.Combine(repo, "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.dll"),
                 "--evidence-directory", recordsDirectory, "--seed", "p4.2-seed-1" }) start.ArgumentList.Add(arg);
-            owned = Process.Start(start) ?? throw new CaptureException(CaptureCode.Unavailable);
+            stopAttempted = false; // new explicitly owned process lifetime
+            owned = diagnostics.At("fixture-start", () => Process.Start(start) ?? throw new CaptureException(CaptureCode.Unavailable));
             stdout = Drain(owned.StandardOutput); stderr = Drain(owned.StandardError);
-            Wait(() => { Current.Refresh(); return Current.MainWindowHandle != 0 && records.HasStartupRecords() && records.ResetOrdinal() > priorEpoch; });
-            admission = new(Current, SetupBudget); setup = new(admission, () => SetupBudget); collector = new(admission, records.ResetOrdinal);
-            if (!Initial(records.State().Value)) Refuse();
+            diagnostics.At("fixture-ready", () => Wait(() => { Current.Refresh(); return Current.MainWindowHandle != 0 &&
+                diagnostics.At("record-read", records.HasStartupRecords) && Epoch() > priorEpoch; }));
+            admission = diagnostics.At("setup-admission", () => new OwnedWindowsAdmission(Current, SetupBudget));
+            setup = new(admission, () => SetupBudget, diagnostics);
+            collector = diagnostics.At("collector-start", () => new ReadOnlyCollector(admission, Epoch));
+            if (!Initial(State().Value)) Refuse();
         });
     }
     private static async Task Drain(StreamReader reader)
@@ -299,7 +323,11 @@ internal sealed class FixedCaptureSuite : IDisposable
     private static int Int(JsonElement value, string key) => value.GetProperty(key).GetInt32();
     private static bool Bool(JsonElement value, string key) => value.GetProperty(key).GetBoolean();
     private static string? Text(JsonElement value, string key) => value.GetProperty(key).GetString();
-    private static void SetCase(string id) { if (!CaseIds.Contains(id)) Refuse(); Program.Case = id; Program.Stage = "setup"; }
+    private void SetCase(string id) => diagnostics.SetCase(id);
+    private FixtureState State() => diagnostics.At("record-read", records.State);
+    private long Epoch() => diagnostics.At("record-read", records.ResetOrdinal);
+    private void WriteArtifact(string name, byte[] bytes, int cap)
+        => diagnostics.At("artifact-write", () => OwnedFiles.WriteNew(Path.Combine(output, name), bytes, cap));
     private void AddCase(string id, string probe = "not_probed", string? before = null)
     { if (cases.Count >= CaseIds.Length || CaseIds[cases.Count] != id) Refuse(); cases.Add(new(id, probe, before)); }
     private Process Current => owned ?? throw new CaptureException(CaptureCode.Unavailable);
@@ -308,14 +336,22 @@ internal sealed class FixedCaptureSuite : IDisposable
     private ReadOnlyCollector Collector => collector ?? throw new CaptureException(CaptureCode.Unavailable);
     public void Stop()
     {
-        collector?.Dispose(); collector = null; admission = null; setup = null;
-        if (owned == null) return;
-        try
+        if (stopAttempted) return;
+        Process? current = owned;
+        Action[] closures = current == null ? [() => collector?.Dispose()] :
+        [
+            () => collector?.Dispose(),
+            () =>
+            { if (!current.HasExited) { current.Kill(entireProcessTree: true); if (!current.WaitForExit(5000)) Refuse(); } },
+            () => stdout?.GetAwaiter().GetResult(), () => stderr?.GetAwaiter().GetResult(), current.Dispose,
+        ];
+        bool clean;
+        try { clean = diagnostics.CleanupOnce(ref stopAttempted, closures); }
+        finally
         {
-            if (!owned.HasExited) { owned.Kill(entireProcessTree: true); if (!owned.WaitForExit(5000)) Refuse(); }
-            stdout?.GetAwaiter().GetResult(); stderr?.GetAwaiter().GetResult();
+            collector = null; admission = null; setup = null; owned = null; stdout = null; stderr = null;
         }
-        finally { owned.Dispose(); owned = null; }
+        if (!clean) throw new InvalidOperationException("owned_cleanup_refused"); // primary already latched
     }
     public void Dispose() => Stop();
     [DllImport("user32.dll")] private static extern bool IsWindow(nint window);

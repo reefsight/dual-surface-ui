@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "p4.3-native-capture-suite-freeze",
+  "status": "source-approved",
+  "sourceDigest": "sha256:cc8dc186990570f38dae4a3389a1b9cb45b3e40c62e8b42265ce1c20cfac9475",
+  "collectorBinaryDigest": "sha256:08b7c766b778c5075913824407fef9892e7af376eaec63579052fef1fca2f17f",
+  "fixtureBinaryDigest": "sha256:05491f5a44d01e9a25f5098d86a4919abb9bb8d6f4d44a4050dcf2560107161d",
+  "reviewReports": [
+    {
+      "path": "docs/reviews/p4.3-native-suite-d1-security-agent-review.md",
+      "blob": "6a38c4e2d8e4223b9c0c6624b1e373484d5ecefb"
+    },
+    {
+      "path": "docs/reviews/p4.3-native-suite-d1-accessibility-agent-review.md",
+      "blob": "9fa1b464f524291cf2a6097eaccaa27fbcce7f3c"
+    },
+    {
+      "path": "docs/reviews/p4.3-native-suite-d1-package-agent-review.md",
+      "blob": "e97677fb987fc07dd2494f6ccbcaa91115416207"
+    }
+  ],
+  "decision": {
+    "path": "docs/reviews/p4.3-native-suite-d1-execution-entry-2026-10-04.md",
+    "blob": "ea1cf0861b699b4e80a87e2dc640a629c16edec8"
+  }
+}

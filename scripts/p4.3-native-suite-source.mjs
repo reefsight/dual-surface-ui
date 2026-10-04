@@ -8,7 +8,9 @@ import { loadAcceptedCaptureOracle } from "./p4.3-capture-contracts.mjs";
 
 export const NATIVE_SUITE_PATHS = Object.freeze([
   "docs/work-items/P4.3-native-capture-suite-integration.md",
+  "docs/work-items/P4.3-native-failure-diagnostics.md",
   "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj",
+  "experiments/windows-uia/managed-reference/CaptureSuite/FailureDiagnostics.cs",
   "experiments/windows-uia/managed-reference/CaptureSuite/FixtureRecords.cs",
   "experiments/windows-uia/managed-reference/CaptureSuite/OwnedFiles.cs",
   "experiments/windows-uia/managed-reference/CaptureSuite/Program.cs",
@@ -16,13 +18,14 @@ export const NATIVE_SUITE_PATHS = Object.freeze([
   "experiments/windows-uia/managed-reference/CaptureSuite/TrustedSetup.cs",
   "experiments/windows-uia/managed-reference/CaptureSuite/UnitCases.cs",
   "scripts/p4.3-native-suite-contracts.mjs", "scripts/p4.3-native-suite-source.mjs",
+  "scripts/p4.3-native-failure-diagnostics.mjs", "test/p4.3-native-failure-diagnostics.test.ts",
   "scripts/run-p4.3-capture-suite.ps1", "scripts/verify-p4.3-native-suite.mjs", "test/p4.3-native-suite.test.ts",
 ].sort());
-const REVIEW_PATHS = Object.freeze(["docs/reviews/p4.3-native-suite-security-agent-review.md",
-  "docs/reviews/p4.3-native-suite-accessibility-agent-review.md", "docs/reviews/p4.3-native-suite-package-agent-review.md"]);
+const REVIEW_PATHS = Object.freeze(["docs/reviews/p4.3-native-suite-d1-security-agent-review.md",
+  "docs/reviews/p4.3-native-suite-d1-accessibility-agent-review.md", "docs/reviews/p4.3-native-suite-d1-package-agent-review.md"]);
 const REVIEW_AGENTS = Object.freeze(["/root/p42_security_review", "/root/p42_accessibility_interop_review", "/root/p42_package_gate_review"]);
 const APPROVAL_LABELS = Object.freeze(["Reviewer agent", "Disposition", "Reviewed source", "Unresolved Critical/High/Medium", "Native execution"]);
-const ENTRY = "docs/reviews/p4.3-native-suite-execution-entry-2026-10-04.md";
+const ENTRY = "docs/reviews/p4.3-native-suite-d1-execution-entry-2026-10-04.md";
 const DLL = "experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.dll";
 const FIXTURE = "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.dll";
 const FIXTURE_DIGEST = "sha256:05491f5a44d01e9a25f5098d86a4919abb9bb8d6f4d44a4050dcf2560107161d";
@@ -131,7 +134,7 @@ export async function nativeSuiteBinding(root) {
   return { files, component, digest: digest(JSON.stringify({ files, component })) };
 }
 export async function admitNativeSuiteFreeze(root) {
-  const freeze = parseCapturePublication(await fixedRead(root, "docs/evidence/p4.3-native-suite-freeze.json", 32768));
+  const freeze = parseCapturePublication(await fixedRead(root, "docs/evidence/p4.3-native-suite-d1-freeze.json", 32768));
   if (!exact(freeze, ["schemaVersion", "kind", "status", "sourceDigest", "collectorBinaryDigest", "fixtureBinaryDigest", "reviewReports", "decision"]) ||
       freeze.schemaVersion !== "0.1" || freeze.kind !== "p4.3-native-capture-suite-freeze" || freeze.status !== "source-approved" ||
       freeze.fixtureBinaryDigest !== FIXTURE_DIGEST || (await nativeSuiteBinding(root)).digest !== freeze.sourceDigest ||

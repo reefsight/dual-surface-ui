@@ -202,6 +202,16 @@ Its first source/binary-frozen native attempt then stopped before publication,
 with only two fixture recorder files retained and no repeat. Zero S2 native
 scenario passes are claimed; reviewed secret-safe diagnostics are the next step,
 not retries or relaxed fixture/guard/budget rules.
+The later [D1 bounded diagnostics checkpoint](evidence/p4.3-native-suite-d1-development-2026-10-04.md)
+has three actual final source approvals,238 managed pure units,1137 full JS,
+114 managed-browser and12 deterministic-conformance cases plus all remaining
+prerequisites. Its one changed-source native attempt failed at bootstrap before
+any scenario completed; a separately admitted original-byte negative record
+asserts startup/setup-admission/guard-refused/Unavailable, not an exact internal
+OS cause or successful cleanup. No repeat or unchanged retry followed. New
+negative artifact reviews independently admit the same failed original bytes
+without accepting native/S2; complete22/32 native first/repeat proof,
+independent artifact approval and a separate S2 runtime decision stay mandatory.
 P4.4's frozen language-decision method is planned in
 [the native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).

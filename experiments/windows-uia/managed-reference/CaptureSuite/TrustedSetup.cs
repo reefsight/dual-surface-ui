@@ -8,7 +8,7 @@ namespace DualSurface.UiaCapture;
 // Fixed synthetic setup only, NOT an action API, receipt, policy or executor.
 // Every operation freshly walks the already admitted owned root(s); no retained
 // removed peer, Name match, Desktop search or input fallback is used.
-internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<CaptureBudget> sharedBudget)
+internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<CaptureBudget> sharedBudget, FailureDiagnostics diagnostics)
 {
     private sealed record Entry(AutomationElement Peer, string Identity, string? Parent, string Root,
         string Correlation, string Type);
@@ -104,7 +104,7 @@ internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<Capture
         }
         return rejected;
     }
-    private static bool Rejected(Action operation, Type expected)
+    internal static bool Rejected(Action operation, Type expected)
     {
         // Catch only the actual fixed mutation call, not discovery/admission or
         // property reads. A source guard refusal is not a provider rejection.
@@ -112,6 +112,9 @@ internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<Capture
         catch (Exception error) when (expected.IsInstanceOfType(error)) { return true; }
     }
     private void Operation<T>(string id, AutomationPattern family, ExpectedAuxiliary auxiliary, bool disabledProbe, Action<T, AutomationElement> operation)
+        where T : BasePattern
+        => diagnostics.At("setup-admission", () => OperationCore(id, family, auxiliary, disabledProbe, operation));
+    private void OperationCore<T>(string id, AutomationPattern family, ExpectedAuxiliary auxiliary, bool disabledProbe, Action<T, AutomationElement> operation)
         where T : BasePattern
     {
         var budget = sharedBudget(); budget.CheckTime();
@@ -121,11 +124,11 @@ internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<Capture
         var roots = new List<Root>();
         foreach (var window in new[] { frame.Main, frame.Auxiliary }.Where(w => w != null))
         {
-            var peer = AutomationElement.FromHandle(window!.Handle);
+            var peer = diagnostics.At("root-from-handle", () => AutomationElement.FromHandle(window!.Handle));
             Guard(peer, frame, budget);
             string type = Read<ControlType>(peer, AutomationElement.ControlTypeProperty).ProgrammaticName;
             bool semanticWindow = window == frame.Main || auxiliary == ExpectedAuxiliary.Modal;
-            RequireRootProof(window.Handle.ToInt64(), Read<int>(peer, AutomationElement.NativeWindowHandleProperty), type, semanticWindow);
+            RequireRootProof(window!.Handle.ToInt64(), Read<int>(peer, AutomationElement.NativeWindowHandleProperty), type, semanticWindow);
             roots.Add(new(peer, Identity(peer, frame, budget), window == frame.Main ? "main" : "auxiliary", window, type, semanticWindow));
         }
         var nodes = new Dictionary<string, Entry>(StringComparer.Ordinal);
@@ -148,8 +151,12 @@ internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<Capture
         try
         {
             Fence();
-            if (!target.Peer.TryGetCurrentPattern(family, out object? wrapper) || wrapper is not T) Refuse();
-            budget.CheckTime(); operation((T)wrapper, target.Peer); budget.CheckTime();
+            T pattern = diagnostics.At("pattern-operation", () =>
+            {
+                if (!target.Peer.TryGetCurrentPattern(family, out object? wrapper) || wrapper is not T) Refuse();
+                return (T)wrapper;
+            });
+            budget.CheckTime(); operation(pattern, target.Peer); budget.CheckTime();
         }
         finally { currentFence = null; }
         return;
@@ -160,7 +167,7 @@ internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<Capture
             OwnedWindowTopology.RequireSame(frame, admission.Observe(auxiliary, budget));
             foreach (var root in roots)
             {
-                var live = AutomationElement.FromHandle(root.Window.Handle);
+                var live = diagnostics.At("root-from-handle", () => AutomationElement.FromHandle(root.Window.Handle));
                 Guard(live, frame, budget);
                 RequireRootProof(root.Window.Handle.ToInt64(), Read<int>(live, AutomationElement.NativeWindowHandleProperty),
                     Read<ControlType>(live, AutomationElement.ControlTypeProperty).ProgrammaticName, root.SemanticWindow);
@@ -213,7 +220,10 @@ internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<Capture
                     _ => throw new CaptureException(CaptureCode.InvalidObservation),
                 };
                 budget.CheckTime();
-                if (!entry.Peer.TryGetCurrentPattern(patternId, out object? value) || !wrapperType.IsInstanceOfType(value)) Refuse();
+                diagnostics.At("pattern-required", () =>
+                {
+                    if (!entry.Peer.TryGetCurrentPattern(patternId, out object? value) || !wrapperType.IsInstanceOfType(value)) Refuse();
+                });
                 budget.CheckTime();
             }
         }
@@ -224,7 +234,7 @@ internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<Capture
             {
                 if (depth >= CaptureLimits.Depth) Refuse();
                 if (!nodes.TryGetValue(current.Parent, out var parent)) Refuse();
-                if (!Same(walker.GetParent(current.Peer), parent.Peer, frame, budget) ||
+                if (!Same(diagnostics.At("tree-parent", () => walker.GetParent(current.Peer)), parent.Peer, frame, budget) ||
                     Identity(parent.Peer, frame, budget) != parent.Identity ||
                     Read<string>(parent.Peer, AutomationElement.AutomationIdProperty) != parent.Correlation ||
                     Read<ControlType>(parent.Peer, AutomationElement.ControlTypeProperty).ProgrammaticName != "ControlType." + parent.Type) Refuse();
@@ -248,13 +258,14 @@ internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<Capture
             if (!type.StartsWith("ControlType.", StringComparison.Ordinal)) Refuse();
             nodes.Add(identity, new(peer, identity, parent, root, correlation, type[12..]));
             int children = 0;
-            for (var child = walker.GetFirstChild(peer); child != null; child = walker.GetNextSibling(child))
+            for (var child = diagnostics.At("tree-first-child", () => walker.GetFirstChild(peer)); child != null;
+                child = diagnostics.At("tree-next-sibling", () => walker.GetNextSibling(child)))
             {
                 budget.CheckTime(); if (++children > CaptureLimits.Children) Refuse();
                 Guard(child, frame, budget);
                 string childIdentity = Identity(child, frame, budget);
                 if (roots.Any(r => r.Label != root && r.Identity == childIdentity && Same(r.Peer, child, frame, budget))) continue;
-                if (!Same(walker.GetParent(child), peer, frame, budget)) Refuse();
+                if (!Same(diagnostics.At("tree-parent", () => walker.GetParent(child)), peer, frame, budget)) Refuse();
                 Walk(child, identity, root, depth + 1);
             }
         }
@@ -264,7 +275,8 @@ internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<Capture
         var budget = activeBudget ?? throw new CaptureException(CaptureCode.Unavailable);
         budget.CheckTime();
         (currentFence ?? throw new CaptureException(CaptureCode.Unavailable))();
-        MutateBeforeDeadline(budget.CheckTime, operation);
+        // Surround complete expected-probe wrapper, not its intentionally caught SDK throw.
+        diagnostics.At("sdk-mutation", () => MutateBeforeDeadline(budget.CheckTime, operation));
     }
     // Pure helper is exercised without a clock sleep or a provider call. Actual
     // SDK mutations all use the same sequence budget immediately before calling.
@@ -294,7 +306,7 @@ internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<Capture
     private string Identity(AutomationElement peer, OwnedWindowFrame frame, CaptureBudget budget)
     {
         Guard(peer, frame, budget);
-        int[] parts = peer.GetRuntimeId(); ReadOnlyCollector.RequireRuntimeParts(parts);
+        int[] parts = diagnostics.At("runtime-id", peer.GetRuntimeId); ReadOnlyCollector.RequireRuntimeParts(parts);
         budget.CheckTime();
         string bounded = string.Join(",", parts.Select(part => part.ToString(CultureInfo.InvariantCulture)));
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(salt + "/" + bounded))); // private only
@@ -304,10 +316,20 @@ internal sealed class TrustedSetup(OwnedWindowsAdmission admission, Func<Capture
     private T Read<T>(AutomationElement peer, AutomationProperty property)
     {
         var budget = activeBudget ?? throw new CaptureException(CaptureCode.Unavailable);
-        budget.CheckTime();
-        object observed = peer.GetCurrentPropertyValue(property, ignoreDefaultValue: true);
-        budget.CheckTime();
-        return observed is T value ? value : throw new CaptureException(CaptureCode.InvalidObservation);
+        string label = property == AutomationElement.ProcessIdProperty ? "process-id" :
+            property == AutomationElement.NativeWindowHandleProperty ? "window-handle" :
+            property == AutomationElement.ControlTypeProperty ? "control-type" :
+            property == AutomationElement.AutomationIdProperty ? "automation-id" :
+            property == AutomationElement.IsPasswordProperty ? "is-password" :
+            property == AutomationElement.IsEnabledProperty ? "is-enabled" :
+            property == AutomationElement.IsOffscreenProperty ? "is-offscreen" :
+            property == ValuePattern.IsReadOnlyProperty ? "value-readonly" :
+            property == RangeValuePattern.IsReadOnlyProperty ? "range-readonly" :
+            property == ExpandCollapsePattern.ExpandCollapseStateProperty ? "expansion-state" :
+            property == SelectionItemPattern.SelectionContainerProperty ? "selection-container" :
+            throw new CaptureException(CaptureCode.InvalidObservation);
+        return diagnostics.ReadRequired<T>(label, () => peer.GetCurrentPropertyValue(property, ignoreDefaultValue: true),
+            budget.CheckTime, AutomationElement.NotSupported);
     }
     [System.Diagnostics.CodeAnalysis.DoesNotReturn] private static void Refuse() => throw new CaptureException(CaptureCode.InvalidObservation);
 }

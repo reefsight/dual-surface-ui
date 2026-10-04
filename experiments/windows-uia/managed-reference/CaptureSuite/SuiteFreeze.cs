@@ -11,7 +11,9 @@ internal static class SuiteFreeze
     public const string FixtureDigest = "sha256:05491f5a44d01e9a25f5098d86a4919abb9bb8d6f4d44a4050dcf2560107161d";
     internal static readonly string[] SourcePaths = [
         "docs/work-items/P4.3-native-capture-suite-integration.md",
+        "docs/work-items/P4.3-native-failure-diagnostics.md",
         "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj",
+        "experiments/windows-uia/managed-reference/CaptureSuite/FailureDiagnostics.cs",
         "experiments/windows-uia/managed-reference/CaptureSuite/FixtureRecords.cs",
         "experiments/windows-uia/managed-reference/CaptureSuite/OwnedFiles.cs",
         "experiments/windows-uia/managed-reference/CaptureSuite/Program.cs",
@@ -19,15 +21,17 @@ internal static class SuiteFreeze
         "experiments/windows-uia/managed-reference/CaptureSuite/TrustedSetup.cs",
         "experiments/windows-uia/managed-reference/CaptureSuite/UnitCases.cs",
         "scripts/p4.3-native-suite-contracts.mjs",
+        "scripts/p4.3-native-failure-diagnostics.mjs",
         "scripts/p4.3-native-suite-source.mjs",
         "scripts/run-p4.3-capture-suite.ps1",
         "scripts/verify-p4.3-native-suite.mjs",
         "test/p4.3-native-suite.test.ts",
+        "test/p4.3-native-failure-diagnostics.test.ts",
     ];
     private static readonly string[] ReviewPaths = [
-        "docs/reviews/p4.3-native-suite-security-agent-review.md",
-        "docs/reviews/p4.3-native-suite-accessibility-agent-review.md",
-        "docs/reviews/p4.3-native-suite-package-agent-review.md",
+        "docs/reviews/p4.3-native-suite-d1-security-agent-review.md",
+        "docs/reviews/p4.3-native-suite-d1-accessibility-agent-review.md",
+        "docs/reviews/p4.3-native-suite-d1-package-agent-review.md",
     ];
     private static readonly string[] ReviewAgents = [
         "/root/p42_security_review", "/root/p42_accessibility_interop_review", "/root/p42_package_gate_review",
@@ -46,7 +50,7 @@ internal static class SuiteFreeze
     }
     public static SuitePins Admit(string repo)
     {
-        var value = Parse(OwnedFiles.Read(Path.Combine(repo, "docs/evidence/p4.3-native-suite-freeze.json"), 32768));
+        var value = Parse(OwnedFiles.Read(Path.Combine(repo, "docs/evidence/p4.3-native-suite-d1-freeze.json"), 32768));
         Exact(value, ["schemaVersion", "kind", "status", "sourceDigest", "collectorBinaryDigest", "fixtureBinaryDigest", "reviewReports", "decision"]);
         if (Text(value, "schemaVersion") != "0.1" || Text(value, "kind") != "p4.3-native-capture-suite-freeze" ||
             Text(value, "status") != "source-approved" || Text(value, "fixtureBinaryDigest") != FixtureDigest) Refuse();
@@ -66,7 +70,7 @@ internal static class SuiteFreeze
             RequireApprovalMetadata(text, source, ReviewAgents[i]);
         }
         var decision = value.GetProperty("decision"); Exact(decision, ["path", "blob"]);
-        const string decisionPath = "docs/reviews/p4.3-native-suite-execution-entry-2026-10-04.md";
+        const string decisionPath = "docs/reviews/p4.3-native-suite-d1-execution-entry-2026-10-04.md";
         if (Text(decision, "path") != decisionPath) Refuse();
         string entry = ReadNormalized(repo, decisionPath);
         if (GitBlob(entry) != Text(decision, "blob")) Refuse();

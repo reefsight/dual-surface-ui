@@ -47,7 +47,7 @@ internal static class SuiteUnitCases
         Pass(() => Check(SuiteFreeze.GitBlob("hello\n") == "ce013625030ba8dba906f756967f9e9ca394464a"));
         Pass(() => Check(FixedCaptureSuite.CaseIds.Length == 22 && FixedCaptureSuite.CaseIds.Distinct().Count() == 22));
         Pass(() => Check(FixedCaptureSuite.CaptureIds.Length == 32 && FixedCaptureSuite.CaptureIds.Distinct().Count() == 32));
-        Pass(() => Check(SuiteFreeze.SourcePaths.Length == 13 && SuiteFreeze.SourcePaths.Distinct().Count() == 13));
+        Pass(() => Check(SuiteFreeze.SourcePaths.Length == 17 && SuiteFreeze.SourcePaths.Distinct().Count() == 17));
         Pass(() => Check(FixtureRecords.ParseState(Utf8(state)).Same(FixtureRecords.ParseState(Utf8(state)))));
         Pass(() => Check(!FixtureRecords.ParseState(Utf8(state)).Same(FixtureRecords.ParseState(Utf8(state.Replace("\"revision\":0", "\"revision\":1"))))));
         Pass(() => TrustedSetup.RequireRootProof(123, 123, "ControlType.Window", true));
@@ -154,6 +154,117 @@ internal static class SuiteUnitCases
         });
         Deny(() => SuiteFreeze.RequireApprovalMetadata(synthetic, source + "\n", agents[0]));
         Deny(() => SuiteFreeze.RequireApprovalMetadata(decision, source.ToUpperInvariant()));
+        var diagnosticPins = new SuitePins(source, "sha256:" + new string('2', 64), "sha256:" + new string('3', 64));
+        const string time = "2026-10-04T08:00:00.000Z";
+        var tuple = new FailureTuple("initial", "setup", "is-password", "not-supported", "InvalidObservation");
+        string failure = Encoding.UTF8.GetString(FailureDiagnostics.Encode(diagnosticPins, tuple, null, time));
+        foreach (string stage in FailureDiagnostics.Stages)
+            Pass(() => FailureDiagnostics.Encode(diagnosticPins, new(stage is "output" or "startup" or "cleanup" ? "bootstrap" : "initial",
+                stage, null, "guard-refused", "InvalidObservation"), null, time));
+        foreach (string code in FailureDiagnostics.Codes)
+            Pass(() => FailureDiagnostics.Encode(diagnosticPins, new("initial", "setup", null,
+                code == "Timeout" ? "timeout" : code == "Unexpected" ? "unexpected" : "guard-refused", code), null, time));
+        foreach (string label in FailureDiagnostics.PropertySites)
+            foreach (string classification in new[] { "not-supported", "malformed-property" })
+                Pass(() => FailureDiagnostics.Encode(diagnosticPins, tuple with { Site = label, Classification = classification }, null, time));
+        foreach (string invalid in new[]
+        {
+            "", "[]", "null", failure + "{}", failure[..^1], failure[..^1] + ",\"extra\":null}",
+            failure[..^1] + ",\"site\":null}", failure[..^1] + ",\"s\\u0069te\":null}",
+            failure.Replace("\"site\":\"is-password\"", "\"site\":{}"),
+            failure.Replace("\"site\":\"is-password\"", "\"site\":42"),
+            failure.Replace("\"site\":\"is-password\"", "\"site\":true"),
+            failure.Replace("\"site\":\"is-password\"", "\"site\":\"unknown\""),
+            failure.Replace("\"case\":\"initial\"", "\"case\":\"bootstrap\""),
+            failure.Replace("\"case\":\"initial\"", "\"case\":\"unknown\""),
+            failure.Replace("\"stage\":\"setup\"", "\"stage\":\"capture\""),
+            failure.Replace("\"classification\":\"not-supported\"", "\"classification\":\"typed-supported\""),
+            failure.Replace("\"code\":\"InvalidObservation\"", "\"code\":\"Unexpected\""),
+            failure.Replace("\"cleanupCode\":null", "\"cleanupCode\":\"unknown\""),
+            failure.Replace(time, "2026-02-30T08:00:00.000Z"), failure.Replace(time, "2026-10-04T25:00:00.000Z"),
+            failure.Replace(time, "2026-10-04T08:00:00.000+00:00"), failure.Replace(time, "2026-10-04T08:00:00Z"),
+            failure.Replace(source, stale), failure.Replace("\"schemaVersion\":\"0.1\"", "\"schemaVersion\":null"),
+            failure.Replace("\"site\":\"is-password\"", "\"site\":\"\\ud800\""), new string(' ', 4097),
+        }) Deny(() => FailureDiagnostics.Parse(Utf8(invalid), diagnosticPins));
+        Deny(() => FailureDiagnostics.Parse([0xc0, 0xaf], diagnosticPins));
+        Deny(() => FailureDiagnostics.Parse(new byte[] { 0xef, 0xbb, 0xbf }.Concat(Utf8(failure)).ToArray(), diagnosticPins));
+        foreach (var malformed in new[] { diagnosticPins with { SourceDigest = source + "\n" },
+            diagnosticPins with { CollectorBinaryDigest = diagnosticPins.CollectorBinaryDigest + "\n" },
+            diagnosticPins with { FixtureBinaryDigest = diagnosticPins.FixtureBinaryDigest + "\n" } })
+            Deny(() => FailureDiagnostics.Encode(malformed, tuple, null, time));
+        Deny(() => FailureDiagnostics.Encode(diagnosticPins, new("bootstrap", "cleanup", "owned-stop", "unexpected", "Unexpected"), "Timeout", time));
+        Pass(() =>
+        {
+            var context = new FailureDiagnostics(); context.SetCase("initial");
+            object unsupported = new object(); int reads = 0, deadlines = 0;
+            bool denied = false;
+            try { context.ReadRequired<bool>("is-password", () => { reads++; return unsupported; },
+                () => { if (++deadlines == 2) throw new CaptureException(CaptureCode.ResourceExceeded); }, unsupported); }
+            catch (CaptureException error) when (error.Code == CaptureCode.ResourceExceeded) { denied = true; }
+            Check(denied && reads == 1 && deadlines == 2 && context.Primary is { Classification: "guard-refused", Code: "ResourceExceeded", Site: "is-password" });
+        });
+        Pass(() =>
+        {
+            var context = new FailureDiagnostics(); context.SetCase("initial"); object sentinel = new object();
+            try { context.ReadRequired<bool>("is-password", () => sentinel, () => { }, sentinel); } catch (CaptureException) { }
+            var primary = context.Primary; int afterRefusal = 0;
+            try { context.At("sdk-mutation", () => afterRefusal++); } catch (CaptureException) { }
+            context.Cleanup(() => throw new TimeoutException("secret provider / path / native ID"));
+            context.Latch(new SecretException());
+            Check(afterRefusal == 0 && primary == context.Primary && context.CleanupCode == "Timeout" && !context.TryPublish());
+            string encoded = Encoding.UTF8.GetString(FailureDiagnostics.Encode(diagnosticPins, context.Primary!, context.CleanupCode, time));
+            Check(!encoded.Contains("secret", StringComparison.Ordinal) && context.Primary is { Classification: "not-supported" });
+        });
+        Pass(() =>
+        {
+            var context = new FailureDiagnostics(); context.SetCase("initial"); int reads = 0;
+            try { context.ReadRequired<bool>("is-password", () => { reads++; return new SecretObject(); }, () => { }, new object()); }
+            catch (CaptureException) { }
+            Check(reads == 1 && context.Primary is { Classification: "malformed-property" });
+        });
+        Pass(() =>
+        {
+            var context = new FailureDiagnostics(); context.SetCase("initial");
+            context.At("is-password", () => true); context.SetStage("capture");
+            try { context.At("capture-call", () => throw new SecretException()); } catch (SecretException) { }
+            Check(context.Primary is { Site: "capture-call", Classification: "unexpected", Code: "Unexpected" });
+        });
+        foreach (Type expected in new[] { typeof(System.Windows.Automation.ElementNotEnabledException),
+            typeof(System.Windows.Automation.ElementNotEnabledException), typeof(InvalidOperationException), typeof(ArgumentException) })
+            Pass(() =>
+            {
+                var context = new FailureDiagnostics(); context.SetCase("disabled");
+                bool rejected = context.At("sdk-mutation", () => TrustedSetup.Rejected(
+                    () => throw (Exception)Activator.CreateInstance(expected)!, expected));
+                int continued = 0; context.At("sdk-mutation", () => continued++);
+                Check(rejected && context.Primary == null && continued == 1);
+            });
+        Pass(() =>
+        {
+            var context = new FailureDiagnostics(); context.SetCase("initial");
+            bool stopped = false; int closed = 0;
+            Action[] closures = [() => { Check(stopped); closed++; throw new SecretException(); }, () => closed++, () => closed++, () => closed++, () => closed++];
+            Check(!context.CleanupOnce(ref stopped, closures));
+            Check(context.CleanupOnce(ref stopped, closures) && closed == 5);
+            Check(context.Primary is { Stage: "cleanup", Site: "owned-stop" } && context.CleanupCode == null);
+            stopped = false; // pure seam simulates a separately created owned lifetime, no actual process
+            Check(context.CleanupOnce(ref stopped, [() => closed++]) && closed == 6);
+        });
+        Pass(() =>
+        {
+            bool attempted = false; int writes = 0;
+            Check(!FailureDiagnostics.PublishOnce(ref attempted, () => { writes++; throw new System.IO.IOException("collision/partial secret"); }));
+            Check(!FailureDiagnostics.PublishOnce(ref attempted, () => writes++) && writes == 1);
+        });
+        foreach (Type fault in new[] { typeof(System.Windows.Automation.ElementNotAvailableException),
+            typeof(System.Windows.Automation.ElementNotEnabledException), typeof(TimeoutException) })
+            Pass(() =>
+            {
+                var context = new FailureDiagnostics(); context.SetCase("initial");
+                try { context.At("is-password", () => throw (Exception)Activator.CreateInstance(fault)!); } catch (Exception) { }
+                Check(context.Primary?.Classification == (fault == typeof(TimeoutException) ? "timeout" : "sdk-fault"));
+                _ = FailureDiagnostics.Encode(diagnosticPins, context.Primary!, null, time);
+            });
         // No native admission, process, property getter, filesystem API or fixture
         // startup is called by these parsing/workload units.
         return cases;
@@ -167,4 +278,10 @@ internal static class SuiteUnitCases
     }
     private static byte[] Utf8(string text) => Encoding.UTF8.GetBytes(text);
     private static void Check(bool ok) { if (!ok) throw new InvalidOperationException("suite_unit_failed"); }
+    private sealed class SecretObject { public override string ToString() => throw new InvalidOperationException("must_not_stringify"); }
+    private sealed class SecretException : Exception
+    {
+        public override string Message => throw new InvalidOperationException("must_not_inspect_message");
+        public override string ToString() => throw new InvalidOperationException("must_not_stringify_error");
+    }
 }
