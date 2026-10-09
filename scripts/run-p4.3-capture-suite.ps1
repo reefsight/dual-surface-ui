@@ -2,6 +2,25 @@ param([switch]$Native)
 $ErrorActionPreference = 'Stop'
 $taskRepo = Split-Path -Parent $PSScriptRoot
 $taskReference = Join-Path $taskRepo 'experiments/windows-uia/managed-reference'
+function Confirm-FrozenArtifact {
+    Push-Location $taskRepo
+    try {
+        node scripts/p4.3-native-suite-source.mjs --admit
+        if ($LASTEXITCODE -ne 0) { throw 'Actual reviewed source/binary/closure freeze required; no rebuild or worker fallback.' }
+    } finally { Pop-Location }
+}
+function Confirm-NoDevConfiguration {
+    foreach ($taskDevPath in @(
+        'experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.runtimeconfig.dev.json',
+        'fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.runtimeconfig.dev.json'
+    )) {
+        try { [IO.File]::GetAttributes((Join-Path $taskRepo $taskDevPath)) | Out-Null }
+        catch [IO.FileNotFoundException] { continue }
+        throw 'Unexpected fixed dev-runtime configuration; worker refused.'
+    }
+}
+# Admission precedes even SDK invocation. Native NEVER compiles a candidate.
+if ($Native) { Confirm-FrozenArtifact }
 $taskSdk = Join-Path ([IO.Path]::GetTempPath()) 'dual-surface-ui-dotnet-10.0.401'
 $taskSdkExe = Join-Path $taskSdk 'dotnet.exe'
 $taskMarker = Join-Path $taskSdk '.p4.2-sdk-ready'
@@ -80,10 +99,14 @@ Test-BoundedPipes
 Push-Location $taskReference
 try {
     if ((& $taskSdkExe --version) -ne '10.0.401') { throw 'SDK version mismatch.' }
-    & $taskSdkExe build CaptureSuite/CaptureSuite.csproj -c Release --nologo
-    if ($LASTEXITCODE -ne 0) { throw 'P4.3 capture-suite build failed.' }
+    if (-not $Native) {
+        & $taskSdkExe build CaptureSuite/CaptureSuite.csproj -c Release -t:Rebuild --nologo
+        if ($LASTEXITCODE -ne 0) { throw 'P4.3 capture-suite build failed.' }
+    }
     $taskWorkerDll = Join-Path $taskReference 'CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.dll'
     function Invoke-CaptureWorker([string[]]$Arguments, [int]$Deadline, [string]$Mode) {
+        if ($Native) { Confirm-FrozenArtifact }
+        Confirm-NoDevConfiguration
         $taskStart = [Diagnostics.ProcessStartInfo]::new($taskSdkExe)
         $taskStart.UseShellExecute = $false
         $taskStart.CreateNoWindow = $true
@@ -135,8 +158,7 @@ try {
     if ($Native) {
         Push-Location $taskRepo
         try {
-            node scripts/p4.3-native-suite-source.mjs --admit
-            if ($LASTEXITCODE -ne 0) { throw 'Actual reviewed source/binary freeze required before native launch.' }
+            Confirm-FrozenArtifact
             $taskEvidenceBase = Join-Path ([IO.Path]::GetTempPath()) 'dual-surface-ui-native-evidence'
             if (Test-Path -LiteralPath $taskEvidenceBase) {
                 if ((Get-Item -LiteralPath $taskEvidenceBase).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Evidence base aliased.' }
@@ -145,8 +167,7 @@ try {
             New-Item -ItemType Directory -Path $taskRunRoot | Out-Null
             Write-Output ('evidence-directory=' + $taskRunRoot)
             foreach ($taskRun in @('first', 'repeat')) {
-                node scripts/p4.3-native-suite-source.mjs --admit
-                if ($LASTEXITCODE -ne 0) { throw 'Reviewed candidate drift; native launch refused.' }
+                Confirm-FrozenArtifact
                 $taskOutput = Join-Path $taskRunRoot $taskRun
                 New-Item -ItemType Directory -Path $taskOutput | Out-Null
                 Invoke-CaptureWorker @('--native', '--output', $taskOutput) 240000 'native'

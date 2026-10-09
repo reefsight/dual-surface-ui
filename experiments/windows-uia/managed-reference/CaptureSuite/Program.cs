@@ -249,7 +249,8 @@ internal sealed class FixedCaptureSuite : IDisposable
             foreach (string arg in new[] { Path.Combine(repo, "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.dll"),
                 "--evidence-directory", recordsDirectory, "--seed", "p4.2-seed-1" }) start.ArgumentList.Add(arg);
             stopAttempted = false; // new explicitly owned process lifetime
-            owned = diagnostics.At("fixture-start", () => Process.Start(start) ?? throw new CaptureException(CaptureCode.Unavailable));
+            owned = diagnostics.At("fixture-start", () => SuiteFreeze.BeforeFixtureStart(pins, () => SuiteFreeze.Admit(repo),
+                () => SetupBudget.CheckTime(), () => Process.Start(start) ?? throw new CaptureException(CaptureCode.Unavailable)));
             stdout = Drain(owned.StandardOutput); stderr = Drain(owned.StandardError);
             diagnostics.At("fixture-ready", () => Wait(() => { Current.Refresh(); return Current.MainWindowHandle != 0 &&
                 diagnostics.At("record-read", records.HasStartupRecords) && Epoch() > priorEpoch; }));

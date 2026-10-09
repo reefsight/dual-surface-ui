@@ -7,8 +7,20 @@
     <Nullable>enable</Nullable>
     <AssemblyName>DualSurface.UiaCaptureSuite</AssemblyName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="FailureDiagnostics.cs" />
+    <Compile Include="FixtureRecords.cs" />
+    <Compile Include="OwnedFiles.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="SuiteFreeze.cs" />
+    <Compile Include="TrustedSetup.cs" />
+    <Compile Include="UnitCases.cs" />
     <Compile Include="../CaptureHarness/CopiedObservation.cs" Link="Foundation/CopiedObservation.cs" />
     <Compile Include="../CaptureHarness/FixtureSubjects.cs" Link="Foundation/FixtureSubjects.cs" />
     <Compile Include="../CaptureHarness/SemanticProjection.cs" Link="Foundation/SemanticProjection.cs" />

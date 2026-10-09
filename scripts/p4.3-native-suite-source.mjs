@@ -10,6 +10,8 @@ export const NATIVE_SUITE_PATHS = Object.freeze([
   "docs/work-items/P4.3-native-capture-suite-integration.md",
   "docs/work-items/P4.3-native-failure-diagnostics.md",
   "docs/work-items/P4.3-admission-guard-diagnostics.md",
+  "docs/work-items/P4.3-frozen-artifact-execution-r1.md",
+  "experiments/windows-uia/managed-reference/global.json",
   "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj",
   "experiments/windows-uia/managed-reference/CaptureSuite/FailureDiagnostics.cs",
   "experiments/windows-uia/managed-reference/CaptureSuite/FixtureRecords.cs",
@@ -22,20 +24,128 @@ export const NATIVE_SUITE_PATHS = Object.freeze([
   "scripts/p4.3-native-failure-diagnostics.mjs", "test/p4.3-native-failure-diagnostics.test.ts",
   "scripts/run-p4.3-capture-suite.ps1", "scripts/verify-p4.3-native-suite.mjs", "test/p4.3-native-suite.test.ts",
 ].sort());
-const REVIEW_PATHS = Object.freeze(["docs/reviews/p4.3-native-suite-d2-security-agent-review.md",
-  "docs/reviews/p4.3-native-suite-d2-accessibility-agent-review.md", "docs/reviews/p4.3-native-suite-d2-package-agent-review.md"]);
-const REVIEW_AGENTS = Object.freeze(["/root/p42_security_review", "/root/p42_accessibility_interop_review", "/root/p42_package_gate_review"]);
+const REVIEW_PATHS = Object.freeze(["docs/reviews/p4.3-native-suite-r1-security-agent-review.md",
+  "docs/reviews/p4.3-native-suite-r1-accessibility-agent-review.md", "docs/reviews/p4.3-native-suite-r1-package-agent-review.md"]);
+const REVIEW_AGENTS = Object.freeze(["/root/resumed_gate_authority_audit", "/root/controlled_continuation_interop", "/root/resumed_roadmap_next_action"]);
 const APPROVAL_LABELS = Object.freeze(["Reviewer agent", "Disposition", "Reviewed source", "Unresolved Critical/High/Medium", "Native execution"]);
-const ENTRY = "docs/reviews/p4.3-native-suite-d2-execution-entry-2026-10-04.md";
+const ENTRY = "docs/reviews/p4.3-native-suite-r1-execution-entry-2026-10-09.md";
+const PROVENANCE = "docs/evidence/p4.3-native-suite-r1-build-provenance.json";
 const DLL = "experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.dll";
 const FIXTURE = "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.dll";
 const FIXTURE_DIGEST = "sha256:05491f5a44d01e9a25f5098d86a4919abb9bb8d6f4d44a4050dcf2560107161d";
+export const R1_EXECUTION_PATHS = Object.freeze([
+  DLL.replace(/\.dll$/, ".deps.json"), DLL.replace(/\.dll$/, ".runtimeconfig.json"),
+  FIXTURE.replace(/\.dll$/, ".deps.json"), FIXTURE.replace(/\.dll$/, ".runtimeconfig.json"),
+]);
+export const R1_BUILD_PATHS = Object.freeze([
+  ...NATIVE_SUITE_PATHS.filter(path => path.endsWith(".cs") || path.endsWith(".csproj") || path.endsWith("/global.json")),
+  "experiments/windows-uia/managed-reference/CaptureHarness/CopiedObservation.cs",
+  "experiments/windows-uia/managed-reference/CaptureHarness/FixtureSubjects.cs",
+  "experiments/windows-uia/managed-reference/CaptureHarness/SemanticProjection.cs",
+  "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowTopology.cs",
+  "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowsAdmission.cs",
+  "experiments/windows-uia/managed-reference/NativeCaptureHarness/ReadOnlyCollector.cs",
+].sort());
+const SDK_ARCHIVE = "24b670ad3d923bfcf47df6c3b034152398b42f6dbc388e10d783aee1cfb5e5817d399fc0ae2a12cfa822a55e61d34830ccb15c50ef6efee437ab874bb7c79430";
+const BUILD_ARGUMENTS = Object.freeze(["build", "CaptureSuite/CaptureSuite.csproj", "-c", "Release", "-t:Rebuild", "--nologo"]);
 const refuse = () => { throw new TypeError("native_suite_source_refused"); };
 const digest = value => "sha256:" + createHash("sha256").update(value).digest("hex");
 const text = bytes => new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes).replaceAll("\r\n", "\n");
 const exact = (value, keys) => value && typeof value === "object" && !Array.isArray(value) &&
   Object.keys(value).length === keys.length && keys.every(k => Object.hasOwn(value, k));
 const blob = value => createHash("sha1").update("blob " + Buffer.byteLength(value, "utf8") + "\0").update(value, "utf8").digest("hex");
+
+// Private provenance parser. Token counting includes start/end containers and
+// decoded keys, matching Utf8JsonReader; no change to frozen public parsers.
+export function parseR1BuildProvenance(bytes) {
+  if (!(bytes instanceof Uint8Array) || bytes.length < 1 || bytes.length > 32768 ||
+      bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) refuse();
+  let input; try { input = new TextDecoder("utf-8", { fatal: true }).decode(bytes); } catch { refuse(); }
+  let at = 0, tokens = 0;
+  const token = () => { if (++tokens > 2048) refuse(); };
+  const space = () => { while (/[\x20\t\r\n]/.test(input[at] ?? "x")) at++; };
+  const string = () => {
+    token(); const start = at++;
+    while (at < input.length) {
+      const ch = input[at++]; if (ch === "\\") { at++; continue; }
+      if (ch === '"') {
+        let value; try { value = JSON.parse(input.slice(start, at)); } catch { refuse(); }
+        if (!value.isWellFormed() || Buffer.byteLength(value, "utf8") > 512) refuse();
+        return value;
+      }
+    }
+    refuse();
+  };
+  const value = depth => {
+    space(); const ch = input[at];
+    if (ch === '"') return string();
+    if (ch === "{" || ch === "[") {
+      if (depth + 1 > 6) refuse(); token(); at++; space();
+      const object = ch === "{", close = object ? "}" : "]", result = object ? Object.create(null) : [];
+      const keys = new Set();
+      if (input[at] === close) { at++; token(); return result; }
+      while (true) {
+        space(); if (object) {
+          if (input[at] !== '"') refuse(); const key = string(); if (keys.has(key)) refuse(); keys.add(key);
+          space(); if (input[at++] !== ":") refuse(); result[key] = value(depth + 1);
+        } else result.push(value(depth + 1));
+        space(); const delimiter = input[at++];
+        if (delimiter === close) { token(); return result; } if (delimiter !== ",") refuse();
+      }
+    }
+    token();
+    for (const [literal, result] of [["true", true], ["false", false], ["null", null]])
+      if (input.startsWith(literal, at)) { at += literal.length; return result; }
+    const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/.exec(input.slice(at));
+    if (!match || match[0].length > 512) refuse(); at += match[0].length; return Number(match[0]);
+  };
+  const result = value(0); space(); if (at !== input.length) refuse(); return result;
+}
+const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+function records(value, paths) {
+  if (!Array.isArray(value) || value.length !== paths.length || value.some((item, i) =>
+    !exact(item, ["path", "digest"]) || item.path !== paths[i] || typeof item.digest !== "string" ||
+    item.digest.length !== 71 || !/^sha256:[a-f0-9]{64}$/.test(item.digest))) refuse();
+  // Return canonical key order; input object property order is not authority.
+  return value.map(item => ({ path: item.path, digest: item.digest }));
+}
+export function admitR1BuildProvenance(bytes, pins, executionFiles, buildFiles) {
+  const v = parseR1BuildProvenance(bytes);
+  const closure = records(executionFiles, R1_EXECUTION_PATHS), inputs = records(buildFiles, R1_BUILD_PATHS);
+  if (!exact(v, ["schemaVersion", "kind", "sourceCommit", "sourceDigest", "buildInputs", "builds"]) ||
+      v.schemaVersion !== "0.1" || v.kind !== "p4.3-native-suite-r1-build-provenance" ||
+      typeof v.sourceCommit !== "string" || v.sourceCommit.length !== 40 || !/^[a-f0-9]{40}$/.test(v.sourceCommit) ||
+      typeof v.sourceDigest !== "string" || v.sourceDigest.length !== 71 ||
+      v.sourceDigest !== pins.sourceDigest || !/^sha256:[a-f0-9]{64}$/.test(v.sourceDigest)) refuse();
+  const b = v.buildInputs;
+  if (!exact(b, ["sdkVersion", "sdkArchiveDigest", "project", "configuration", "arguments", "files"]) ||
+      b.sdkVersion !== "10.0.401" || b.sdkArchiveDigest !== SDK_ARCHIVE ||
+      b.project !== "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj" ||
+      b.configuration !== "Release" || !equal(b.arguments, BUILD_ARGUMENTS) ||
+      !equal(records(b.files, R1_BUILD_PATHS), inputs) || !Array.isArray(v.builds) || v.builds.length !== 2) refuse();
+  for (let i = 0; i < 2; i++) {
+    const run = v.builds[i];
+    if (!exact(run, ["lane", "collectorBinaryDigest", "informationalRevision", "sourceLinkRevision", "executionFiles"]) ||
+        run.lane !== ["first", "repeat"][i] || run.collectorBinaryDigest !== pins.collectorBinaryDigest ||
+        typeof run.collectorBinaryDigest !== "string" || run.collectorBinaryDigest.length !== 71 ||
+        !/^sha256:[a-f0-9]{64}$/.test(run.collectorBinaryDigest) || run.informationalRevision !== v.sourceCommit ||
+        run.sourceLinkRevision !== v.sourceCommit || !equal(records(run.executionFiles, R1_EXECUTION_PATHS), closure)) refuse();
+  }
+  return v;
+}
+export function admitR1FreezeShape(freeze) {
+  if (!exact(freeze, ["schemaVersion", "kind", "status", "sourceDigest", "collectorBinaryDigest", "fixtureBinaryDigest", "reviewReports", "decision", "executionFiles", "buildProvenance"]) ||
+      freeze.schemaVersion !== "0.1" || freeze.kind !== "p4.3-native-capture-suite-freeze" || freeze.status !== "source-approved" ||
+      freeze.fixtureBinaryDigest !== FIXTURE_DIGEST || !Array.isArray(freeze.reviewReports) || freeze.reviewReports.length !== 3) refuse();
+  for (const pin of [freeze.sourceDigest, freeze.collectorBinaryDigest])
+    if (typeof pin !== "string" || pin.length !== 71 || !/^sha256:[a-f0-9]{64}$/.test(pin)) refuse();
+  records(freeze.executionFiles, R1_EXECUTION_PATHS);
+  for (const [item, path] of [...freeze.reviewReports.map((report, i) => [report, REVIEW_PATHS[i]]),
+    [freeze.decision, ENTRY], [freeze.buildProvenance, PROVENANCE]])
+    if (!exact(item, ["path", "blob"]) || item.path !== path || typeof item.blob !== "string" ||
+        item.blob.length !== 40 || !/^[a-f0-9]{40}$/.test(item.blob)) refuse();
+  return freeze;
+}
 
 // A pinned repository report is governance evidence, NOT a cryptographic
 // signature proving who authored it. Admit current top-level canonical fields;
@@ -127,6 +237,12 @@ async function fixedRead(root, path, cap) {
     return bytes.subarray(0, length);
   } finally { await file.close(); }
 }
+export async function requireNoR1DevConfigurations(root) {
+  for (const path of [DLL, FIXTURE].map(path => path.replace(/\.dll$/, ".runtimeconfig.dev.json"))) {
+    try { await lstat(resolve(root, path)); } catch (error) { if (error.code === "ENOENT") continue; throw error; }
+    refuse();
+  }
+}
 export async function nativeSuiteBinding(root) {
   const component = (await nativeCollectorBinding(root)).digest;
   if (component !== "sha256:dc5b16aab0140d6d81cdff2366792a088fd2d9f249bad6aa1bb143115863185b") refuse();
@@ -135,13 +251,23 @@ export async function nativeSuiteBinding(root) {
   return { files, component, digest: digest(JSON.stringify({ files, component })) };
 }
 export async function admitNativeSuiteFreeze(root) {
-  const freeze = parseCapturePublication(await fixedRead(root, "docs/evidence/p4.3-native-suite-d2-freeze.json", 32768));
-  if (!exact(freeze, ["schemaVersion", "kind", "status", "sourceDigest", "collectorBinaryDigest", "fixtureBinaryDigest", "reviewReports", "decision"]) ||
-      freeze.schemaVersion !== "0.1" || freeze.kind !== "p4.3-native-capture-suite-freeze" || freeze.status !== "source-approved" ||
-      freeze.fixtureBinaryDigest !== FIXTURE_DIGEST || (await nativeSuiteBinding(root)).digest !== freeze.sourceDigest ||
+  const freeze = parseCapturePublication(await fixedRead(root, "docs/evidence/p4.3-native-suite-r1-freeze.json", 32768));
+  admitR1FreezeShape(freeze);
+  if ((await nativeSuiteBinding(root)).digest !== freeze.sourceDigest ||
       digest(await fixedRead(root, DLL, 8388608)) !== freeze.collectorBinaryDigest ||
       digest(await fixedRead(root, FIXTURE, 8388608)) !== freeze.fixtureBinaryDigest ||
-      !Array.isArray(freeze.reviewReports) || freeze.reviewReports.length !== 3) refuse();
+      freeze.fixtureBinaryDigest !== FIXTURE_DIGEST) refuse();
+  const closure = records(freeze.executionFiles, R1_EXECUTION_PATHS);
+  for (const file of closure) if (digest(await fixedRead(root, file.path, 32768)) !== file.digest) refuse();
+  // Fixed absence policy, including directories/broken symlinks. ENOENT alone
+  // is absence; no enumeration or caller-selected companion is permitted.
+  await requireNoR1DevConfigurations(root);
+  if (!exact(freeze.buildProvenance, ["path", "blob"]) || freeze.buildProvenance.path !== PROVENANCE) refuse();
+  const provenance = await fixedRead(root, PROVENANCE, 32768);
+  if (blob(text(provenance)) !== freeze.buildProvenance.blob) refuse();
+  const buildFiles = [];
+  for (const path of R1_BUILD_PATHS) buildFiles.push({ path, digest: digest(text(await fixedRead(root, path, 1048576))) });
+  admitR1BuildProvenance(provenance, freeze, closure, buildFiles);
   for (let i = 0; i < REVIEW_PATHS.length; i++) {
     const report = freeze.reviewReports[i];
     if (!exact(report, ["path", "blob"]) || report.path !== REVIEW_PATHS[i]) refuse();

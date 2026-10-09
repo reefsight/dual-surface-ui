@@ -13,6 +13,8 @@ internal static class SuiteFreeze
         "docs/work-items/P4.3-native-capture-suite-integration.md",
         "docs/work-items/P4.3-native-failure-diagnostics.md",
         "docs/work-items/P4.3-admission-guard-diagnostics.md",
+        "docs/work-items/P4.3-frozen-artifact-execution-r1.md",
+        "experiments/windows-uia/managed-reference/global.json",
         "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj",
         "experiments/windows-uia/managed-reference/CaptureSuite/FailureDiagnostics.cs",
         "experiments/windows-uia/managed-reference/CaptureSuite/FixtureRecords.cs",
@@ -30,16 +32,32 @@ internal static class SuiteFreeze
         "test/p4.3-native-failure-diagnostics.test.ts",
     ];
     private static readonly string[] ReviewPaths = [
-        "docs/reviews/p4.3-native-suite-d2-security-agent-review.md",
-        "docs/reviews/p4.3-native-suite-d2-accessibility-agent-review.md",
-        "docs/reviews/p4.3-native-suite-d2-package-agent-review.md",
+        "docs/reviews/p4.3-native-suite-r1-security-agent-review.md",
+        "docs/reviews/p4.3-native-suite-r1-accessibility-agent-review.md",
+        "docs/reviews/p4.3-native-suite-r1-package-agent-review.md",
     ];
     private static readonly string[] ReviewAgents = [
-        "/root/p42_security_review", "/root/p42_accessibility_interop_review", "/root/p42_package_gate_review",
+        "/root/resumed_gate_authority_audit", "/root/controlled_continuation_interop", "/root/resumed_roadmap_next_action",
     ];
     private static readonly string[] ApprovalLabels = [
         "Reviewer agent", "Disposition", "Reviewed source", "Unresolved Critical/High/Medium", "Native execution",
     ];
+    private const string SuiteDll = "experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.dll";
+    private const string FixtureDll = "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.dll";
+    internal static readonly string[] ExecutionPaths = [
+        SuiteDll.Replace(".dll", ".deps.json"), SuiteDll.Replace(".dll", ".runtimeconfig.json"),
+        FixtureDll.Replace(".dll", ".deps.json"), FixtureDll.Replace(".dll", ".runtimeconfig.json"),
+    ];
+    internal static readonly string[] BuildPaths = SourcePaths.Where(path => path.EndsWith(".cs", StringComparison.Ordinal) ||
+        path.EndsWith(".csproj", StringComparison.Ordinal) || path.EndsWith("/global.json", StringComparison.Ordinal)).Concat([
+        "experiments/windows-uia/managed-reference/CaptureHarness/CopiedObservation.cs",
+        "experiments/windows-uia/managed-reference/CaptureHarness/FixtureSubjects.cs",
+        "experiments/windows-uia/managed-reference/CaptureHarness/SemanticProjection.cs",
+        "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowTopology.cs",
+        "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowsAdmission.cs",
+        "experiments/windows-uia/managed-reference/NativeCaptureHarness/ReadOnlyCollector.cs",
+    ]).Order(StringComparer.Ordinal).ToArray();
+    private static readonly string[] BuildArguments = ["build", "CaptureSuite/CaptureSuite.csproj", "-c", "Release", "-t:Rebuild", "--nologo"];
     public static string Repository()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -51,15 +69,32 @@ internal static class SuiteFreeze
     }
     public static SuitePins Admit(string repo)
     {
-        var value = Parse(OwnedFiles.Read(Path.Combine(repo, "docs/evidence/p4.3-native-suite-d2-freeze.json"), 32768));
-        Exact(value, ["schemaVersion", "kind", "status", "sourceDigest", "collectorBinaryDigest", "fixtureBinaryDigest", "reviewReports", "decision"]);
-        if (Text(value, "schemaVersion") != "0.1" || Text(value, "kind") != "p4.3-native-capture-suite-freeze" ||
-            Text(value, "status") != "source-approved" || Text(value, "fixtureBinaryDigest") != FixtureDigest) Refuse();
+        var value = Parse(OwnedFiles.Read(Path.Combine(repo, "docs/evidence/p4.3-native-suite-r1-freeze.json"), 32768));
+        RequireFreezeShape(value);
         string source = Text(value, "sourceDigest"); DigestShape(source);
         string binary = Digest(OwnedFiles.Read(typeof(SuiteFreeze).Assembly.Location, 8388608));
         if (binary != Text(value, "collectorBinaryDigest") || source != SourceBinding(repo)) Refuse();
         string fixture = Path.Combine(repo, "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.dll");
         if (Digest(OwnedFiles.Read(fixture, 8388608)) != FixtureDigest) Refuse();
+        var closure = value.GetProperty("executionFiles"); RequireRecords(closure, ExecutionPaths);
+        foreach (var file in closure.EnumerateArray())
+            if (Digest(OwnedFiles.Read(Path.Combine(repo, Text(file, "path")), 32768)) != Text(file, "digest")) Refuse();
+        foreach (string path in new[] { SuiteDll, FixtureDll })
+        {
+            string dev = Path.Combine(repo, path.Replace(".dll", ".runtimeconfig.dev.json"));
+            OwnedFiles.RequireDirectory(Path.GetDirectoryName(dev)!);
+            try { _ = File.GetAttributes(dev); }
+            catch (FileNotFoundException) { continue; }
+            Refuse(); // includes directories and aliases; other IO errors fail closed
+        }
+        var provenance = value.GetProperty("buildProvenance"); Exact(provenance, ["path", "blob"]);
+        const string provenancePath = "docs/evidence/p4.3-native-suite-r1-build-provenance.json";
+        if (Text(provenance, "path") != provenancePath) Refuse();
+        byte[] provenanceBytes = OwnedFiles.Read(Path.Combine(repo, provenancePath), 32768);
+        if (GitBlob(new UTF8Encoding(false, true).GetString(provenanceBytes).Replace("\r\n", "\n")) != Text(provenance, "blob")) Refuse();
+        var buildFiles = JsonSerializer.SerializeToElement(BuildPaths.Select(path => new
+            { path, digest = Digest(Encoding.UTF8.GetBytes(ReadNormalized(repo, path))) }).ToArray());
+        RequireBuildProvenance(provenanceBytes, new(source, binary, FixtureDigest), closure, buildFiles);
         var reports = value.GetProperty("reviewReports");
         if (reports.ValueKind != JsonValueKind.Array || reports.GetArrayLength() != 3) Refuse();
         for (int i = 0; i < ReviewPaths.Length; i++)
@@ -71,12 +106,38 @@ internal static class SuiteFreeze
             RequireApprovalMetadata(text, source, ReviewAgents[i]);
         }
         var decision = value.GetProperty("decision"); Exact(decision, ["path", "blob"]);
-        const string decisionPath = "docs/reviews/p4.3-native-suite-d2-execution-entry-2026-10-04.md";
+        const string decisionPath = "docs/reviews/p4.3-native-suite-r1-execution-entry-2026-10-09.md";
         if (Text(decision, "path") != decisionPath) Refuse();
         string entry = ReadNormalized(repo, decisionPath);
         if (GitBlob(entry) != Text(decision, "blob")) Refuse();
         RequireApprovalMetadata(entry, source);
         return new(source, binary, FixtureDigest);
+    }
+    internal static T BeforeFixtureStart<T>(SuitePins expected, Func<SuitePins> current, Action checkTime, Func<T> launch)
+    {
+        checkTime();
+        if (current() != expected) Refuse();
+        checkTime();
+        return launch(); // never called on a failed/currently different closure
+    }
+    internal static void RequireFreezeShape(JsonElement value)
+    {
+        Exact(value, ["schemaVersion", "kind", "status", "sourceDigest", "collectorBinaryDigest", "fixtureBinaryDigest", "reviewReports", "decision", "executionFiles", "buildProvenance"]);
+        if (Text(value, "schemaVersion") != "0.1" || Text(value, "kind") != "p4.3-native-capture-suite-freeze" ||
+            Text(value, "status") != "source-approved" || Text(value, "fixtureBinaryDigest") != FixtureDigest) Refuse();
+        DigestShape(Text(value, "sourceDigest")); DigestShape(Text(value, "collectorBinaryDigest"));
+        RequireRecords(value.GetProperty("executionFiles"), ExecutionPaths);
+        var reports = value.GetProperty("reviewReports");
+        if (reports.ValueKind != JsonValueKind.Array || reports.GetArrayLength() != 3) Refuse();
+        for (int i = 0; i < 3; i++) Reference(reports[i], ReviewPaths[i]);
+        Reference(value.GetProperty("decision"), "docs/reviews/p4.3-native-suite-r1-execution-entry-2026-10-09.md");
+        Reference(value.GetProperty("buildProvenance"), "docs/evidence/p4.3-native-suite-r1-build-provenance.json");
+        static void Reference(JsonElement record, string path)
+        {
+            Exact(record, ["path", "blob"]); string blob = Text(record, "blob");
+            if (Text(record, "path") != path || blob.Length != 40 ||
+                !System.Text.RegularExpressions.Regex.IsMatch(blob, "^[a-f0-9]{40}$")) Refuse();
+        }
     }
     // Repository report pins are governance evidence, not a signature proving
     // authorship. Keep this grammar identical to the private JS admission.
@@ -170,29 +231,79 @@ internal static class SuiteFreeze
         object[] Files(string[] paths) => paths.Order(StringComparer.Ordinal).Select(path => (object)new
             { path, digest = Digest(Encoding.UTF8.GetBytes(ReadNormalized(repo, path))) }).ToArray();
     }
-    internal static JsonElement Parse(byte[] bytes)
+    internal static JsonElement Parse(byte[] bytes, bool provenance = false)
     {
         if (bytes.Length is < 1 or > 32768 || bytes.AsSpan().StartsWith(new byte[] { 0xef, 0xbb, 0xbf })) Refuse();
         try
         {
             _ = new UTF8Encoding(false, true).GetString(bytes);
-            var reader = new Utf8JsonReader(bytes, new JsonReaderOptions { MaxDepth = 16 });
+            int depth = provenance ? 6 : 16;
+            var reader = new Utf8JsonReader(bytes, new JsonReaderOptions { MaxDepth = depth });
             var objects = new Stack<HashSet<string>?>(); int tokens = 0;
             while (reader.Read())
             {
-                if (++tokens > 4096) Refuse();
+                if (++tokens > (provenance ? 2048 : 4096)) Refuse();
+                if (provenance && reader.TokenType == JsonTokenType.Number && reader.ValueSpan.Length > 512) Refuse();
                 if (reader.TokenType == JsonTokenType.StartObject) objects.Push(new(StringComparer.Ordinal));
                 if (reader.TokenType == JsonTokenType.StartArray) objects.Push(null);
                 if (reader.TokenType is JsonTokenType.EndObject or JsonTokenType.EndArray) objects.Pop();
                 if (reader.TokenType == JsonTokenType.PropertyName && (objects.Count == 0 || objects.Peek() == null ||
                     !objects.Peek()!.Add(reader.GetString()!))) Refuse();
-                if (reader.TokenType is JsonTokenType.String or JsonTokenType.PropertyName) CaptureBudget.RequireText(reader.GetString(), 256);
+                if (reader.TokenType is JsonTokenType.String or JsonTokenType.PropertyName)
+                {
+                    string scalar = reader.GetString()!;
+                    CaptureBudget.RequireText(scalar, provenance ? 512 : 256);
+                    if (provenance && Encoding.UTF8.GetByteCount(scalar) > 512) Refuse();
+                }
             }
-            using var json = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 16 });
+            using var json = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = depth });
             return json.RootElement.Clone();
         }
         catch (Exception error) when (error is JsonException or DecoderFallbackException or InvalidOperationException)
         { throw new CaptureException(CaptureCode.InvalidObservation); }
+    }
+    private static void RequireRecords(JsonElement records, string[] paths)
+    {
+        if (records.ValueKind != JsonValueKind.Array || records.GetArrayLength() != paths.Length) Refuse();
+        for (int i = 0; i < paths.Length; i++)
+        {
+            var record = records[i]; Exact(record, ["path", "digest"]);
+            if (Text(record, "path") != paths[i]) Refuse(); DigestShape(Text(record, "digest"));
+        }
+    }
+    private static bool SameRecords(JsonElement left, JsonElement right, string[] paths)
+    {
+        RequireRecords(left, paths); RequireRecords(right, paths);
+        return Enumerable.Range(0, paths.Length).All(i => Text(left[i], "digest") == Text(right[i], "digest"));
+    }
+    internal static void RequireBuildProvenance(byte[] bytes, SuitePins pins, JsonElement closure, JsonElement buildFiles)
+    {
+        var value = Parse(bytes, true);
+        Exact(value, ["schemaVersion", "kind", "sourceCommit", "sourceDigest", "buildInputs", "builds"]);
+        string commit = Text(value, "sourceCommit");
+        if (Text(value, "schemaVersion") != "0.1" || Text(value, "kind") != "p4.3-native-suite-r1-build-provenance" ||
+            commit.Length != 40 || !System.Text.RegularExpressions.Regex.IsMatch(commit, "^[a-f0-9]{40}$") || Text(value, "sourceDigest") != pins.SourceDigest) Refuse();
+        DigestShape(pins.SourceDigest); DigestShape(pins.CollectorBinaryDigest);
+        var inputs = value.GetProperty("buildInputs");
+        Exact(inputs, ["sdkVersion", "sdkArchiveDigest", "project", "configuration", "arguments", "files"]);
+        const string archive = "24b670ad3d923bfcf47df6c3b034152398b42f6dbc388e10d783aee1cfb5e5817d399fc0ae2a12cfa822a55e61d34830ccb15c50ef6efee437ab874bb7c79430";
+        var arguments = inputs.GetProperty("arguments");
+        if (Text(inputs, "sdkVersion") != "10.0.401" || Text(inputs, "sdkArchiveDigest") != archive ||
+            Text(inputs, "project") != "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj" ||
+            Text(inputs, "configuration") != "Release" || arguments.ValueKind != JsonValueKind.Array ||
+            arguments.GetArrayLength() != BuildArguments.Length) Refuse();
+        for (int i = 0; i < BuildArguments.Length; i++)
+            if (arguments[i].ValueKind != JsonValueKind.String || arguments[i].GetString() != BuildArguments[i]) Refuse();
+        if (!SameRecords(inputs.GetProperty("files"), buildFiles, BuildPaths)) Refuse();
+        var builds = value.GetProperty("builds");
+        if (builds.ValueKind != JsonValueKind.Array || builds.GetArrayLength() != 2) Refuse();
+        for (int i = 0; i < 2; i++)
+        {
+            var run = builds[i]; Exact(run, ["lane", "collectorBinaryDigest", "informationalRevision", "sourceLinkRevision", "executionFiles"]);
+            if (Text(run, "lane") != (i == 0 ? "first" : "repeat") || Text(run, "collectorBinaryDigest") != pins.CollectorBinaryDigest ||
+                Text(run, "informationalRevision") != commit || Text(run, "sourceLinkRevision") != commit ||
+                !SameRecords(run.GetProperty("executionFiles"), closure, ExecutionPaths)) Refuse();
+        }
     }
     private static void Exact(JsonElement value, string[] keys)
     {
@@ -211,6 +322,6 @@ internal static class SuiteFreeze
         return Convert.ToHexStringLower(SHA1.HashData(prefix.Concat(data).ToArray()));
     }
     private static void DigestShape(string digest)
-    { if (!System.Text.RegularExpressions.Regex.IsMatch(digest, "^sha256:[a-f0-9]{64}$")) Refuse(); }
+    { if (digest.Length != 71 || !System.Text.RegularExpressions.Regex.IsMatch(digest, "^sha256:[a-f0-9]{64}$")) Refuse(); }
     [System.Diagnostics.CodeAnalysis.DoesNotReturn] private static void Refuse() => throw new CaptureException(CaptureCode.InvalidObservation);
 }

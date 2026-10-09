@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace DualSurface.UiaCapture;
 
@@ -47,7 +48,7 @@ internal static class SuiteUnitCases
         Pass(() => Check(SuiteFreeze.GitBlob("hello\n") == "ce013625030ba8dba906f756967f9e9ca394464a"));
         Pass(() => Check(FixedCaptureSuite.CaseIds.Length == 22 && FixedCaptureSuite.CaseIds.Distinct().Count() == 22));
         Pass(() => Check(FixedCaptureSuite.CaptureIds.Length == 32 && FixedCaptureSuite.CaptureIds.Distinct().Count() == 32));
-        Pass(() => Check(SuiteFreeze.SourcePaths.Length == 18 && SuiteFreeze.SourcePaths.Distinct().Count() == 18));
+        Pass(() => Check(SuiteFreeze.SourcePaths.Length == 20 && SuiteFreeze.SourcePaths.Distinct().Count() == 20));
         Pass(() => Check(FixtureRecords.ParseState(Utf8(state)).Same(FixtureRecords.ParseState(Utf8(state)))));
         Pass(() => Check(!FixtureRecords.ParseState(Utf8(state)).Same(FixtureRecords.ParseState(Utf8(state.Replace("\"revision\":0", "\"revision\":1"))))));
         Pass(() => TrustedSetup.RequireRootProof(123, 123, "ControlType.Window", true));
@@ -104,7 +105,7 @@ internal static class SuiteUnitCases
         });
         // Synthetic grammar input only, never repository review or authorization.
         string source = "sha256:" + new string('a', 64), stale = "sha256:" + new string('9', 64);
-        string[] agents = ["/root/p42_security_review", "/root/p42_accessibility_interop_review", "/root/p42_package_gate_review"];
+        string[] agents = ["/root/resumed_gate_authority_audit", "/root/controlled_continuation_interop", "/root/resumed_roadmap_next_action"];
         string Review(string agent) => "# Synthetic parser review\n\nReviewer agent: " + agent +
             "\nDisposition: source-approved\nReviewed source: " + source + "\nUnresolved Critical/High/Medium: 0\n\nSynthetic only.\n";
         string decision = "# Synthetic parser decision\n\nNative execution: authorized for the frozen fixed suite only\nReviewed source: " + source + "\n\nSynthetic only.\n";
@@ -154,6 +155,118 @@ internal static class SuiteUnitCases
         });
         Deny(() => SuiteFreeze.RequireApprovalMetadata(synthetic, source + "\n", agents[0]));
         Deny(() => SuiteFreeze.RequireApprovalMetadata(decision, source.ToUpperInvariant()));
+        foreach (string oldAgent in new[] { "/root/p42_security_review", "/root/p42_accessibility_interop_review", "/root/p42_package_gate_review" })
+            Deny(() => SuiteFreeze.RequireApprovalMetadata(Review(oldAgent), source, oldAgent));
+        // Synthetic fixed-input provenance. No repository approval/native proof.
+        var provenancePins = new SuitePins(source, stale, SuiteFreeze.FixtureDigest);
+        Pass(() => {
+            int admissions = 0, launches = 0, timeChecks = 0;
+            Check(SuiteFreeze.BeforeFixtureStart(provenancePins, () => { admissions++; return provenancePins; }, () => timeChecks++, () => ++launches) == 1);
+            Check(admissions == 1 && launches == 1 && timeChecks == 2);
+        });
+        foreach (var current in new[] { provenancePins with { SourceDigest = stale }, provenancePins with { CollectorBinaryDigest = source },
+            provenancePins with { FixtureBinaryDigest = stale } })
+            Pass(() => {
+                int launches = 0; bool refused = false;
+                try { SuiteFreeze.BeforeFixtureStart(provenancePins, () => current, () => { }, () => ++launches); }
+                catch (CaptureException) { refused = true; }
+                Check(refused && launches == 0);
+            });
+        Pass(() => {
+            int launches = 0; bool refused = false;
+            try { SuiteFreeze.BeforeFixtureStart(provenancePins, () => throw new CaptureException(CaptureCode.InvalidObservation), () => { }, () => ++launches); }
+            catch (CaptureException) { refused = true; }
+            Check(refused && launches == 0);
+        });
+        foreach (int failedCheck in new[] { 1, 2 })
+            Pass(() => {
+                int admissions = 0, launches = 0, timeChecks = 0; bool refused = false;
+                try { SuiteFreeze.BeforeFixtureStart(provenancePins, () => { admissions++; return provenancePins; },
+                    () => { if (++timeChecks == failedCheck) throw new CaptureException(CaptureCode.ResourceExceeded); }, () => ++launches); }
+                catch (CaptureException error) when (error.Code == CaptureCode.ResourceExceeded) { refused = true; }
+                Check(refused && launches == 0 && admissions == failedCheck - 1);
+            });
+        var execution = JsonSerializer.SerializeToElement(SuiteFreeze.ExecutionPaths.Select(path => new { path, digest = stale }).ToArray());
+        var buildFiles = JsonSerializer.SerializeToElement(SuiteFreeze.BuildPaths.Select(path => new { path, digest = source }).ToArray());
+        const string commit = "1111111111111111111111111111111111111111";
+        string provenance = JsonSerializer.Serialize(new {
+            schemaVersion = "0.1", kind = "p4.3-native-suite-r1-build-provenance", sourceCommit = commit, sourceDigest = source,
+            buildInputs = new { sdkVersion = "10.0.401", sdkArchiveDigest = "24b670ad3d923bfcf47df6c3b034152398b42f6dbc388e10d783aee1cfb5e5817d399fc0ae2a12cfa822a55e61d34830ccb15c50ef6efee437ab874bb7c79430",
+                project = "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj", configuration = "Release",
+                arguments = new[] { "build", "CaptureSuite/CaptureSuite.csproj", "-c", "Release", "-t:Rebuild", "--nologo" }, files = buildFiles },
+            builds = new[] { "first", "repeat" }.Select(lane => new { lane, collectorBinaryDigest = stale,
+                informationalRevision = commit, sourceLinkRevision = commit, executionFiles = execution }).ToArray()
+        });
+        Pass(() => Check(SuiteFreeze.BuildPaths.Length == 15 && SuiteFreeze.BuildPaths.Distinct().Count() == 15));
+        Pass(() => SuiteFreeze.RequireBuildProvenance(Utf8(provenance), provenancePins, execution, buildFiles));
+        foreach (string invalid in new[] {
+            provenance.Replace("10.0.401", "10.0.402"), provenance.Replace("Release", "Debug"),
+            provenance.Replace("-t:Rebuild", "-t:Build"), provenance.Replace("\"repeat\"", "\"first\""),
+            provenance.Replace("\"sourceLinkRevision\":\"" + commit, "\"sourceLinkRevision\":\"" + new string('2', 40)),
+            provenance.Replace("\"sourceCommit\":\"" + commit, "\"sourceCommit\":\"" + new string('2', 40)),
+            provenance.Replace("\"sourceDigest\":\"" + source, "\"sourceDigest\":\"" + stale),
+            provenance.Replace("\"digest\":\"" + source, "\"digest\":\"" + stale),
+            provenance.Replace("\"digest\":\"" + stale, "\"digest\":\"" + source),
+            provenance.Replace("global.json", "GLOBAL.json"), provenance.Replace(".deps.json", ".runtimeconfig.dev.json"),
+            provenance.Replace("\"schemaVersion\":\"0.1\"", "\"schemaVersion\":\"0.1\",\"extra\":0"),
+            provenance[..^1] + ",\"sourceCommit\":\"" + commit + "\"}",
+            provenance + "{}", "\ufeff" + provenance, new string(' ', 32769),
+        }) Deny(() => SuiteFreeze.RequireBuildProvenance(Utf8(invalid), provenancePins, execution, buildFiles));
+        foreach (string invalid in new[] { "{\"x\":1,\"\\u0078\":2}", "{\"a\":\"\\ud800\"}",
+            "[[[[[[[]]]]]]]", "[" + string.Join(",", Enumerable.Repeat("0", 2047)) + "]",
+            "{\"a\":\"" + new string('a', 513) + "\"}", "{\"a\":\"" + new string('ก', 171) + "\"}", "1" + new string('0', 512) })
+            Deny(() => SuiteFreeze.Parse(Utf8(invalid), true));
+        Deny(() => SuiteFreeze.Parse([0xc0, 0xaf], true));
+        Pass(() => SuiteFreeze.Parse(Utf8("{\"x\":\"" + new string('ก', 170) + "\"}"), true));
+        Pass(() => SuiteFreeze.Parse(Utf8("[[[[[[]]]]]]"), true));
+        Pass(() => SuiteFreeze.Parse(Utf8("1" + new string('0', 511)), true));
+        Action<JsonNode>[] provenanceMutations = [
+            v => v["extra"] = 1, v => v.AsObject().Remove("sourceCommit"),
+            v => v["sourceCommit"] = commit + "\n", v => v["buildInputs"]!["extra"] = 1,
+            v => v["buildInputs"]!["sdkArchiveDigest"] = new string('a', 128),
+            v => v["buildInputs"]!["project"] = "../CaptureSuite.csproj",
+            v => v["buildInputs"]!["arguments"]!.AsArray().Add("-p:SourceRevisionId=x"),
+            v => v["buildInputs"]!["files"]!.AsArray().RemoveAt(14),
+            v => v["buildInputs"]!["files"]![1] = v["buildInputs"]!["files"]![0]!.DeepClone(),
+            v => v["buildInputs"]!["files"]![0]!["extra"] = 1,
+            v => v["builds"]!.AsArray().RemoveAt(1),
+            v => v["builds"]!.AsArray().Add(v["builds"]![0]!.DeepClone()),
+            v => v["builds"]![0]!.AsObject().Remove("sourceLinkRevision"),
+            v => v["builds"]![1]!["extra"] = 1,
+            v => v["builds"]![1]!["collectorBinaryDigest"] = source,
+            v => v["builds"]![1]!["informationalRevision"] = new string('2', 40),
+            v => v["builds"]![1]!["executionFiles"]!.AsArray().RemoveAt(3),
+            v => v["builds"]![0]!["executionFiles"]!.AsArray().Add(v["builds"]![0]!["executionFiles"]![0]!.DeepClone()),
+            v => v["builds"]![0]!["executionFiles"]![0]!["digest"] = new JsonArray(stale),
+        ];
+        foreach (var mutate in provenanceMutations)
+        {
+            var v = JsonNode.Parse(provenance)!; mutate(v);
+            Deny(() => SuiteFreeze.RequireBuildProvenance(Utf8(v.ToJsonString()), provenancePins, execution, buildFiles));
+        }
+        string freeze = JsonSerializer.Serialize(new { schemaVersion = "0.1", kind = "p4.3-native-capture-suite-freeze", status = "source-approved",
+            sourceDigest = source, collectorBinaryDigest = stale, fixtureBinaryDigest = SuiteFreeze.FixtureDigest,
+            reviewReports = new[] { "security", "accessibility", "package" }.Select(role => new {
+                path = "docs/reviews/p4.3-native-suite-r1-" + role + "-agent-review.md", blob = commit }).ToArray(),
+            decision = new { path = "docs/reviews/p4.3-native-suite-r1-execution-entry-2026-10-09.md", blob = commit },
+            executionFiles = execution, buildProvenance = new { path = "docs/evidence/p4.3-native-suite-r1-build-provenance.json", blob = commit } });
+        Pass(() => SuiteFreeze.RequireFreezeShape(SuiteFreeze.Parse(Utf8(freeze))));
+        Action<JsonNode>[] freezeMutations = [
+            v => { v.AsObject().Remove("executionFiles"); v.AsObject().Remove("buildProvenance"); },
+            v => v["extra"] = 1, v => v["fixtureBinaryDigest"] = source,
+            v => v["reviewReports"]![0]!["path"] = "docs/reviews/p4.3-native-suite-d2-security-agent-review.md",
+            v => v["reviewReports"]![1] = v["reviewReports"]![0]!.DeepClone(),
+            v => v["decision"]!["path"] = "docs/reviews/p4.3-native-suite-d2-execution-entry-2026-10-04.md",
+            v => v["buildProvenance"]!["path"] = "other.json",
+            v => v["executionFiles"]!.AsArray().RemoveAt(3),
+            v => v["executionFiles"]![1] = v["executionFiles"]![0]!.DeepClone(),
+            v => v["decision"]!["extra"] = 1, v => v["buildProvenance"]!["blob"] = commit + "\n",
+        ];
+        foreach (var mutate in freezeMutations)
+        {
+            var v = JsonNode.Parse(freeze)!; mutate(v);
+            Deny(() => SuiteFreeze.RequireFreezeShape(SuiteFreeze.Parse(Utf8(v.ToJsonString()))));
+        }
         var diagnosticPins = new SuitePins(source, "sha256:" + new string('2', 64), "sha256:" + new string('3', 64));
         const string time = "2026-10-04T08:00:00.000Z";
         var tuple = new FailureTuple("initial", "setup", "is-password", "not-supported", "InvalidObservation");

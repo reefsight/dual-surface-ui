@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { mkdtemp, mkdir, writeFile, rm, link } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, rm, link, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { CASE_IDS, INITIAL_FIXTURE_STATE, canonical } from "../scripts/p4.2-fixture-contracts.mjs";
@@ -7,7 +7,8 @@ import { loadAcceptedCaptureOracle } from "../scripts/p4.3-capture-contracts.mjs
 import { SUITE_CAPTURE_IDS, SUITE_PROBE_IDS, SUITE_LIMITS, SUITE_ARTIFACT_NAMES, SUITE_SESSION_REF, suiteRequestId,
   rawSuiteDigest, admitSuiteReport, expandedComboExpectation, verifyNativeCaptureSuite, verifyNativeCapturePair,
   admitSuiteDirectoryPath, admitSuiteRunRootPath, readNativeCaptureSuite, admitSuiteUnitSummary } from "../scripts/p4.3-native-suite-contracts.mjs";
-import { admitSuiteReviewMetadata, admitSuiteDecisionMetadata } from "../scripts/p4.3-native-suite-source.mjs";
+import { admitSuiteReviewMetadata, admitSuiteDecisionMetadata, admitR1BuildProvenance, parseR1BuildProvenance,
+  R1_BUILD_PATHS, R1_EXECUTION_PATHS, NATIVE_SUITE_PATHS, admitR1FreezeShape, requireNoR1DevConfigurations } from "../scripts/p4.3-native-suite-source.mjs";
 
 // All fixtures in this file are SYNTHETIC verifier-negative/translation data.
 // They are constructed from frozen expectations, NOT C# output, UIA observations,
@@ -35,6 +36,127 @@ describe("D2 pure suite unit-count admission (not native coverage)", () => {
       new TextEncoder().encode('\ufeff' + JSON.stringify(summary)),
       new TextEncoder().encode(JSON.stringify(summary).slice(0, -1) + ',"cases":1}')])
       expect(() => admitSuiteUnitSummary(bytes)).toThrow();
+  });
+});
+
+describe("R1 frozen artifact qualification grammar (synthetic; no native execution)", () => {
+  const sha = "sha256:" + "a".repeat(64), binary = "sha256:" + "b".repeat(64), commit = "1".repeat(40);
+  const paths = ["security", "accessibility", "package"].map(role => `docs/reviews/p4.3-native-suite-r1-${role}-agent-review.md`);
+  const closure = R1_EXECUTION_PATHS.map(path => ({ path, digest: sha }));
+  const files = R1_BUILD_PATHS.map(path => ({ path, digest: sha }));
+  const pins = { sourceDigest: sha, collectorBinaryDigest: binary };
+  const provenance = () => ({ schemaVersion: "0.1", kind: "p4.3-native-suite-r1-build-provenance",
+    sourceCommit: commit, sourceDigest: sha,
+    buildInputs: { sdkVersion: "10.0.401", sdkArchiveDigest: "24b670ad3d923bfcf47df6c3b034152398b42f6dbc388e10d783aee1cfb5e5817d399fc0ae2a12cfa822a55e61d34830ccb15c50ef6efee437ab874bb7c79430",
+      project: "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj", configuration: "Release",
+      arguments: ["build", "CaptureSuite/CaptureSuite.csproj", "-c", "Release", "-t:Rebuild", "--nologo"], files: structuredClone(files) },
+    builds: ["first", "repeat"].map(lane => ({ lane, collectorBinaryDigest: binary,
+      informationalRevision: commit, sourceLinkRevision: commit, executionFiles: structuredClone(closure) })) });
+  const freeze = () => ({ schemaVersion: "0.1", kind: "p4.3-native-capture-suite-freeze", status: "source-approved",
+    ...pins, fixtureBinaryDigest: "sha256:05491f5a44d01e9a25f5098d86a4919abb9bb8d6f4d44a4050dcf2560107161d",
+    reviewReports: paths.map(path => ({ path, blob: commit })),
+    decision: { path: "docs/reviews/p4.3-native-suite-r1-execution-entry-2026-10-09.md", blob: commit },
+    executionFiles: structuredClone(closure),
+    buildProvenance: { path: "docs/evidence/p4.3-native-suite-r1-build-provenance.json", blob: commit } });
+  it("retains exact Suite20/build15/closure4 lists", () => {
+    expect(NATIVE_SUITE_PATHS).toHaveLength(20); expect(R1_BUILD_PATHS).toHaveLength(15);
+    expect(R1_EXECUTION_PATHS).toHaveLength(4);
+    expect(new Set(R1_BUILD_PATHS).size).toBe(15);
+    expect(NATIVE_SUITE_PATHS).toContain("experiments/windows-uia/managed-reference/global.json");
+    expect(() => admitR1FreezeShape(freeze())).not.toThrow();
+    expect(() => admitR1BuildProvenance(encode(provenance()), pins, closure, files)).not.toThrow();
+  });
+  const mutations: [string, (v: any) => void][] = [
+    ["unknown root", v => { v.extra = 1; }], ["missing root", v => { delete v.sourceCommit; }],
+    ["different source", v => { v.sourceDigest = binary; }], ["newline commit", v => { v.sourceCommit += "\n"; }],
+    ["wrong SDK", v => { v.buildInputs.sdkVersion = "10.0.402"; }],
+    ["wrong archive", v => { v.buildInputs.sdkArchiveDigest = "a".repeat(128); }],
+    ["unknown input key", v => { v.buildInputs.extra = 1; }],
+    ["wrong project", v => { v.buildInputs.project = "../CaptureSuite.csproj"; }],
+    ["wrong configuration", v => { v.buildInputs.configuration = "Debug"; }],
+    ["incremental build", v => { v.buildInputs.arguments[4] = "-t:Build"; }],
+    ["extra build argument", v => { v.buildInputs.arguments.push("-p:SourceRevisionId=x"); }],
+    ["missing source input", v => { v.buildInputs.files.pop(); }],
+    ["duplicate source input", v => { v.buildInputs.files[1] = v.buildInputs.files[0]; }],
+    ["input order", v => { v.buildInputs.files.reverse(); }],
+    ["input digest", v => { v.buildInputs.files[0].digest = binary; }],
+    ["input alias", v => { v.buildInputs.files[0].path = "alias.cs"; }],
+    ["input extra field", v => { v.buildInputs.files[0].extra = 1; }],
+    ["missing repeat", v => { v.builds.pop(); }], ["extra build", v => { v.builds.push(v.builds[0]); }],
+    ["build order", v => { v.builds.reverse(); }], ["duplicate lane", v => { v.builds[1].lane = "first"; }],
+    ["missing lane key", v => { delete v.builds[0].sourceLinkRevision; }],
+    ["unknown lane key", v => { v.builds[1].extra = 1; }],
+    ["wrong binary", v => { v.builds[1].collectorBinaryDigest = sha; }],
+    ["wrong informational revision", v => { v.builds[1].informationalRevision = "2".repeat(40); }],
+    ["wrong SourceLink revision", v => { v.builds[0].sourceLinkRevision = "2".repeat(40); }],
+    ["missing companion", v => { v.builds[1].executionFiles.pop(); }],
+    ["extra companion", v => { v.builds[0].executionFiles.push(v.builds[0].executionFiles[0]); }],
+    ["companion order", v => { v.builds[0].executionFiles.reverse(); }],
+    ["companion digest", v => { v.builds[1].executionFiles[0].digest = binary; }],
+    ["dev companion substitution", v => { v.builds[0].executionFiles[0].path = "runtimeconfig.dev.json"; }],
+    ["coerced digest", v => { v.builds[0].executionFiles[0].digest = [sha]; }],
+  ];
+  it.each(mutations)("refuses provenance %s", (_name, mutate) => {
+    const v = provenance(); mutate(v);
+    expect(() => admitR1BuildProvenance(encode(v), pins, closure, files)).toThrow();
+  });
+  const freezeMutations: [string, (v: any) => void][] = [
+    ["legacy eight keys", v => { delete v.executionFiles; delete v.buildProvenance; }],
+    ["unknown key", v => { v.extra = 1; }], ["fixture change", v => { v.fixtureBinaryDigest = sha; }],
+    ["report order", v => { v.reviewReports.reverse(); }],
+    ["old report", v => { v.reviewReports[0].path = v.reviewReports[0].path.replace("r1", "d2"); }],
+    ["old decision", v => { v.decision.path = "docs/reviews/p4.3-native-suite-d2-execution-entry-2026-10-04.md"; }],
+    ["alternate provenance", v => { v.buildProvenance.path = "other.json"; }],
+    ["missing companion", v => { v.executionFiles.pop(); }], ["duplicate companion", v => { v.executionFiles[1] = v.executionFiles[0]; }],
+    ["unknown reference field", v => { v.decision.extra = 1; }],
+    ["malformed blob", v => { v.buildProvenance.blob += "\n"; }],
+  ];
+  it.each(freezeMutations)("refuses frozen profile %s", (_name, mutate) => {
+    const v = freeze(); mutate(v); expect(() => admitR1FreezeShape(v)).toThrow();
+  });
+  it.each(["/root/p42_security_review", "/root/p42_accessibility_interop_review", "/root/p42_package_gate_review"])("refuses historical role %s", agent => {
+    expect(() => admitSuiteReviewMetadata("# Synthetic\n\n", agent, sha)).toThrow();
+  });
+  it("refuses original-byte parser boundaries before lossy decoding", () => {
+    for (const bytes of [new Uint8Array(32769), new Uint8Array([0xc0, 0xaf]),
+      encode("x").slice(0, 0), new TextEncoder().encode('\ufeff{}'),
+      new TextEncoder().encode('{"x":1,"\\u0078":2}'), new TextEncoder().encode('{}{}'),
+      new TextEncoder().encode('{"x":"\\ud800"}'),
+      new TextEncoder().encode('[[[[[[[]]]]]]]'),
+      new TextEncoder().encode('[' + Array(2047).fill(0).join(',') + ']'),
+      encode({ x: "a".repeat(513) }), encode({ x: "ก".repeat(171) }), new TextEncoder().encode("1" + "0".repeat(512))])
+      expect(() => parseR1BuildProvenance(bytes)).toThrow();
+    expect(() => parseR1BuildProvenance(encode({ x: "ก".repeat(170) }))).not.toThrow();
+    expect(() => parseR1BuildProvenance(new TextEncoder().encode('[[[[[[]]]]]]'))).not.toThrow();
+    expect(() => parseR1BuildProvenance(new TextEncoder().encode("1" + "0".repeat(511)))).not.toThrow();
+  });
+  it("keeps Native admission before SDK and workers, with only pure Rebuild", async () => {
+    const launcher = (await readFile(resolve("scripts/run-p4.3-capture-suite.ps1"), "utf8")).replaceAll("\r\n", "\n");
+    const initial = launcher.indexOf("if ($Native) { Confirm-FrozenArtifact }");
+    expect(initial).toBeGreaterThan(0); expect(initial).toBeLessThan(launcher.indexOf("$taskSdk ="));
+    expect(launcher).toContain("if (-not $Native) {\n        & $taskSdkExe build CaptureSuite/CaptureSuite.csproj -c Release -t:Rebuild --nologo");
+    expect(launcher.match(/& \$taskSdkExe build/g)).toHaveLength(1);
+    expect(launcher).toContain("function Invoke-CaptureWorker([string[]]$Arguments, [int]$Deadline, [string]$Mode) {\n        if ($Native) { Confirm-FrozenArtifact }");
+    expect(launcher).toContain("Confirm-NoDevConfiguration\n        $taskStart =");
+    const project = await readFile(resolve("experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj"), "utf8");
+    expect(project).toContain("<EnableDefaultCompileItems>false</EnableDefaultCompileItems>");
+    for (const item of ["Items", "ApplicationDefinition", "PageItems", "EmbeddedResourceItems"])
+      expect(project).toContain(`<EnableDefault${item}>false</EnableDefault${item}>`);
+    expect(project.match(/<Compile Include=/g)).toHaveLength(13); expect(project).not.toContain("*");
+    const program = (await readFile(resolve("experiments/windows-uia/managed-reference/CaptureSuite/Program.cs"), "utf8")).replaceAll("\r\n", "\n");
+    expect(program).toContain('owned = diagnostics.At("fixture-start", () => SuiteFreeze.BeforeFixtureStart(pins, () => SuiteFreeze.Admit(repo),\n                () => SetupBudget.CheckTime(), () => Process.Start(start)');
+    expect(program.match(/Process\.Start\(start\)/g)).toHaveLength(1);
+  });
+  it.each([0, 1])("refuses fixed dev config %s, including a directory (pure filesystem negative)", async i => {
+    const temporary = await mkdtemp(join(tmpdir(), "dsui-r1-dev-config-"));
+    const path = join(temporary, R1_EXECUTION_PATHS[i * 2 + 1].replace(/\.runtimeconfig\.json$/, ".runtimeconfig.dev.json"));
+    try {
+      await expect(requireNoR1DevConfigurations(temporary)).resolves.toBeUndefined();
+      await mkdir(resolve(path, ".."), { recursive: true }); await writeFile(path, "{}");
+      await expect(requireNoR1DevConfigurations(temporary)).rejects.toThrow();
+      await rm(path); await mkdir(path);
+      await expect(requireNoR1DevConfigurations(temporary)).rejects.toThrow();
+    } finally { await rm(temporary, { recursive: true, force: true }); }
   });
 });
 const trusted = { sourceDigest: "sha256:" + "1".repeat(64), collectorBinaryDigest: "sha256:" + "2".repeat(64),
@@ -326,7 +448,7 @@ describe("P4.3 original-byte suite verifier (synthetic, no native execution)", (
 });
 
 describe("P4.3 source-governance metadata parser (synthetic, not an approval)", () => {
-  const agents = ["/root/p42_security_review", "/root/p42_accessibility_interop_review", "/root/p42_package_gate_review"];
+  const agents = ["/root/resumed_gate_authority_audit", "/root/controlled_continuation_interop", "/root/resumed_roadmap_next_action"];
   const source = trusted.sourceDigest, stale = "sha256:" + "9".repeat(64);
   const review = (agent = agents[0]) => "# Synthetic parser review input\n\n" +
     "Reviewer agent: " + agent + "\nDisposition: source-approved\nReviewed source: " + source +
