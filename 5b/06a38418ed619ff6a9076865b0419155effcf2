@@ -1,0 +1,81 @@
+docs/evidence/p4.3-native-suite-r1-development-2026-10-09.md
+  s_142b4d269ec35e::t_9e44982614fee6 46-47
+  s_142b4d269ec35e::t_7d519d180be108 41
+  s_142b4d269ec35e::t_edd1cc0b16bddc 43
+  s_142b4d269ec35e::t_8658851bd67875 44-45,59-62
+  s_142b4d269ec35e::t_a53968f3741d63 84-104
+  s_142b4d269ec35e::t_2bfc0388b94964 48-49
+  s_142b4d269ec35e::t_c4e29384d624cd 42
+  s_142b4d269ec35e::t_d9bba876938fc2 1-40,52-58,63-83,105-116,127-134
+  s_142b4d269ec35e::t_fa4e74593d1f22 50-51,117-126
+docs/reviews/p4.3-native-suite-r1-accessibility-agent-review.md
+  s_142b4d269ec35e::t_0d0be4510a5ad6 1-3,6-7,11-47,49-102,104-117
+  s_142b4d269ec35e::t_cb044ff1d1c280 4,8-10,48,103,118-161
+  s_142b4d269ec35e::t_61f91e5ac4847f 5,162-223
+experiments/windows-uia/managed-reference/CaptureSuite/SuiteFreeze.cs
+  s_142b4d269ec35e::t_c9ff596fbaa772 73,123-140
+  s_142b4d269ec35e::t_856fff3719f370 117,119,121-122
+  s_142b4d269ec35e::t_550823f937cae8 16-17,35-37,40,45-60,72,79-97,109,141,234,240-241,245,252-257,259,265-284,286-307
+  s_142b4d269ec35e::t_ac0b4e116e2644 246
+  s_142b4d269ec35e::t_20e43208ee2acb 285,325
+  s_142b4d269ec35e::t_afa1e6a358c28c 116,118,120
+docs/reviews/p4.3-native-suite-r1-security-agent-review.md
+  s_142b4d269ec35e::t_09c7e411fbbb0e 1-2,8,10,15,17,19-30,32-45,47-50,73,78,82-90,93-95,123-147,150-168,177-197
+  s_142b4d269ec35e::t_f7235dbc65653c 3-7,9,11-14,16,18,31,46,51-72,74-77,79-81,91-92,96-122,148-149,169-176
+docs/reviews/p4.3-native-suite-r1-package-agent-review.md
+  s_142b4d269ec35e::t_eee021337b453f 1-162
+docs/reviews/p4.3-r1-committed-build-entry-2026-10-09.md
+  s_142b4d269ec35e::t_172a5751af7dfd 1-46
+scripts/run-p4.3-capture-suite.ps1
+  s_142b4d269ec35e::t_7d8224507a97f3 5-11,22-23,102-105,108,161,170
+  s_142b4d269ec35e::t_99cbac9757e1cc 12-21,109
+scripts/p4.3-native-suite-source.mjs
+  s_142b4d269ec35e::t_7d8224507a97f3 13-14,27-29,31-32,36-50,58-99,101-106,109-116,119-129,131-135
+  s_142b4d269ec35e::t_ac0b4e116e2644 100
+  s_142b4d269ec35e::t_c9ff596fbaa772 136-148,255-256,259
+  s_142b4d269ec35e::t_99cbac9757e1cc 240-245,264
+  s_142b4d269ec35e::t_20e43208ee2acb 107-108,117-118,130
+  s_142b4d269ec35e::t_550823f937cae8 254,260-263,265-270
+  s_142b4d269ec35e::t_ff33919fdf0716 149
+experiments/windows-uia/managed-reference/CaptureSuite/UnitCases.cs
+  s_142b4d269ec35e::t_afa1e6a358c28c 163-165,171,177,181-188
+  s_142b4d269ec35e::t_856fff3719f370 162,166-170,172-176,178-180
+  s_142b4d269ec35e::t_b0ebef27dcabfd 3,220-221,223-269
+  s_142b4d269ec35e::t_20e43208ee2acb 51,108,158-161,189-216,218-219
+  s_142b4d269ec35e::t_be5322e49779e4 222
+  s_142b4d269ec35e::t_ac0b4e116e2644 217
+test/p4.3-native-suite.test.ts
+  s_142b4d269ec35e::t_20e43208ee2acb 2,10,451
+  s_142b4d269ec35e::t_99cbac9757e1cc 11,140,149-160
+  s_142b4d269ec35e::t_afa1e6a358c28c 147
+  s_142b4d269ec35e::t_c9ff596fbaa772 41-126,128-130,132-133,135-139,141-142,145
+  s_142b4d269ec35e::t_b0ebef27dcabfd 134
+  s_142b4d269ec35e::t_ac0b4e116e2644 127,143-144
+  s_142b4d269ec35e::t_be5322e49779e4 131
+  s_142b4d269ec35e::t_856fff3719f370 146,148
+  s_142b4d269ec35e::t_127b3ff4c8dfb3 161
+experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj
+  s_142b4d269ec35e::t_ac0b4e116e2644 11-14
+  s_142b4d269ec35e::t_7d8224507a97f3 10,17-23
+experiments/windows-uia/managed-reference/CaptureSuite/Program.cs
+  s_142b4d269ec35e::t_afa1e6a358c28c 253
+  s_142b4d269ec35e::t_856fff3719f370 252
+docs/reviews/p4.3-r1-fixture-launch-remediation-entry-2026-10-09.md
+  s_142b4d269ec35e::t_467322885e52c1 1-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5b06a38418ed619ff6a9076865b0419155effcf2",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
