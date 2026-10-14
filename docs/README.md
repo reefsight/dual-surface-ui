@@ -124,7 +124,12 @@ qualified Rust native functionality, not a web-only preview. The proposed
 [Rust release contract](adr/0020-rust-native-first-release-requirement.md) preserves
 the evidence-based runtime gate. Resume from the
 [host handoff](work-items/Rust-native-first-release-handoff-2026-10-14.md);
-Rust installation on the current machine is not authorized.
+At that handoff, Rust installation on the current machine was not authorized.
+Later on 2026-10-14 the maintainer authorized user-local Rust installation without
+admin and confirmed the Desktop ready for native tests. The additive
+[resume work item](work-items/Rust-user-local-native-resume-2026-10-14.md) and
+[toolchain readiness evidence](evidence/rust-user-local-readiness-2026-10-14.md)
+record the new scope; native acceptance and release remain gated.
 P4.5 and P4.6 are planned in the
 [authenticated native host](work-items/P4.5-authenticated-native-host.md) and
 [macOS Accessibility adapter](work-items/P4.6-macos-accessibility-adapter.md)
