@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "p4.3-native-capture-suite-freeze",
+  "status": "source-approved",
+  "sourceDigest": "sha256:0011376b411742d76078d0b67a65cc213236a38678d83869b6fc79f8578d3416",
+  "collectorBinaryDigest": "sha256:1ec86ebb15d99fa0b6a0385f5dfaae3224de02d102846767fe3a4a56583200c3",
+  "fixtureBinaryDigest": "sha256:05491f5a44d01e9a25f5098d86a4919abb9bb8d6f4d44a4050dcf2560107161d",
+  "reviewReports": [
+    {
+      "path": "docs/reviews/p4.3-native-suite-r1-security-agent-review.md",
+      "blob": "47407721f49872a8a2687b8f2a5d990cede47648"
+    },
+    {
+      "path": "docs/reviews/p4.3-native-suite-r1-accessibility-agent-review.md",
+      "blob": "75345ab12e193795b8b01684946e8ede34cc8274"
+    },
+    {
+      "path": "docs/reviews/p4.3-native-suite-r1-package-agent-review.md",
+      "blob": "3d60447364110c6157248a544ec30a394142d2a8"
+    }
+  ],
+  "decision": {
+    "path": "docs/reviews/p4.3-native-suite-r1-execution-entry-2026-10-09.md",
+    "blob": "b0cf72bcba1d175d160e7c4a69cc8aea209d214f"
+  },
+  "executionFiles": [
+    {
+      "path": "experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.deps.json",
+      "digest": "sha256:f245c0c42309f67ef0a196e162886cb374e374fb0375aa4ac453d82f019ef177"
+    },
+    {
+      "path": "experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.runtimeconfig.json",
+      "digest": "sha256:96bc2946dff8790400d652ec7f8de7bb043e954980d59470c112788b68a1fbd3"
+    },
+    {
+      "path": "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.deps.json",
+      "digest": "sha256:8e6b5289544bc920417f02e8d10d0ead463a17afbb8ed37132aff9fc0d10a8ed"
+    },
+    {
+      "path": "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.runtimeconfig.json",
+      "digest": "sha256:96bc2946dff8790400d652ec7f8de7bb043e954980d59470c112788b68a1fbd3"
+    }
+  ],
+  "buildProvenance": {
+    "path": "docs/evidence/p4.3-native-suite-r1-build-provenance.json",
+    "blob": "c0caf9d3b498f22095e4dfd02c5256310b7b4e67"
+  }
+}

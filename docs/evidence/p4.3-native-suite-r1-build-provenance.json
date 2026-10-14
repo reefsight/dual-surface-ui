@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "p4.3-native-suite-r1-build-provenance",
+  "sourceCommit": "5b06a38418ed619ff6a9076865b0419155effcf2",
+  "sourceDigest": "sha256:0011376b411742d76078d0b67a65cc213236a38678d83869b6fc79f8578d3416",
+  "buildInputs": {
+    "sdkVersion": "10.0.401",
+    "sdkArchiveDigest": "24b670ad3d923bfcf47df6c3b034152398b42f6dbc388e10d783aee1cfb5e5817d399fc0ae2a12cfa822a55e61d34830ccb15c50ef6efee437ab874bb7c79430",
+    "project": "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj",
+    "configuration": "Release",
+    "arguments": [
+      "build",
+      "CaptureSuite/CaptureSuite.csproj",
+      "-c",
+      "Release",
+      "-t:Rebuild",
+      "--nologo"
+    ],
+    "files": [
+      {
+        "path": "experiments/windows-uia/managed-reference/CaptureHarness/CopiedObservation.cs",
+        "digest": "sha256:cbd14b0e4c2c7e0e2cc07170758c575aad962e8d162330af5d5efe6bf491c29e"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/CaptureHarness/FixtureSubjects.cs",
+        "digest": "sha256:4a3d4ca1bbf047320252f5167cdbdba83d242783fbea5697bc0e0b7b3a6c122d"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/CaptureHarness/SemanticProjection.cs",
+        "digest": "sha256:b027527e3d44384bcd9bf9b279ac32a7f11607d81b038368ba64232215d5b9af"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj",
+        "digest": "sha256:156ea453142d882f90416ad5f5ca8f9e566a7e04d1ec5cc69b506430261f5621"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/CaptureSuite/FailureDiagnostics.cs",
+        "digest": "sha256:f12d4954c7b1630efd8826314eb83d2aeecd1b7897190d268ca7043e3652df1d"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/CaptureSuite/FixtureRecords.cs",
+        "digest": "sha256:24fa4dfa5fafae1e14b1ff9d5df4137a4c9f2bd59929de3ab0562e167426671d"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/CaptureSuite/OwnedFiles.cs",
+        "digest": "sha256:1677160322b58f91c97d74270de6699889709ef298b01aa9511068986cf1180f"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/CaptureSuite/Program.cs",
+        "digest": "sha256:315d774a48a30c101fe968e13cf51d001a62b9aee0b329959a08988a4f7f3003"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/CaptureSuite/SuiteFreeze.cs",
+        "digest": "sha256:bc1d75b3d602dd90f357d78c8de350460f9681b1f41856dd7f85f10ac8c0fe74"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/CaptureSuite/TrustedSetup.cs",
+        "digest": "sha256:6f45da548bb2ea46a14b7f58c3533583f4cc9d04da3841d46ff5bf7ce89fc6ef"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/CaptureSuite/UnitCases.cs",
+        "digest": "sha256:81501c098d721194049ddd67325a20f89da554cb32b74d635dda095198d0c2a6"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowTopology.cs",
+        "digest": "sha256:b3eaaae08045b422ce8e25562deddbbeadef18d5adf6a42121fa94dc1c569e48"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowsAdmission.cs",
+        "digest": "sha256:6e31705d3d68463307685a0d33073eb80f8ae8bb143353b9f8819e38422d2669"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/NativeCaptureHarness/ReadOnlyCollector.cs",
+        "digest": "sha256:7bb7326aa9ee58193a842c15ada966ab409553b2d8db7865284b30e41ddb9b2c"
+      },
+      {
+        "path": "experiments/windows-uia/managed-reference/global.json",
+        "digest": "sha256:c700761a8da9e52ee1da80751b38b9a9c36a72f5cbcbfa3c6c0ec006ed29262b"
+      }
+    ]
+  },
+  "builds": [
+    {
+      "lane": "first",
+      "collectorBinaryDigest": "sha256:1ec86ebb15d99fa0b6a0385f5dfaae3224de02d102846767fe3a4a56583200c3",
+      "informationalRevision": "5b06a38418ed619ff6a9076865b0419155effcf2",
+      "sourceLinkRevision": "5b06a38418ed619ff6a9076865b0419155effcf2",
+      "executionFiles": [
+        {
+          "path": "experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.deps.json",
+          "digest": "sha256:f245c0c42309f67ef0a196e162886cb374e374fb0375aa4ac453d82f019ef177"
+        },
+        {
+          "path": "experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.runtimeconfig.json",
+          "digest": "sha256:96bc2946dff8790400d652ec7f8de7bb043e954980d59470c112788b68a1fbd3"
+        },
+        {
+          "path": "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.deps.json",
+          "digest": "sha256:8e6b5289544bc920417f02e8d10d0ead463a17afbb8ed37132aff9fc0d10a8ed"
+        },
+        {
+          "path": "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.runtimeconfig.json",
+          "digest": "sha256:96bc2946dff8790400d652ec7f8de7bb043e954980d59470c112788b68a1fbd3"
+        }
+      ]
+    },
+    {
+      "lane": "repeat",
+      "collectorBinaryDigest": "sha256:1ec86ebb15d99fa0b6a0385f5dfaae3224de02d102846767fe3a4a56583200c3",
+      "informationalRevision": "5b06a38418ed619ff6a9076865b0419155effcf2",
+      "sourceLinkRevision": "5b06a38418ed619ff6a9076865b0419155effcf2",
+      "executionFiles": [
+        {
+          "path": "experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.deps.json",
+          "digest": "sha256:f245c0c42309f67ef0a196e162886cb374e374fb0375aa4ac453d82f019ef177"
+        },
+        {
+          "path": "experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.runtimeconfig.json",
+          "digest": "sha256:96bc2946dff8790400d652ec7f8de7bb043e954980d59470c112788b68a1fbd3"
+        },
+        {
+          "path": "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.deps.json",
+          "digest": "sha256:8e6b5289544bc920417f02e8d10d0ead463a17afbb8ed37132aff9fc0d10a8ed"
+        },
+        {
+          "path": "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.runtimeconfig.json",
+          "digest": "sha256:96bc2946dff8790400d652ec7f8de7bb043e954980d59470c112788b68a1fbd3"
+        }
+      ]
+    }
+  ]
+}
