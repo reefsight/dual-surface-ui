@@ -1,0 +1,25 @@
+docs/evidence/p4.3-r1-resume-prerequisites-2026-10-14.md
+  s_142b4d269ec35e::t_20934fdd60fd8c 1-67
+docs/evidence/p4.3-r1-native-first-failure-2026-10-14.md
+  s_142b4d269ec35e::t_fc844f0f1125f3 1-77
+docs/work-items/P4.3-window-handle-read-context-investigation.md
+  s_142b4d269ec35e::t_fc844f0f1125f3 1-72
+docs/reviews/p4.3-r1-final-go-no-go-2026-10-14.md
+  s_142b4d269ec35e::t_7764292220dd7d 1-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e32e0a6759087901e7cc08a6cd92497e91ebd707",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
