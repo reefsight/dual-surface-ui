@@ -1,0 +1,41 @@
+docs/evidence/p4.3-native-suite-r1-packet-preflight-2026-10-09.md
+  s_142b4d269ec35e::t_7f9c806f9a1825 1-46
+docs/reviews/p4.3-native-suite-r1-build-security-agent-review-2026-10-09.md
+  s_142b4d269ec35e::t_cab182edd5d5d2 1-2,5-17,22-102,104-144
+  s_142b4d269ec35e::t_e4deadb2be8824 3-4,18-21,103
+docs/reviews/p4.3-native-suite-r1-build-accessibility-agent-review-2026-10-09.md
+  s_142b4d269ec35e::t_2f2bb0746114af 1-57
+docs/reviews/p4.3-native-suite-r1-final-packet-security-agent-review-2026-10-09.md
+  s_142b4d269ec35e::t_735c9ac886519c 1-145
+docs/evidence/p4.3-native-suite-r1-build-provenance.json
+  s_142b4d269ec35e::t_5b508f21662918 1-132
+docs/evidence/p4.3-native-suite-r1-build-qualification-2026-10-09.md
+  s_142b4d269ec35e::t_9b888553caba76 139-274
+  s_142b4d269ec35e::t_d80e0aade36eac 1-138,275
+docs/reviews/p4.3-native-suite-r1-final-packet-accessibility-agent-review-2026-10-09.md
+  s_142b4d269ec35e::t_fada75628ef0f2 1-70
+docs/reviews/p4.3-native-suite-r1-build-package-agent-review-2026-10-09.md
+  s_142b4d269ec35e::t_9d29ab63235c3d 1-157
+docs/reviews/p4.3-native-suite-r1-final-packet-package-agent-review-2026-10-09.md
+  s_142b4d269ec35e::t_3d099f8df9eead 1-162
+docs/evidence/p4.3-native-suite-r1-freeze.json
+  s_142b4d269ec35e::t_8f6cbf6342c29a 1-48
+docs/reviews/p4.3-native-suite-r1-execution-entry-2026-10-09.md
+  s_142b4d269ec35e::t_bf2ceea0312e08 1-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7a4ad8dbfae46c52ba7ec2d12f7a00e84e3ea2c6",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
