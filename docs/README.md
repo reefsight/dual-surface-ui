@@ -119,6 +119,12 @@ P4.4's evidence-gated language selection is specified in the
 [native language decision work item](work-items/P4.4-native-language-decision.md)
 and proposed [ADR 0018](adr/0018-native-runtime-language-decision-method.md).
 Rust remains preferred, but no language is selected before comparable P4.3 evidence.
+The maintainer confirmed on 2026-10-14 that the first planned release must include
+qualified Rust native functionality, not a web-only preview. The proposed
+[Rust release contract](adr/0020-rust-native-first-release-requirement.md) preserves
+the evidence-based runtime gate. Resume from the
+[host handoff](work-items/Rust-native-first-release-handoff-2026-10-14.md);
+Rust installation on the current machine is not authorized.
 P4.5 and P4.6 are planned in the
 [authenticated native host](work-items/P4.5-authenticated-native-host.md) and
 [macOS Accessibility adapter](work-items/P4.6-macos-accessibility-adapter.md)

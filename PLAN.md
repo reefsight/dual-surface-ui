@@ -8,6 +8,13 @@ P4.1 must freeze a language-neutral protocol and portable evidence before any
 OS adapter begins. Rust is preferred but not selected before measurement. The
 Phase 4 Exit Gate remains a separate decision.
 
+On 2026-10-14 the maintainer confirmed that the first planned release must
+include real Rust native functionality and can wait for native gates.
+Web-only publication is not the current first-release target. The
+[release requirement](docs/adr/0020-rust-native-first-release-requirement.md)
+and [host handoff](docs/work-items/Rust-native-first-release-handoff-2026-10-14.md)
+preserve technical qualification and separate runtime/release decisions.
+
 Dual Surface UI is a standards-first compatibility and safety framework that
 turns existing applications into reliable agent interfaces without replacing
 the human interface. The project compiles application semantics into compact

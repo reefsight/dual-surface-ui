@@ -265,6 +265,15 @@ and any `0.4` release remain explicit later maintainer decisions.
 
 ## Release checkpoints
 
+First-release constraint confirmed on 2026-10-14: the maintainer requires real
+qualified Rust native functionality and accepts waiting for native gates.
+The checkpoints below remain capability/version targets, not permission to ship
+a web-only first release. See the proposed
+[Rust release contract](adr/0020-rust-native-first-release-requirement.md) and
+[host handoff](work-items/Rust-native-first-release-handoff-2026-10-14.md).
+P4.4 qualification/selection, P4.7 acceptance and separate publication authority
+remain mandatory; Rust preference cannot substitute for native evidence.
+
 - `0.1`: Phase 1 technical preview.
 - `0.2`: Phase 2 WebMCP preview.
 - `0.3`: Phase 3 ecosystem/eval preview.
