@@ -1,0 +1,26 @@
+docs/work-items/Rust-user-local-native-resume-2026-10-14.md
+  s_142b4d269ec35e::t_989ce4affa7e6e 1-45,47-70
+  s_142b4d269ec35e::t_0b87a4b2b28a8e 46
+docs/README.md
+  s_142b4d269ec35e::t_64bc34be006ffe 127-132
+docs/evidence/rust-user-local-readiness-2026-10-14.md
+  s_142b4d269ec35e::t_41ea8d12285ad4 1-18,21-31,34-62,64-93
+  s_142b4d269ec35e::t_0b87a4b2b28a8e 32-33,63
+  s_142b4d269ec35e::t_56441b5713e98f 19-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c4f5fd94e115c714aebb569087022798cce5eedc",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
