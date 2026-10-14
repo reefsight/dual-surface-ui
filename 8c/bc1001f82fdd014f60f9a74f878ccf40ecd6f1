@@ -1,0 +1,27 @@
+docs/work-items/Rust-native-first-release-handoff-2026-10-14.md
+  s_142b4d269ec35e::t_d22eeb14fe3b6b 1-129
+docs/adr/0020-rust-native-first-release-requirement.md
+  s_142b4d269ec35e::t_d22eeb14fe3b6b 1-64
+PLAN.md
+  s_142b4d269ec35e::t_9c3310007b07b4 11-17
+docs/04-roadmap.md
+  s_142b4d269ec35e::t_9c3310007b07b4 268-276
+docs/README.md
+  s_142b4d269ec35e::t_9c3310007b07b4 122-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8cbc1001f82fdd014f60f9a74f878ccf40ecd6f1",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
