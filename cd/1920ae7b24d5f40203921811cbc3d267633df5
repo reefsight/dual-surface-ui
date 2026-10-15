@@ -1,0 +1,64 @@
+docs/reviews/p4.3-native-suite-ctx1-package-agent-review.md
+  s_142b4d269ec35e::t_bd884134a7bd91 1-119
+experiments/windows-uia/managed-reference/CaptureSuiteCtx1/CaptureSuiteCtx1.csproj
+  s_142b4d269ec35e::t_f4ec23264340c2 1-31
+docs/reviews/p4.3-native-suite-ctx1-security-agent-review.md
+  s_142b4d269ec35e::t_02c0ce2041b9c0 1-146
+experiments/windows-uia/managed-reference/CaptureSuiteCtx1/UnitCases.cs
+  s_142b4d269ec35e::t_fdb20767ada977 801
+  s_142b4d269ec35e::t_352ee36ac0e728 1-700,702-706,708-746,778-800,802-815,817-844
+  s_142b4d269ec35e::t_dc1e0f2525f4dd 701,707,747-777
+  s_142b4d269ec35e::t_5b4eabfaf76111 816
+scripts/p4.3-native-suite-ctx1-failure-diagnostics.mjs
+  s_142b4d269ec35e::t_c14d660d963a32 1-245
+experiments/windows-uia/managed-reference/CaptureSuiteCtx1/TrustedSetup.cs
+  s_142b4d269ec35e::t_51ad9b5444772e 1-370
+experiments/windows-uia/managed-reference/CaptureSuiteCtx1/SuiteFreeze.cs
+  s_142b4d269ec35e::t_209db8a2fddf40 1-144,147-398
+  s_142b4d269ec35e::t_0a16ed82bb3c72 145-146
+docs/reviews/p4.3-native-suite-ctx1-committed-build-entry-2026-10-15.md
+  s_142b4d269ec35e::t_acc7869ba34fe2 1-90
+docs/evidence/browser-conformance-deadline-investigation-2026-10-15.md
+  s_142b4d269ec35e::t_612441f3dc9856 1-91
+scripts/verify-p4.3-native-suite-ctx1.mjs
+  s_142b4d269ec35e::t_cd24244e7f8293 1-38
+docs/evidence/p4.3-native-suite-ctx1-development-checkpoint-2026-10-15.md
+  s_142b4d269ec35e::t_f69d357d559758 1-119
+  s_142b4d269ec35e::t_6d036a3efc93b9 120-173
+test/p4.3-native-suite-ctx1-failure-diagnostics.test.ts
+  s_142b4d269ec35e::t_85196ab5abb742 43
+  s_142b4d269ec35e::t_3e959b0c0b4a2a 331
+  s_142b4d269ec35e::t_225336f7f14a6c 1-42,44-330,332-770
+docs/reviews/p4.3-native-suite-ctx1-accessibility-agent-review.md
+  s_142b4d269ec35e::t_9fb961970b0a36 1-21,23-37,39-52,54-69,71,80-88,90-92,96-103,105-109
+  s_142b4d269ec35e::t_b02889372ea053 22,38,53,70,72-79,89,93-95,104
+scripts/run-p4.3-capture-suite-ctx1.ps1
+  s_142b4d269ec35e::t_70ed93e9b0dad3 1-161,163-207
+  s_142b4d269ec35e::t_0a16ed82bb3c72 162
+experiments/windows-uia/managed-reference/CaptureSuiteCtx1/FailureDiagnostics.cs
+  s_142b4d269ec35e::t_584025302f849e 306-307
+  s_142b4d269ec35e::t_d621b91f4f9820 1-305,308-383
+test/p4.3-native-suite-ctx1.test.ts
+  s_142b4d269ec35e::t_9a6d3df5201fbb 1-4,6-13,15-86,88-140,256-435
+  s_142b4d269ec35e::t_3017802fdd6e05 14,141-255
+  s_142b4d269ec35e::t_0a16ed82bb3c72 5
+  s_142b4d269ec35e::t_9151bb2106c3f7 87
+scripts/p4.3-native-suite-ctx1-source.mjs
+  s_142b4d269ec35e::t_86e1e668eac836 1-303
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cd1920ae7b24d5f40203921811cbc3d267633df5",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
