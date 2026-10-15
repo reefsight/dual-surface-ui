@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "0.1",
+  "kind": "p4.3-native-capture-suite-ctx1-freeze",
+  "status": "source-approved",
+  "sourceDigest": "sha256:afbe8ea38a233e27c0de3d23a73260bc3c8a868e3db820b66da6a1565d181da8",
+  "collectorBinaryDigest": "sha256:78b2e1e53b9ada94d32960d66353a5a062abea814771cc7a39be459e31677b0c",
+  "fixtureBinaryDigest": "sha256:05491f5a44d01e9a25f5098d86a4919abb9bb8d6f4d44a4050dcf2560107161d",
+  "reviewReports": [
+    {
+      "path": "docs/reviews/p4.3-native-suite-ctx1-security-agent-review.md",
+      "blob": "dd4ef89d36b4fc53bb6bf28f634e968b597092d5"
+    },
+    {
+      "path": "docs/reviews/p4.3-native-suite-ctx1-accessibility-agent-review.md",
+      "blob": "efbc9bef6b67bb5f108446ab95177a0cc97c4cd3"
+    },
+    {
+      "path": "docs/reviews/p4.3-native-suite-ctx1-package-agent-review.md",
+      "blob": "7d21a0455effea645c566045506532a07cce9fac"
+    }
+  ],
+  "decision": {
+    "path": "docs/reviews/p4.3-native-suite-ctx1-execution-entry-2026-10-15.md",
+    "blob": "d8008d70ed4fb6a6d9382ab425eba87abd2e77f8"
+  },
+  "executionFiles": [
+    {
+      "path": "experiments/windows-uia/managed-reference/CaptureSuiteCtx1/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.Ctx1.deps.json",
+      "digest": "sha256:e72443b502fc03867109bfaf68fca58c23c6ac68024c689c79f291c5ae787515"
+    },
+    {
+      "path": "experiments/windows-uia/managed-reference/CaptureSuiteCtx1/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.Ctx1.runtimeconfig.json",
+      "digest": "sha256:96bc2946dff8790400d652ec7f8de7bb043e954980d59470c112788b68a1fbd3"
+    },
+    {
+      "path": "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.deps.json",
+      "digest": "sha256:8e6b5289544bc920417f02e8d10d0ead463a17afbb8ed37132aff9fc0d10a8ed"
+    },
+    {
+      "path": "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.runtimeconfig.json",
+      "digest": "sha256:96bc2946dff8790400d652ec7f8de7bb043e954980d59470c112788b68a1fbd3"
+    }
+  ],
+  "buildProvenance": {
+    "path": "docs/evidence/p4.3-native-suite-ctx1-build-provenance.json",
+    "blob": "4e2d2165029939d88bd75861d9703326fb2b5de4"
+  }
+}
