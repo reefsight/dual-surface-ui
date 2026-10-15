@@ -1,0 +1,31 @@
+docs/reviews/p4.3-native-suite-ctx1-outcome-accessibility-agent-review-2026-10-15.md
+  s_142b4d269ec35e::t_1693505bf0fe7a 23-127
+  s_142b4d269ec35e::t_bbe383785c9931 20-22
+  s_46a5795d960135::t_50a49290439e8f 1-19
+docs/evidence/p4.3-native-suite-ctx1-first-failure-2026-10-15.md
+  s_142b4d269ec35e::t_3ba32f8129e41c 1-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9f5fc73bb876bf4f01b39d84f0fd6938a2b040df",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    },
+    "s_46a5795d960135": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a13e94-c2bc-7941-a7b2-a5775545331f",
+        "model": "unknown"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
