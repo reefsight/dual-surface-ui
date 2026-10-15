@@ -1,0 +1,398 @@
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+
+namespace DualSurface.UiaCapture;
+
+internal sealed record SuitePins(string SourceDigest, string CollectorBinaryDigest, string FixtureBinaryDigest);
+internal static class SuiteFreeze
+{
+    public const string FixtureDigest = "sha256:05491f5a44d01e9a25f5098d86a4919abb9bb8d6f4d44a4050dcf2560107161d";
+    internal static readonly string[] SourcePaths = [
+        "docs/work-items/P4.3-native-capture-suite-integration.md",
+        "docs/work-items/P4.3-window-handle-read-context-investigation.md",
+        "docs/work-items/P4.3-admission-guard-diagnostics.md",
+        "docs/work-items/P4.3-window-handle-read-context-ctx1-candidate.md",
+        "experiments/windows-uia/managed-reference/global.json",
+        "experiments/windows-uia/managed-reference/CaptureSuiteCtx1/CaptureSuiteCtx1.csproj",
+        "experiments/windows-uia/managed-reference/CaptureSuiteCtx1/FailureDiagnostics.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuite/FixtureRecords.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuite/OwnedFiles.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuite/Program.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuiteCtx1/SuiteFreeze.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuiteCtx1/TrustedSetup.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuiteCtx1/UnitCases.cs",
+        "scripts/p4.3-native-suite-contracts.mjs",
+        "scripts/p4.3-native-suite-ctx1-failure-diagnostics.mjs",
+        "scripts/p4.3-native-suite-ctx1-source.mjs",
+        "scripts/run-p4.3-capture-suite-ctx1.ps1",
+        "scripts/verify-p4.3-native-suite-ctx1.mjs",
+        "test/p4.3-native-suite-ctx1.test.ts",
+        "test/p4.3-native-suite-ctx1-failure-diagnostics.test.ts",
+    ];
+    internal const string BaselineR1Digest = "sha256:0011376b411742d76078d0b67a65cc213236a38678d83869b6fc79f8578d3416";
+    private static readonly string[] BaselineSourcePaths = [
+        "docs/work-items/P4.3-native-capture-suite-integration.md",
+        "docs/work-items/P4.3-native-failure-diagnostics.md",
+        "docs/work-items/P4.3-admission-guard-diagnostics.md",
+        "docs/work-items/P4.3-frozen-artifact-execution-r1.md",
+        "experiments/windows-uia/managed-reference/global.json",
+        "experiments/windows-uia/managed-reference/CaptureSuite/CaptureSuite.csproj",
+        "experiments/windows-uia/managed-reference/CaptureSuite/FailureDiagnostics.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuite/FixtureRecords.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuite/OwnedFiles.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuite/Program.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuite/SuiteFreeze.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuite/TrustedSetup.cs",
+        "experiments/windows-uia/managed-reference/CaptureSuite/UnitCases.cs",
+        "scripts/p4.3-native-suite-contracts.mjs",
+        "scripts/p4.3-native-failure-diagnostics.mjs",
+        "scripts/p4.3-native-suite-source.mjs",
+        "scripts/run-p4.3-capture-suite.ps1",
+        "scripts/verify-p4.3-native-suite.mjs",
+        "test/p4.3-native-suite.test.ts",
+        "test/p4.3-native-failure-diagnostics.test.ts",
+    ];
+    private static readonly string[] ReviewPaths = [
+        "docs/reviews/p4.3-native-suite-ctx1-security-agent-review.md",
+        "docs/reviews/p4.3-native-suite-ctx1-accessibility-agent-review.md",
+        "docs/reviews/p4.3-native-suite-ctx1-package-agent-review.md",
+    ];
+    private static readonly string[] ReviewAgents = [
+        "/root/ctx1_source_security", "/root/ctx1_source_interop", "/root/ctx1_source_package",
+    ];
+    private static readonly string[] ApprovalLabels = [
+        "Reviewer agent", "Disposition", "Reviewed source", "Unresolved Critical/High/Medium", "Native execution",
+    ];
+    private const string SuiteDll = "experiments/windows-uia/managed-reference/CaptureSuiteCtx1/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.Ctx1.dll";
+    private const string FixtureDll = "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.dll";
+    internal static readonly string[] ExecutionPaths = [
+        SuiteDll.Replace(".dll", ".deps.json"), SuiteDll.Replace(".dll", ".runtimeconfig.json"),
+        FixtureDll.Replace(".dll", ".deps.json"), FixtureDll.Replace(".dll", ".runtimeconfig.json"),
+    ];
+    internal static readonly string[] BuildPaths = SourcePaths.Where(path => path.EndsWith(".cs", StringComparison.Ordinal) ||
+        path.EndsWith(".csproj", StringComparison.Ordinal) || path.EndsWith("/global.json", StringComparison.Ordinal)).Concat([
+        "experiments/windows-uia/managed-reference/CaptureHarness/CopiedObservation.cs",
+        "experiments/windows-uia/managed-reference/CaptureHarness/FixtureSubjects.cs",
+        "experiments/windows-uia/managed-reference/CaptureHarness/SemanticProjection.cs",
+        "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowTopology.cs",
+        "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowsAdmission.cs",
+        "experiments/windows-uia/managed-reference/NativeCaptureHarness/ReadOnlyCollector.cs",
+    ]).Order(StringComparer.Ordinal).ToArray();
+    private static readonly string[] BuildArguments = ["build", "CaptureSuiteCtx1/CaptureSuiteCtx1.csproj", "-c", "Release", "-t:Rebuild", "--nologo"];
+    public static string Repository()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        for (int i = 0; i < 7; i++) directory = directory.Parent ?? throw new CaptureException(CaptureCode.Unavailable);
+        string expected = Path.Combine(directory.FullName, "experiments/windows-uia/managed-reference/CaptureSuiteCtx1/bin/Release/net10.0-windows/");
+        if (!string.Equals(Path.GetFullPath(expected), Path.GetFullPath(AppContext.BaseDirectory), StringComparison.OrdinalIgnoreCase)) Refuse();
+        OwnedFiles.RequireDirectory(directory.FullName);
+        return directory.FullName;
+    }
+    public static SuitePins Admit(string repo)
+    {
+        RequireBaselinePacket(repo); // preservation only; never renew the consumed R1 native entry
+        var value = Parse(OwnedFiles.Read(Path.Combine(repo, "docs/evidence/p4.3-native-suite-ctx1-freeze.json"), 32768));
+        RequireFreezeShape(value);
+        string source = Text(value, "sourceDigest"); DigestShape(source);
+        string binary = Digest(OwnedFiles.Read(typeof(SuiteFreeze).Assembly.Location, 8388608));
+        if (binary != Text(value, "collectorBinaryDigest") || source != SourceBinding(repo)) Refuse();
+        string fixture = Path.Combine(repo, "fixtures/native/windows-app/Fixture/bin/Release/net10.0-windows/DualSurface.Fixture.dll");
+        if (Digest(OwnedFiles.Read(fixture, 8388608)) != FixtureDigest) Refuse();
+        var closure = value.GetProperty("executionFiles"); RequireRecords(closure, ExecutionPaths);
+        foreach (var file in closure.EnumerateArray())
+            if (Digest(OwnedFiles.Read(Path.Combine(repo, Text(file, "path")), 32768)) != Text(file, "digest")) Refuse();
+        foreach (string path in new[] { SuiteDll, FixtureDll })
+        {
+            string dev = Path.Combine(repo, path.Replace(".dll", ".runtimeconfig.dev.json"));
+            OwnedFiles.RequireDirectory(Path.GetDirectoryName(dev)!);
+            try { _ = File.GetAttributes(dev); }
+            catch (FileNotFoundException) { continue; }
+            Refuse(); // includes directories and aliases; other IO errors fail closed
+        }
+        var provenance = value.GetProperty("buildProvenance"); Exact(provenance, ["path", "blob"]);
+        const string provenancePath = "docs/evidence/p4.3-native-suite-ctx1-build-provenance.json";
+        if (Text(provenance, "path") != provenancePath) Refuse();
+        byte[] provenanceBytes = OwnedFiles.Read(Path.Combine(repo, provenancePath), 32768);
+        if (GitBlob(new UTF8Encoding(false, true).GetString(provenanceBytes).Replace("\r\n", "\n")) != Text(provenance, "blob")) Refuse();
+        var buildFiles = JsonSerializer.SerializeToElement(BuildPaths.Select(path => new
+            { path, digest = Digest(Encoding.UTF8.GetBytes(ReadNormalized(repo, path))) }).ToArray());
+        RequireBuildProvenance(provenanceBytes, new(source, binary, FixtureDigest), closure, buildFiles);
+        var reports = value.GetProperty("reviewReports");
+        if (reports.ValueKind != JsonValueKind.Array || reports.GetArrayLength() != 3) Refuse();
+        for (int i = 0; i < ReviewPaths.Length; i++)
+        {
+            var report = reports[i]; Exact(report, ["path", "blob"]);
+            if (Text(report, "path") != ReviewPaths[i]) Refuse();
+            string text = ReadNormalized(repo, ReviewPaths[i]);
+            if (GitBlob(text) != Text(report, "blob")) Refuse();
+            RequireApprovalMetadata(text, source, ReviewAgents[i]);
+        }
+        var decision = value.GetProperty("decision"); Exact(decision, ["path", "blob"]);
+        const string decisionPath = "docs/reviews/p4.3-native-suite-ctx1-execution-entry-2026-10-15.md";
+        if (Text(decision, "path") != decisionPath) Refuse();
+        string entry = ReadNormalized(repo, decisionPath);
+        if (GitBlob(entry) != Text(decision, "blob")) Refuse();
+        RequireApprovalMetadata(entry, source);
+        return new(source, binary, FixtureDigest);
+    }
+    internal static void RequireBaselinePacket(string repo)
+    {
+        _ = BaselineSourceBinding(repo);
+        const string baselineDll = "experiments/windows-uia/managed-reference/CaptureSuite/bin/Release/net10.0-windows/DualSurface.UiaCaptureSuite.dll";
+        const string baselineFreeze = "docs/evidence/p4.3-native-suite-r1-freeze.json";
+        string frozen = new UTF8Encoding(false, true).GetString(
+            OwnedFiles.Read(Path.Combine(repo, baselineFreeze), 32768)).Replace("\r\n", "\n");
+        if (GitBlob(frozen) != "c165cfcf4ff802eeb7f22d692c51066d0cf31b0f") Refuse();
+        var baseline = Parse(Encoding.UTF8.GetBytes(frozen));
+        if (Text(baseline, "sourceDigest") != BaselineR1Digest || Text(baseline, "fixtureBinaryDigest") != FixtureDigest ||
+            Digest(OwnedFiles.Read(Path.Combine(repo, baselineDll), 8388608)) != Text(baseline, "collectorBinaryDigest") ||
+            Digest(OwnedFiles.Read(Path.Combine(repo, FixtureDll), 8388608)) != FixtureDigest) Refuse();
+        string[] closure = [baselineDll.Replace(".dll", ".deps.json"), baselineDll.Replace(".dll", ".runtimeconfig.json"),
+            FixtureDll.Replace(".dll", ".deps.json"), FixtureDll.Replace(".dll", ".runtimeconfig.json")];
+        RequireRecords(baseline.GetProperty("executionFiles"), closure);
+        foreach (var file in baseline.GetProperty("executionFiles").EnumerateArray())
+            if (Digest(OwnedFiles.Read(Path.Combine(repo, Text(file, "path")), 32768)) != Text(file, "digest")) Refuse();
+        foreach (string dll in new[] { baselineDll, FixtureDll }) RequireNoDevConfiguration(repo, dll);
+        string[] reports = ["docs/reviews/p4.3-native-suite-r1-security-agent-review.md",
+            "docs/reviews/p4.3-native-suite-r1-accessibility-agent-review.md",
+            "docs/reviews/p4.3-native-suite-r1-package-agent-review.md"];
+        var reviews = baseline.GetProperty("reviewReports");
+        for (int i = 0; i < reports.Length; i++) Reference(reviews[i], reports[i]);
+        Reference(baseline.GetProperty("decision"), "docs/reviews/p4.3-native-suite-r1-execution-entry-2026-10-09.md");
+        Reference(baseline.GetProperty("buildProvenance"), "docs/evidence/p4.3-native-suite-r1-build-provenance.json");
+        void Reference(JsonElement record, string path)
+        {
+            if (Text(record, "path") != path || GitBlob(ReadNormalized(repo, path)) != Text(record, "blob")) Refuse();
+        }
+    }
+    private static void RequireNoDevConfiguration(string repo, string dll)
+    {
+        string dev = Path.Combine(repo, dll.Replace(".dll", ".runtimeconfig.dev.json"));
+        OwnedFiles.RequireDirectory(Path.GetDirectoryName(dev)!);
+        try { _ = File.GetAttributes(dev); }
+        catch (FileNotFoundException) { return; }
+        Refuse();
+    }
+    internal static T BeforeFixtureStart<T>(SuitePins expected, Func<SuitePins> current, Action checkTime, Func<T> launch)
+    {
+        checkTime();
+        if (current() != expected) Refuse();
+        checkTime();
+        return launch(); // never called on a failed/currently different closure
+    }
+    internal static void RequireFreezeShape(JsonElement value)
+    {
+        Exact(value, ["schemaVersion", "kind", "status", "sourceDigest", "collectorBinaryDigest", "fixtureBinaryDigest", "reviewReports", "decision", "executionFiles", "buildProvenance"]);
+        if (Text(value, "schemaVersion") != "0.1" || Text(value, "kind") != "p4.3-native-capture-suite-ctx1-freeze" ||
+            Text(value, "status") != "source-approved" || Text(value, "fixtureBinaryDigest") != FixtureDigest) Refuse();
+        DigestShape(Text(value, "sourceDigest")); DigestShape(Text(value, "collectorBinaryDigest"));
+        RequireRecords(value.GetProperty("executionFiles"), ExecutionPaths);
+        var reports = value.GetProperty("reviewReports");
+        if (reports.ValueKind != JsonValueKind.Array || reports.GetArrayLength() != 3) Refuse();
+        for (int i = 0; i < 3; i++) Reference(reports[i], ReviewPaths[i]);
+        Reference(value.GetProperty("decision"), "docs/reviews/p4.3-native-suite-ctx1-execution-entry-2026-10-15.md");
+        Reference(value.GetProperty("buildProvenance"), "docs/evidence/p4.3-native-suite-ctx1-build-provenance.json");
+        static void Reference(JsonElement record, string path)
+        {
+            Exact(record, ["path", "blob"]); string blob = Text(record, "blob");
+            if (Text(record, "path") != path || blob.Length != 40 ||
+                !System.Text.RegularExpressions.Regex.IsMatch(blob, "^[a-f0-9]{40}$")) Refuse();
+        }
+    }
+    // Repository report pins are governance evidence, not a signature proving
+    // authorship. Keep this grammar identical to the private JS admission.
+    internal static void RequireApprovalMetadata(string content, string sourceDigest, string? reviewerAgent = null)
+    {
+        CaptureBudget.RequireText(content, CaptureLimits.ReportBytes, false);
+        if (Encoding.UTF8.GetByteCount(content) > CaptureLimits.ReportBytes || content.StartsWith('\ufeff') ||
+            content.Contains('\0') || reviewerAgent != null && !ReviewAgents.Contains(reviewerAgent, StringComparer.Ordinal)) Refuse();
+        if (sourceDigest == null || sourceDigest.Length != 71) Refuse();
+        DigestShape(sourceDigest);
+        content = content.Replace("\r\n", "\n");
+        if (content.Contains('\r')) Refuse();
+        var fields = reviewerAgent == null ? new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Native execution"] = "authorized for the frozen fixed suite only", ["Reviewed source"] = sourceDigest,
+        } : new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Reviewer agent"] = reviewerAgent, ["Disposition"] = "source-approved", ["Reviewed source"] = sourceDigest,
+            ["Unresolved Critical/High/Medium"] = "0",
+        };
+        // Fixed plaintext prefix; raw HTML/declarations/processing instructions
+        // cannot wrap metadata before this block. Body text is not authority.
+        string[] prefix = content.Split('\n');
+        if (prefix.Length < 3 + fields.Count ||
+            !System.Text.RegularExpressions.Regex.IsMatch(prefix[0], @"^# [A-Za-z0-9 .():/_-]{1,240}$",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant) || prefix[1] != "" || prefix[2 + fields.Count] != "") Refuse();
+        int fieldIndex = 2;
+        foreach (var field in fields) if (prefix[fieldIndex++] != field.Key + ": " + field.Value) Refuse();
+        foreach (string label in ApprovalLabels)
+        {
+            string token = label + ":"; int count = 0, start = 0, found;
+            while ((found = content.IndexOf(token, start, StringComparison.Ordinal)) != -1) { count++; start = found + token.Length; }
+            if (count != (fields.ContainsKey(label) ? 1 : 0)) Refuse();
+        }
+        var observed = new HashSet<string>(StringComparer.Ordinal);
+        char fence = '\0'; int fenceLength = 0; bool quote = false, comment = false;
+        foreach (string line in content.Split('\n'))
+        {
+            var fenceLine = System.Text.RegularExpressions.Regex.Match(line, @"^[ \t]{0,3}(`{3,}|~{3,})([\s\S]*)$",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+            if (fence != '\0')
+            {
+                if (fenceLine.Success && fenceLine.Groups[1].Value[0] == fence && fenceLine.Groups[1].Value.Length >= fenceLength &&
+                    System.Text.RegularExpressions.Regex.IsMatch(fenceLine.Groups[2].Value, @"^[ \t]*$",
+                        System.Text.RegularExpressions.RegexOptions.CultureInvariant)) fence = '\0';
+                continue;
+            }
+            bool hidden = comment || line.Contains("<!--", StringComparison.Ordinal);
+            foreach (System.Text.RegularExpressions.Match marker in System.Text.RegularExpressions.Regex.Matches(line, "<!--|-->",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant))
+            {
+                if (marker.Value == "<!--") { if (comment) Refuse(); comment = true; }
+                else { if (!comment) Refuse(); comment = false; }
+            }
+            if (System.Text.RegularExpressions.Regex.IsMatch(line, @"^[ \t]*$", System.Text.RegularExpressions.RegexOptions.CultureInvariant)) quote = false;
+            else if (System.Text.RegularExpressions.Regex.IsMatch(line, @"^[ \t]{0,3}>", System.Text.RegularExpressions.RegexOptions.CultureInvariant)) quote = true;
+            if (fenceLine.Success && !hidden && !quote)
+            {
+                if (fenceLine.Groups[1].Value[0] == '`' && fenceLine.Groups[2].Value.Contains('`')) Refuse();
+                fence = fenceLine.Groups[1].Value[0]; fenceLength = fenceLine.Groups[1].Value.Length; continue;
+            }
+            if (hidden || quote) continue;
+            foreach (var field in fields) if (line == field.Key + ": " + field.Value) observed.Add(field.Key);
+        }
+        if (fence != '\0' || comment || observed.Count != fields.Count) Refuse();
+    }
+    public static string SourceBinding(string repo)
+    {
+        string baselineR1 = BaselineSourceBinding(repo);
+        var files = SourcePaths.Order(StringComparer.Ordinal).Select(path => (object)new
+            { path, digest = Digest(Encoding.UTF8.GetBytes(ReadNormalized(repo, path))) }).ToArray();
+        return Digest(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { files, baselineR1 })));
+    }
+    internal static string BaselineSourceBinding(string repo)
+    {
+        string[] foundation = ["docs/work-items/P4.3-capture-foundation-increment.md",
+            "experiments/windows-uia/managed-reference/CaptureHarness/CaptureHarness.csproj",
+            "experiments/windows-uia/managed-reference/CaptureHarness/CopiedObservation.cs",
+            "experiments/windows-uia/managed-reference/CaptureHarness/FixtureSubjects.cs",
+            "experiments/windows-uia/managed-reference/CaptureHarness/Program.cs",
+            "experiments/windows-uia/managed-reference/CaptureHarness/SemanticProjection.cs",
+            "experiments/windows-uia/managed-reference/CaptureHarness/UnitCases.cs", "scripts/p4.3-capture-contracts.mjs",
+            "scripts/p4.3-capture-source.mjs", "scripts/run-p4.3-capture-unit.ps1", "scripts/verify-p4.3-capture-unit.mjs", "test/p4.3-capture.test.ts"];
+        string foundationDigest = Digest(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(Files(foundation))));
+        if (foundationDigest != "sha256:79d5777287b327e9c355263e915836577994e052c7e70282c8cf466fa4c27f67") Refuse();
+        string[] component = ["docs/work-items/P4.3-native-collector-component.md",
+            "docs/work-items/P4.3-admission-guard-diagnostics.md",
+            "experiments/windows-uia/managed-reference/NativeCaptureHarness/NativeCaptureHarness.csproj",
+            "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowTopology.cs",
+            "experiments/windows-uia/managed-reference/NativeCaptureHarness/OwnedWindowsAdmission.cs",
+            "experiments/windows-uia/managed-reference/NativeCaptureHarness/Program.cs",
+            "experiments/windows-uia/managed-reference/NativeCaptureHarness/ReadOnlyCollector.cs",
+            "scripts/p4.3-native-capture-source.mjs", "scripts/run-p4.3-native-capture-unit.ps1",
+            "scripts/verify-p4.3-native-capture-unit.mjs", "test/p4.3-native-capture.test.ts"];
+        string componentDigest = Digest(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { files = Files(component), foundation = foundationDigest })));
+        if (componentDigest != "sha256:dc5b16aab0140d6d81cdff2366792a088fd2d9f249bad6aa1bb143115863185b") Refuse();
+        string baseline = Digest(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { files = Files(BaselineSourcePaths), component = componentDigest })));
+        if (baseline != BaselineR1Digest) Refuse();
+        return baseline;
+        object[] Files(string[] paths) => paths.Order(StringComparer.Ordinal).Select(path => (object)new
+            { path, digest = Digest(Encoding.UTF8.GetBytes(ReadNormalized(repo, path))) }).ToArray();
+    }
+    internal static JsonElement Parse(byte[] bytes, bool provenance = false)
+    {
+        if (bytes.Length is < 1 or > 32768 || bytes.AsSpan().StartsWith(new byte[] { 0xef, 0xbb, 0xbf })) Refuse();
+        try
+        {
+            _ = new UTF8Encoding(false, true).GetString(bytes);
+            int depth = provenance ? 6 : 16;
+            var reader = new Utf8JsonReader(bytes, new JsonReaderOptions { MaxDepth = depth });
+            var objects = new Stack<HashSet<string>?>(); int tokens = 0;
+            while (reader.Read())
+            {
+                if (++tokens > (provenance ? 2048 : 4096)) Refuse();
+                if (provenance && reader.TokenType == JsonTokenType.Number && reader.ValueSpan.Length > 512) Refuse();
+                if (reader.TokenType == JsonTokenType.StartObject) objects.Push(new(StringComparer.Ordinal));
+                if (reader.TokenType == JsonTokenType.StartArray) objects.Push(null);
+                if (reader.TokenType is JsonTokenType.EndObject or JsonTokenType.EndArray) objects.Pop();
+                if (reader.TokenType == JsonTokenType.PropertyName && (objects.Count == 0 || objects.Peek() == null ||
+                    !objects.Peek()!.Add(reader.GetString()!))) Refuse();
+                if (reader.TokenType is JsonTokenType.String or JsonTokenType.PropertyName)
+                {
+                    string scalar = reader.GetString()!;
+                    CaptureBudget.RequireText(scalar, provenance ? 512 : 256);
+                    if (provenance && Encoding.UTF8.GetByteCount(scalar) > 512) Refuse();
+                }
+            }
+            using var json = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = depth });
+            return json.RootElement.Clone();
+        }
+        catch (Exception error) when (error is JsonException or DecoderFallbackException or InvalidOperationException)
+        { throw new CaptureException(CaptureCode.InvalidObservation); }
+    }
+    private static void RequireRecords(JsonElement records, string[] paths)
+    {
+        if (records.ValueKind != JsonValueKind.Array || records.GetArrayLength() != paths.Length) Refuse();
+        for (int i = 0; i < paths.Length; i++)
+        {
+            var record = records[i]; Exact(record, ["path", "digest"]);
+            if (Text(record, "path") != paths[i]) Refuse(); DigestShape(Text(record, "digest"));
+        }
+    }
+    private static bool SameRecords(JsonElement left, JsonElement right, string[] paths)
+    {
+        RequireRecords(left, paths); RequireRecords(right, paths);
+        return Enumerable.Range(0, paths.Length).All(i => Text(left[i], "digest") == Text(right[i], "digest"));
+    }
+    internal static void RequireBuildProvenance(byte[] bytes, SuitePins pins, JsonElement closure, JsonElement buildFiles)
+    {
+        var value = Parse(bytes, true);
+        Exact(value, ["schemaVersion", "kind", "sourceCommit", "sourceDigest", "buildInputs", "builds"]);
+        string commit = Text(value, "sourceCommit");
+        if (Text(value, "schemaVersion") != "0.1" || Text(value, "kind") != "p4.3-native-suite-ctx1-build-provenance" ||
+            commit.Length != 40 || !System.Text.RegularExpressions.Regex.IsMatch(commit, "^[a-f0-9]{40}$") || Text(value, "sourceDigest") != pins.SourceDigest) Refuse();
+        DigestShape(pins.SourceDigest); DigestShape(pins.CollectorBinaryDigest);
+        var inputs = value.GetProperty("buildInputs");
+        Exact(inputs, ["sdkVersion", "sdkArchiveDigest", "project", "configuration", "arguments", "files"]);
+        const string archive = "24b670ad3d923bfcf47df6c3b034152398b42f6dbc388e10d783aee1cfb5e5817d399fc0ae2a12cfa822a55e61d34830ccb15c50ef6efee437ab874bb7c79430";
+        var arguments = inputs.GetProperty("arguments");
+        if (Text(inputs, "sdkVersion") != "10.0.401" || Text(inputs, "sdkArchiveDigest") != archive ||
+            Text(inputs, "project") != "experiments/windows-uia/managed-reference/CaptureSuiteCtx1/CaptureSuiteCtx1.csproj" ||
+            Text(inputs, "configuration") != "Release" || arguments.ValueKind != JsonValueKind.Array ||
+            arguments.GetArrayLength() != BuildArguments.Length) Refuse();
+        for (int i = 0; i < BuildArguments.Length; i++)
+            if (arguments[i].ValueKind != JsonValueKind.String || arguments[i].GetString() != BuildArguments[i]) Refuse();
+        if (!SameRecords(inputs.GetProperty("files"), buildFiles, BuildPaths)) Refuse();
+        var builds = value.GetProperty("builds");
+        if (builds.ValueKind != JsonValueKind.Array || builds.GetArrayLength() != 2) Refuse();
+        for (int i = 0; i < 2; i++)
+        {
+            var run = builds[i]; Exact(run, ["lane", "collectorBinaryDigest", "informationalRevision", "sourceLinkRevision", "executionFiles"]);
+            if (Text(run, "lane") != (i == 0 ? "first" : "repeat") || Text(run, "collectorBinaryDigest") != pins.CollectorBinaryDigest ||
+                Text(run, "informationalRevision") != commit || Text(run, "sourceLinkRevision") != commit ||
+                !SameRecords(run.GetProperty("executionFiles"), closure, ExecutionPaths)) Refuse();
+        }
+    }
+    private static void Exact(JsonElement value, string[] keys)
+    {
+        if (value.ValueKind != JsonValueKind.Object || value.EnumerateObject().Count() != keys.Length ||
+            keys.Any(k => !value.TryGetProperty(k, out _))) Refuse();
+    }
+    private static string Text(JsonElement value, string key) => value.GetProperty(key).ValueKind == JsonValueKind.String
+        ? value.GetProperty(key).GetString()! : throw new CaptureException(CaptureCode.InvalidObservation);
+    private static string ReadNormalized(string repo, string path)
+        => new UTF8Encoding(false, true).GetString(OwnedFiles.Read(Path.Combine(repo, path), CaptureLimits.ReportBytes)).Replace("\r\n", "\n");
+    public static string Digest(byte[] bytes) => "sha256:" + Convert.ToHexStringLower(SHA256.HashData(bytes));
+    internal static string GitBlob(string value)
+    {
+        byte[] data = Encoding.UTF8.GetBytes(value);
+        byte[] prefix = Encoding.UTF8.GetBytes("blob " + data.Length + "\0");
+        return Convert.ToHexStringLower(SHA1.HashData(prefix.Concat(data).ToArray()));
+    }
+    private static void DigestShape(string digest)
+    { if (digest.Length != 71 || !System.Text.RegularExpressions.Regex.IsMatch(digest, "^sha256:[a-f0-9]{64}$")) Refuse(); }
+    [System.Diagnostics.CodeAnalysis.DoesNotReturn] private static void Refuse() => throw new CaptureException(CaptureCode.InvalidObservation);
+}
