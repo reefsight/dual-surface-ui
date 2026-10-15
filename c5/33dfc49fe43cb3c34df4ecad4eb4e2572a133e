@@ -1,0 +1,35 @@
+docs/adr/0021-native-window-observation-and-membership.md
+  s_142b4d269ec35e::t_d0337217cb38b0 1-122
+docs/reviews/p4.3-window-observation-investigation-package-review-2026-10-15.md
+  s_142b4d269ec35e::t_c210629f47dd54 1-80
+docs/reviews/p4.3-window-observation-investigation-security-review-2026-10-15.md
+  s_142b4d269ec35e::t_fc678aedc64374 1-100
+docs/work-items/P4.3-window-observation-ownership-refinement.md
+  s_142b4d269ec35e::t_d0337217cb38b0 1-88
+docs/reviews/p4.3-window-observation-investigation-accessibility-review-2026-10-15.md
+  s_46a5795d960135::t_4e01e1c922b9d6 1-106
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c533dfc49fe43cb3c34df4ecad4eb4e2572a133e",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    },
+    "s_46a5795d960135": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a13e94-c2bc-7941-a7b2-a5775545331f",
+        "model": "unknown"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
