@@ -1,0 +1,22 @@
+docs/reviews/p4.3-ctx1-design-and-implementation-entry-2026-10-15.md
+  s_142b4d269ec35e::t_f208178fdcac8d 1-55
+docs/work-items/P4.3-window-handle-read-context-ctx1-candidate.md
+  s_142b4d269ec35e::t_f3366403030ac8 1-94,100-300
+  s_142b4d269ec35e::t_990a9bb34468ed 95-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0669364315aabd2282a2dbefe0179a082480b2c2",
+  "prompts": {},
+  "sessions": {
+    "s_142b4d269ec35e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a3d6-eeb8-7660-970f-e1aed8da41c5",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "PHICHAYUT KOTSUNO <PHICHAYUT.KOT@AXONSTECH.COM>"
+    }
+  }
+}
